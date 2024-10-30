@@ -21,7 +21,7 @@ app.use(express.json()); // Middleware to parse JSON bodies
 
 // Define endpoints
 app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World!");
+  res.send("Hello World!!!!");
 });
 
 app.get("/test-connection", async (req: Request, res: Response) => {

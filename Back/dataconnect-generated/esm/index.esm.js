@@ -6,6 +6,42 @@ export const connectorConfig = {
   location: 'europe-west3'
 };
 
+export function createUserRef(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  if('_useGeneratedSdk' in dcInstance) {
+    dcInstance._useGeneratedSdk();
+  } else {
+    console.error('Please update to the latest version of the Data Connect SDK by running `npm install firebase@dataconnect-preview`.');
+  }
+  return mutationRef(dcInstance, 'CreateUser', inputVars);
+}
+export function createUser(dcOrVars, vars) {
+  return executeMutation(createUserRef(dcOrVars, vars));
+}
+export function createEmailRef(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars);
+  if('_useGeneratedSdk' in dcInstance) {
+    dcInstance._useGeneratedSdk();
+  } else {
+    console.error('Please update to the latest version of the Data Connect SDK by running `npm install firebase@dataconnect-preview`.');
+  }
+  return mutationRef(dcInstance, 'CreateEmail', inputVars);
+}
+export function createEmail(dcOrVars, vars) {
+  return executeMutation(createEmailRef(dcOrVars, vars));
+}
+export function createRecipientRef(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars);
+  if('_useGeneratedSdk' in dcInstance) {
+    dcInstance._useGeneratedSdk();
+  } else {
+    console.error('Please update to the latest version of the Data Connect SDK by running `npm install firebase@dataconnect-preview`.');
+  }
+  return mutationRef(dcInstance, 'CreateRecipient', inputVars);
+}
+export function createRecipient(dcOrVars, vars) {
+  return executeMutation(createRecipientRef(dcOrVars, vars));
+}
 export function listEmailsRef(dc) {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   if('_useGeneratedSdk' in dcInstance) {
@@ -65,40 +101,4 @@ export function listSentRef(dcOrVars, vars) {
 }
 export function listSent(dcOrVars, vars) {
   return executeQuery(listSentRef(dcOrVars, vars));
-}
-export function createUserRef(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  if('_useGeneratedSdk' in dcInstance) {
-    dcInstance._useGeneratedSdk();
-  } else {
-    console.error('Please update to the latest version of the Data Connect SDK by running `npm install firebase@dataconnect-preview`.');
-  }
-  return mutationRef(dcInstance, 'CreateUser', inputVars);
-}
-export function createUser(dcOrVars, vars) {
-  return executeMutation(createUserRef(dcOrVars, vars));
-}
-export function createEmailRef(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars);
-  if('_useGeneratedSdk' in dcInstance) {
-    dcInstance._useGeneratedSdk();
-  } else {
-    console.error('Please update to the latest version of the Data Connect SDK by running `npm install firebase@dataconnect-preview`.');
-  }
-  return mutationRef(dcInstance, 'CreateEmail', inputVars);
-}
-export function createEmail(dcOrVars, vars) {
-  return executeMutation(createEmailRef(dcOrVars, vars));
-}
-export function createRecipientRef(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars);
-  if('_useGeneratedSdk' in dcInstance) {
-    dcInstance._useGeneratedSdk();
-  } else {
-    console.error('Please update to the latest version of the Data Connect SDK by running `npm install firebase@dataconnect-preview`.');
-  }
-  return mutationRef(dcInstance, 'CreateRecipient', inputVars);
-}
-export function createRecipient(dcOrVars, vars) {
-  return executeMutation(createRecipientRef(dcOrVars, vars));
 }

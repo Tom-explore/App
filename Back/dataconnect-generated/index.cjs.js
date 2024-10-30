@@ -7,6 +7,48 @@ const connectorConfig = {
 };
 exports.connectorConfig = connectorConfig;
 
+function createUserRef(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  if('_useGeneratedSdk' in dcInstance) {
+    dcInstance._useGeneratedSdk();
+  } else {
+    console.error('Please update to the latest version of the Data Connect SDK by running `npm install firebase@dataconnect-preview`.');
+  }
+  return mutationRef(dcInstance, 'CreateUser', inputVars);
+}
+exports.createUserRef = createUserRef;
+exports.createUser = function createUser(dcOrVars, vars) {
+  return executeMutation(createUserRef(dcOrVars, vars));
+};
+
+function createEmailRef(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars);
+  if('_useGeneratedSdk' in dcInstance) {
+    dcInstance._useGeneratedSdk();
+  } else {
+    console.error('Please update to the latest version of the Data Connect SDK by running `npm install firebase@dataconnect-preview`.');
+  }
+  return mutationRef(dcInstance, 'CreateEmail', inputVars);
+}
+exports.createEmailRef = createEmailRef;
+exports.createEmail = function createEmail(dcOrVars, vars) {
+  return executeMutation(createEmailRef(dcOrVars, vars));
+};
+
+function createRecipientRef(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars);
+  if('_useGeneratedSdk' in dcInstance) {
+    dcInstance._useGeneratedSdk();
+  } else {
+    console.error('Please update to the latest version of the Data Connect SDK by running `npm install firebase@dataconnect-preview`.');
+  }
+  return mutationRef(dcInstance, 'CreateRecipient', inputVars);
+}
+exports.createRecipientRef = createRecipientRef;
+exports.createRecipient = function createRecipient(dcOrVars, vars) {
+  return executeMutation(createRecipientRef(dcOrVars, vars));
+};
+
 function listEmailsRef(dc) {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   if('_useGeneratedSdk' in dcInstance) {
@@ -75,47 +117,5 @@ function listSentRef(dcOrVars, vars) {
 exports.listSentRef = listSentRef;
 exports.listSent = function listSent(dcOrVars, vars) {
   return executeQuery(listSentRef(dcOrVars, vars));
-};
-
-function createUserRef(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  if('_useGeneratedSdk' in dcInstance) {
-    dcInstance._useGeneratedSdk();
-  } else {
-    console.error('Please update to the latest version of the Data Connect SDK by running `npm install firebase@dataconnect-preview`.');
-  }
-  return mutationRef(dcInstance, 'CreateUser', inputVars);
-}
-exports.createUserRef = createUserRef;
-exports.createUser = function createUser(dcOrVars, vars) {
-  return executeMutation(createUserRef(dcOrVars, vars));
-};
-
-function createEmailRef(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars);
-  if('_useGeneratedSdk' in dcInstance) {
-    dcInstance._useGeneratedSdk();
-  } else {
-    console.error('Please update to the latest version of the Data Connect SDK by running `npm install firebase@dataconnect-preview`.');
-  }
-  return mutationRef(dcInstance, 'CreateEmail', inputVars);
-}
-exports.createEmailRef = createEmailRef;
-exports.createEmail = function createEmail(dcOrVars, vars) {
-  return executeMutation(createEmailRef(dcOrVars, vars));
-};
-
-function createRecipientRef(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars);
-  if('_useGeneratedSdk' in dcInstance) {
-    dcInstance._useGeneratedSdk();
-  } else {
-    console.error('Please update to the latest version of the Data Connect SDK by running `npm install firebase@dataconnect-preview`.');
-  }
-  return mutationRef(dcInstance, 'CreateRecipient', inputVars);
-}
-exports.createRecipientRef = createRecipientRef;
-exports.createRecipient = function createRecipient(dcOrVars, vars) {
-  return executeMutation(createRecipientRef(dcOrVars, vars));
 };
 

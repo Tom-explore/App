@@ -139,6 +139,33 @@ export interface User_Key {
 
 
 /* Allow users to create refs without passing in DataConnect */
+export function createUserRef(vars: CreateUserVariables): MutationRef<CreateUserData, CreateUserVariables>;
+/* Allow users to pass in custom DataConnect instances */
+export function createUserRef(dc: DataConnect, vars: CreateUserVariables): MutationRef<CreateUserData,CreateUserVariables>;
+
+export function createUser(vars: CreateUserVariables): MutationPromise<CreateUserData, CreateUserVariables>;
+export function createUser(dc: DataConnect, vars: CreateUserVariables): MutationPromise<CreateUserData,CreateUserVariables>;
+
+
+/* Allow users to create refs without passing in DataConnect */
+export function createEmailRef(vars?: CreateEmailVariables): MutationRef<CreateEmailData, CreateEmailVariables>;
+/* Allow users to pass in custom DataConnect instances */
+export function createEmailRef(dc: DataConnect, vars?: CreateEmailVariables): MutationRef<CreateEmailData,CreateEmailVariables>;
+
+export function createEmail(vars?: CreateEmailVariables): MutationPromise<CreateEmailData, CreateEmailVariables>;
+export function createEmail(dc: DataConnect, vars?: CreateEmailVariables): MutationPromise<CreateEmailData,CreateEmailVariables>;
+
+
+/* Allow users to create refs without passing in DataConnect */
+export function createRecipientRef(vars?: CreateRecipientVariables): MutationRef<CreateRecipientData, CreateRecipientVariables>;
+/* Allow users to pass in custom DataConnect instances */
+export function createRecipientRef(dc: DataConnect, vars?: CreateRecipientVariables): MutationRef<CreateRecipientData,CreateRecipientVariables>;
+
+export function createRecipient(vars?: CreateRecipientVariables): MutationPromise<CreateRecipientData, CreateRecipientVariables>;
+export function createRecipient(dc: DataConnect, vars?: CreateRecipientVariables): MutationPromise<CreateRecipientData,CreateRecipientVariables>;
+
+
+/* Allow users to create refs without passing in DataConnect */
 export function listEmailsRef(): QueryRef<ListEmailsData, undefined>;/* Allow users to pass in custom DataConnect instances */
 export function listEmailsRef(dc: DataConnect): QueryRef<ListEmailsData,undefined>;
 
@@ -178,32 +205,5 @@ export function listSentRef(dc: DataConnect, vars?: ListSentVariables): QueryRef
 
 export function listSent(vars?: ListSentVariables): QueryPromise<ListSentData, ListSentVariables>;
 export function listSent(dc: DataConnect, vars?: ListSentVariables): QueryPromise<ListSentData,ListSentVariables>;
-
-
-/* Allow users to create refs without passing in DataConnect */
-export function createUserRef(vars: CreateUserVariables): MutationRef<CreateUserData, CreateUserVariables>;
-/* Allow users to pass in custom DataConnect instances */
-export function createUserRef(dc: DataConnect, vars: CreateUserVariables): MutationRef<CreateUserData,CreateUserVariables>;
-
-export function createUser(vars: CreateUserVariables): MutationPromise<CreateUserData, CreateUserVariables>;
-export function createUser(dc: DataConnect, vars: CreateUserVariables): MutationPromise<CreateUserData,CreateUserVariables>;
-
-
-/* Allow users to create refs without passing in DataConnect */
-export function createEmailRef(vars?: CreateEmailVariables): MutationRef<CreateEmailData, CreateEmailVariables>;
-/* Allow users to pass in custom DataConnect instances */
-export function createEmailRef(dc: DataConnect, vars?: CreateEmailVariables): MutationRef<CreateEmailData,CreateEmailVariables>;
-
-export function createEmail(vars?: CreateEmailVariables): MutationPromise<CreateEmailData, CreateEmailVariables>;
-export function createEmail(dc: DataConnect, vars?: CreateEmailVariables): MutationPromise<CreateEmailData,CreateEmailVariables>;
-
-
-/* Allow users to create refs without passing in DataConnect */
-export function createRecipientRef(vars?: CreateRecipientVariables): MutationRef<CreateRecipientData, CreateRecipientVariables>;
-/* Allow users to pass in custom DataConnect instances */
-export function createRecipientRef(dc: DataConnect, vars?: CreateRecipientVariables): MutationRef<CreateRecipientData,CreateRecipientVariables>;
-
-export function createRecipient(vars?: CreateRecipientVariables): MutationPromise<CreateRecipientData, CreateRecipientVariables>;
-export function createRecipient(dc: DataConnect, vars?: CreateRecipientVariables): MutationPromise<CreateRecipientData,CreateRecipientVariables>;
 
 
