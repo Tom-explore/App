@@ -1,8 +1,0 @@
-connectorId: "default-connector" # Identifiant du connecteur
-authMode: "PUBLIC" # Mode d'authentification (PUBLIC, ADMIN, USER)
-
-generate:
-  javascriptSdk:
-    package: "@dataconnect/tomexplore" # Nom du package SDK généré
-    outputDir: "../../dataconnect-generated" # Dossier de sortie pour le SDK généré
-    packageJsonDir: "../../" # Dossier où se trouve le `package.json`
