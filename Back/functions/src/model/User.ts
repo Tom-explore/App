@@ -1,61 +1,44 @@
-import { DataTypes, Model, Optional } from 'sequelize';
-import sequelize from '../config/sequelize';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    BaseEntity,
+    CreateDateColumn,
+    UpdateDateColumn,
+  } from 'typeorm';
+  
+  @Entity('users')
+export class User extends BaseEntity {
+  @PrimaryGeneratedColumn()
+  id!: number;
 
-interface UserAttributes {
-  id: number;
-  username: string;
-  email: string;
-  password: string;
-}
+  @Column({ type: 'varchar', nullable: false })
+  username!: string;
 
-interface UserCreationAttributes extends Optional<UserAttributes, 'id'> {}
+  @Column({ type: 'varchar', unique: true, nullable: false })
+  email!: string;
 
-class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
-  public id!: number;
-  public username!: string;
-  public email!: string;
-  public password!: string;
+  @Column({ type: 'varchar', nullable: false })
+  password!: string;
 
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  @CreateDateColumn()
+  createdAt!: Date;
 
-  // Méthode personnalisée d'instance
+  @UpdateDateColumn()
+  updatedAt!: Date;
+
+  constructor(username?: string, email?: string, password?: string) {
+    super();
+    if (username) this.username = username;
+    if (email) this.email = email;
+    if (password) this.password = password;
+  }
+
   public sayHello(): string {
     return `Hello, I am ${this.username}`;
   }
 
-  // Méthode statique pour trouver un utilisateur par ID
-  static async findUserById(id: number): Promise<User | null> {
-    return await User.findByPk(id);
+  public static async findUserById(id: number): Promise<User | null> {
+    return await User.findOneBy({ id });
   }
 }
-
-User.init({
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  username: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  email: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      isEmail: true,
-    },
-  },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-}, {
-  sequelize,
-  modelName: 'User',
-  tableName: 'users',
-  timestamps: true,
-});
-
-export default User;

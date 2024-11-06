@@ -1,21 +1,21 @@
 import { Request, Response } from 'express';
-import User from '../model/User';
+import { User } from '../model/User';
 
-const userController = {
-  // Créer un utilisateur
+export const userController = {
   async createUser(req: Request, res: Response) {
     try {
-      const newUser = await User.create(req.body);
+      const { username, email, password, photo } = req.body;
+      const newUser = User.create({ username, email, password }); 
+      await newUser.save();
       res.status(201).json(newUser);
     } catch (error) {
       res.status(500).json({ error: 'Erreur lors de la création de l’utilisateur' });
     }
   },
 
-  // Récupérer un utilisateur par ID
   async getUserById(req: Request, res: Response) {
     try {
-      const user = await User.findByPk(parseInt(req.params.id));
+      const user = await User.findOneBy({ id: parseInt(req.params.id) });
       if (user) {
         res.status(200).json(user);
       } else {
@@ -26,24 +26,21 @@ const userController = {
     }
   },
 
-  // Récupérer tous les utilisateurs
   async getAllUsers(req: Request, res: Response) {
     try {
-      const users = await User.findAll();
+      const users = await User.find();
       res.status(200).json(users);
     } catch (error) {
       res.status(500).json({ error: 'Erreur lors de la récupération des utilisateurs' });
     }
   },
 
-  // Mettre à jour un utilisateur par ID
   async updateUser(req: Request, res: Response) {
     try {
-      const [updated] = await User.update(req.body, {
-        where: { id: parseInt(req.params.id) },
-      });
-      if (updated) {
-        const updatedUser = await User.findByPk(parseInt(req.params.id));
+      const user = await User.findOneBy({ id: parseInt(req.params.id) });
+      if (user) {
+        User.merge(user, req.body); 
+        const updatedUser = await user.save(); 
         res.status(200).json(updatedUser);
       } else {
         res.status(404).json({ error: 'Utilisateur non trouvé' });
@@ -53,13 +50,10 @@ const userController = {
     }
   },
 
-  // Supprimer un utilisateur par ID
   async deleteUser(req: Request, res: Response) {
     try {
-      const deleted = await User.destroy({
-        where: { id: parseInt(req.params.id) },
-      });
-      if (deleted) {
+      const result = await User.delete({ id: parseInt(req.params.id) });
+      if (result.affected) {
         res.status(204).send();
       } else {
         res.status(404).json({ error: 'Utilisateur non trouvé' });
@@ -69,10 +63,9 @@ const userController = {
     }
   },
 
-  // Appeler la méthode personnalisée 'sayHello' d'un utilisateur
   async sayHello(req: Request, res: Response) {
     try {
-      const user = await User.findByPk(parseInt(req.params.id));
+      const user = await User.findOneBy({ id: parseInt(req.params.id) });
       if (user) {
         res.status(200).send(user.sayHello());
       } else {
