@@ -24,7 +24,7 @@ function App() {
 
   useEffect(() => {
     // Effectuer un appel à l'API
-    fetch(`${apiUrl}/`)
+    fetch(`${apiUrl}/users/1/sayHello`)
       .then((response) => response.text())
       .then((data) => {
         setMessage(data);
