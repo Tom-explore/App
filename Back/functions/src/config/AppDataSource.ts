@@ -3,6 +3,11 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
+const entitiesPath =
+  process.env.NODE_ENV === 'production'
+    ? [__dirname + '/../model/*.js']  
+    : [__dirname + '/../model/*.ts']; 
+
 const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST,
@@ -12,20 +17,20 @@ const AppDataSource = new DataSource({
   database: process.env.DB_NAME as string,
   synchronize: true,
   logging: false,
-  entities: [__dirname + '/../model/*.ts'],
+  entities: entitiesPath,
   subscribers: [],
   poolSize: parseInt(process.env.DB_POOL_MAX as string, 10),
 });
 
-const testConnection = async () => {
+export const initializeDataSource = async () => {
   try {
-    await AppDataSource.initialize();
-    console.log('Connexion à la base de données réussie.');
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+      console.log('Connexion à la base de données réussie et synchronisation du schéma effectuée.');
+    }
   } catch (error) {
-    console.error('Erreur lors de la connexion à la base de données :', error);
+    console.error('Erreur lors de la connexion ou de la synchronisation avec la base de données :', error);
   }
 };
-
-testConnection(); 
 
 export default AppDataSource;
