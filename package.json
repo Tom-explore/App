@@ -3,13 +3,17 @@
   "private": true,
   "version": "0.0.1",
   "scripts": {
-    "build:front": "npm run build --prefix Front",
-    "build:back": "npm run build --prefix Back/functions",
     "dev": "npm run start --prefix Front",
     "emulators": "firebase emulators:start",
-    "serve": "concurrently \"npm run build:back\" \"npm run emulators\" \"npm run dev\"",
-    "build": "npm run build:front && npm run build:back"
+    "db:start": "docker-compose up -d",
+    "build:functions": "npm run build --prefix functions",
+    "serve": "concurrently \"npm run db:start\" \"npm run dev --prefix functions\" \"npm run emulators\" \"npm run dev\"",
+    "build": "npm run build:front && npm run build:back",
+    "build:front": "npm run build --prefix Front",
+    "build:back": "npm run build --prefix functions",
+    "start": "node Back/functions/lib/index.js"
   },
+
   "devDependencies": {
     "concurrently": "^7.0.0"
   },
@@ -21,3 +25,4 @@
     "firebase": "^11.0.1"
   }
 }
+

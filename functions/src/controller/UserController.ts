@@ -79,8 +79,6 @@ export const userController = {
     } catch (error) {
       console.error('Erreur lors de l’exécution de la méthode personnalisée:', error);
       res.status(500).json({ error: 'Erreur lors de l’exécution de la méthode personnalisée' });      
-      res.status(500).json({ error: `${error.message}` });
-
     }
   },
 };

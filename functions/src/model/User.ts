@@ -35,7 +35,7 @@ export class User extends BaseEntity {
   }
 
   public sayHello(): string {
-    return `Hello, I am ${this.username}`;
+    return `Hello, my sister is called ${this.username}`;
   }
 
   public static async findUserById(id: number): Promise<User | null> {
