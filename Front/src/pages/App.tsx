@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import logo from '../assets/logo.svg';
 import '../style/App.css';
 
-
-
 const apiUrl = process.env.REACT_APP_IS_DEV === 'true' 
   ? process.env.REACT_APP_DEV_API_URL 
   : process.env.REACT_APP_PROD_API_URL;
@@ -18,7 +16,7 @@ function App() {
       .then((data) => {
         setMessage(data);
       })
-      .catch((error) => console.error('Erreur lors de la récupération des données :', error));
+      .catch((error) => console.error('Erreur lors de la récupération des données ? :', error));
   }, []);
 
   return (

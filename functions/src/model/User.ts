@@ -39,7 +39,7 @@ export class User extends BaseEntity {
   }
 
   public getEmail(): string {
-    return `Hello, my car is ${this.username} and my email is ${this.email}`;
+    return `Hello, my dog is ${this.username} and my email is ${this.email}`;
   }
   
 
