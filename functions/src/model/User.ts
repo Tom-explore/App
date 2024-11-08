@@ -38,6 +38,11 @@ export class User extends BaseEntity {
     return `Hello, my sister is called ${this.username}`;
   }
 
+  public getEmail(): string {
+    return `Hello, my car is ${this.username} and my email is ${this.email}`;
+  }
+  
+
   public static async findUserById(id: number): Promise<User | null> {
     return await User.findOneBy({ id });
   }
