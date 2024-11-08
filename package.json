@@ -3,20 +3,23 @@
   "private": true,
   "version": "0.0.1",
 "scripts": {
-  "check-env": "node -e \"const dotenv = require('dotenv'); dotenv.config({ path: './functions/.env' }); const isDevBackend = process.env.IS_DEV === 'true'; dotenv.config({ path: './Front/.env' }); const isDevFrontend = process.env.REACT_APP_IS_DEV === 'true'; if (isDevBackend || isDevFrontend) { console.error('Deployment blocked: IS_DEV or REACT_APP_IS_DEV is set to true'); process.exit(1); }\"",
-  "deploy": "npm run check-env && firebase deploy",
-  "dev": "npm run start --prefix Front",
+  "set-env-dev": "node updateEnv.js true",
+  "set-env-prod": "node updateEnv.js false",
+  "test:frontend": "npm test --prefix Front -- --watchAll=false",
+  "test:backend": "npm test --prefix functions",
   "emulators": "firebase emulators:start",
-  "db:start": "docker-compose up -d",
-  "build:functions": "npm run build --prefix functions",
-  "serve": "concurrently \"npm run db:start\" \"npm run dev --prefix functions\" \"npm run emulators\" \"npm run dev\"",
-  "build": "npm run build:front && npm run build:back",
-  "build:front": "npm run build --prefix Front",
-  "build:back": "npm run build --prefix functions",
-  "start": "node Back/functions/lib/index.js"
-},
+  "serve": "concurrently \"npm run start --prefix Front\" \"npm run emulators\"",
+  "check-env": "node -e \"const dotenv = require('dotenv'); dotenv.config({ path: './functions/.env' }); const isDevBackend = process.env.IS_DEV === 'false'; dotenv.config({ path: './Front/.env' }); const isDevFrontend = process.env.REACT_APP_IS_DEV === 'false'; if (!isDevBackend || !isDevFrontend) { console.error('Deployment blocked: IS_DEV or REACT_APP_IS_DEV is still set to true'); process.exit(1); } else { console.log('Environment check passed'); }\"",
+  "build:frontend": "npm run build --prefix Front",
+  "predeploy": "npm run set-env-dev && npm run test:backend && npm run test:frontend && npm run set-env-prod && npm run build:frontend",
+  "deploy": "npm run predeploy && npm run check-env && firebase deploy"
+}
+
+
+,
   "devDependencies": {
-    "concurrently": "^7.0.0"
+    "concurrently": "^7.0.0",
+    "wait-on": "^8.0.1"
   },
   "dependencies": {
     "@firebase/app-check-interop-types": "^0.3.2",
