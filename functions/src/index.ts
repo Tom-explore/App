@@ -8,7 +8,7 @@ import { initializeApp } from "firebase-admin/app";
 
 initializeApp();
 
-const app = express();
+export const app = express();
 app.use(express.json());
 
 const isDev = process.env.IS_DEV === 'true';

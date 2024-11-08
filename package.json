@@ -2,18 +2,19 @@
   "name": "root",
   "private": true,
   "version": "0.0.1",
-  "scripts": {
-    "dev": "npm run start --prefix Front",
-    "emulators": "firebase emulators:start",
-    "db:start": "docker-compose up -d",
-    "build:functions": "npm run build --prefix functions",
-    "serve": "concurrently \"npm run db:start\" \"npm run dev --prefix functions\" \"npm run emulators\" \"npm run dev\"",
-    "build": "npm run build:front && npm run build:back",
-    "build:front": "npm run build --prefix Front",
-    "build:back": "npm run build --prefix functions",
-    "start": "node Back/functions/lib/index.js"
-  },
-
+"scripts": {
+  "check-env": "node -e \"const dotenv = require('dotenv'); dotenv.config({ path: './functions/.env' }); const isDevBackend = process.env.IS_DEV === 'true'; dotenv.config({ path: './Front/.env' }); const isDevFrontend = process.env.REACT_APP_IS_DEV === 'true'; if (isDevBackend || isDevFrontend) { console.error('Deployment blocked: IS_DEV or REACT_APP_IS_DEV is set to true'); process.exit(1); }\"",
+  "deploy": "npm run check-env && firebase deploy",
+  "dev": "npm run start --prefix Front",
+  "emulators": "firebase emulators:start",
+  "db:start": "docker-compose up -d",
+  "build:functions": "npm run build --prefix functions",
+  "serve": "concurrently \"npm run db:start\" \"npm run dev --prefix functions\" \"npm run emulators\" \"npm run dev\"",
+  "build": "npm run build:front && npm run build:back",
+  "build:front": "npm run build --prefix Front",
+  "build:back": "npm run build --prefix functions",
+  "start": "node Back/functions/lib/index.js"
+},
   "devDependencies": {
     "concurrently": "^7.0.0"
   },
@@ -22,7 +23,7 @@
     "@firebase/auth-interop-types": "^0.2.3",
     "@firebase/data-connect": "^0.1.1",
     "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
     "firebase": "^11.0.1"
   }
 }
-

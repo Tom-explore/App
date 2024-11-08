@@ -72,7 +72,7 @@ export const userController = {
     try {
       const user = await User.findOneBy({ id: parseInt(req.params.id) });
       if (user) {
-        res.status(200).send(user.sayHello());
+        res.status(200).send(user.getEmail());
       } else {
         res.status(404).json({ error: 'Utilisateur non trouvé' });
       }
