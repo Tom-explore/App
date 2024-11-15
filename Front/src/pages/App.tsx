@@ -16,7 +16,7 @@ function App() {
       .then((data) => {
         setMessage(data);
       })
-      .catch((error) => console.error('Erreur lors de la récupération des données PO ? :', error));
+      .catch((error) => console.error('Erreur lors de la récupération des données ? :', error));
   }, []);
 
   return (
