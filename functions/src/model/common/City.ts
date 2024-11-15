@@ -10,7 +10,7 @@ export class City {
   country_id!: Country;
 
   @Column('int', { nullable: true })
-  parent_city_id!: number;
+  parent_city_id?: number;
 
   @Column('varchar')
   slug!: string;
