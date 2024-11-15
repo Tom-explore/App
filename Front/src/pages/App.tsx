@@ -23,7 +23,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <p>Message de ta soeur : {message || 'Chargement...'}</p>
+        <p>Message de ta dafhryhegbr : {message || 'Chargement...'}</p>
         <p>TEST</p>
 
       </header>

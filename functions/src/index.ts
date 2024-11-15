@@ -3,7 +3,6 @@ import * as functions from 'firebase-functions';
 import cors from 'cors'; 
 import path from 'path';
 import { initializeDataSource } from './config/AppDataSource';
-import userRoutes from './routes/UserRoutes';
 import { initializeApp } from "firebase-admin/app";
 
 initializeApp();
@@ -31,7 +30,7 @@ if (!isDev) {
   }));
 }
 
-app.use('/users', userRoutes);
+
 
 const frontendPath = path.join(__dirname, '../../Front/build');
 app.use(express.static(frontendPath));
