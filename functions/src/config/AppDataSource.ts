@@ -6,7 +6,7 @@ dotenv.config();
 
 const isDev = process.env.IS_DEV === 'true';
 
-const entitiesPath = [path.join(__dirname, '../../lib/model/*.js')]; 
+const entitiesPath = [path.join(__dirname, '../../lib/model/**/*.js')];
 
 
 console.log('is dev ?', isDev);
