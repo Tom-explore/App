@@ -33,22 +33,41 @@ export class TxCategory extends BaseEntity {
   @JoinColumn({ name: 'language_id' })
   language!: Language;
 
-  constructor(
-    category: Category,
-    language: Language,
-    name: string,
-    slug: string,
-    description: string = '',
-    meta_description: string = '',
-    title: string = ''
-  ) {
+  constructor() {
     super();
-    this.category = category;
-    this.language = language;
-    this.name = name;
-    this.slug = slug;
-    this.description = description;
-    this.meta_description = meta_description;
-    this.title = title;
+  }
+
+  static async createTxCategory(data: Partial<TxCategory>): Promise<TxCategory> {
+    const txCategory = Object.assign(new TxCategory(), data);
+    return await txCategory.save();
+  }
+
+  static async findByCategoryAndLanguage(categoryId: number, languageId: number): Promise<TxCategory | null> {
+    return await TxCategory.findOne({
+      where: { category_id: categoryId, language_id: languageId },
+      relations: ['category', 'language'],
+    });
+  }
+
+  static async findByCategory(categoryId: number): Promise<TxCategory[]> {
+    return await TxCategory.find({ where: { category_id: categoryId }, relations: ['category', 'language'] });
+  }
+
+  static async findByLanguage(languageId: number): Promise<TxCategory[]> {
+    return await TxCategory.find({ where: { language_id: languageId }, relations: ['category', 'language'] });
+  }
+
+  static async updateTxCategory(categoryId: number, languageId: number, data: Partial<TxCategory>): Promise<TxCategory | null> {
+    const txCategory = await TxCategory.findByCategoryAndLanguage(categoryId, languageId);
+    if (!txCategory) return null;
+    Object.assign(txCategory, data);
+    return await txCategory.save();
+  }
+
+  static async deleteTxCategory(categoryId: number, languageId: number): Promise<boolean> {
+    const txCategory = await TxCategory.findByCategoryAndLanguage(categoryId, languageId);
+    if (!txCategory) return false;
+    await txCategory.remove();
+    return true;
   }
 }

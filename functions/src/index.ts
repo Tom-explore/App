@@ -4,7 +4,10 @@ import cors from 'cors';
 import path from 'path';
 import { initializeDataSource } from './config/AppDataSource';
 import { initializeApp } from "firebase-admin/app";
-
+import postBlocRoutes from './routes/blog/PostBlocRoutes';
+import postCategorizationRoutes from './routes/blog/PostCategorizationRoutes';
+import countryRoutes from './routes/common/CountryRoutes';
+import configureRoutes from './config/routes';
 initializeApp();
 
 export const app = express();
@@ -29,6 +32,9 @@ if (!isDev) {
     allowedHeaders: ['Content-Type', 'Authorization'],
   }));
 }
+
+configureRoutes(app);
+
 
 
 

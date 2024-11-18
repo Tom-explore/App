@@ -1,10 +1,10 @@
-import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
-import {Category} from '../categories/Category';
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn, BaseEntity } from 'typeorm';
+import { Category } from '../categories/Category';
 import { City } from '../common/City';
 import { Language } from './Language';
 
 @Entity('tx_category_city_lang')
-export class TxCategoryCityLang {
+export class TxCategoryCityLang extends BaseEntity {
   @PrimaryColumn({ name: 'category_id' })
   category_id!: number;
 
@@ -38,21 +38,54 @@ export class TxCategoryCityLang {
   @Column('varchar', { nullable: true })
   title!: string;
 
-  constructor(
-    category: Category,
-    city: City,
-    language: Language,
-    name: string,
-    description: string = '',
-    meta_description: string = '',
-    title: string = ''
-  ) {
-    this.category = category;
-    this.city = city;
-    this.language = language;
-    this.name = name;
-    this.description = description;
-    this.meta_description = meta_description;
-    this.title = title;
+  constructor() {
+    super();
+  }
+
+  static async createTxCategoryCityLang(data: Partial<TxCategoryCityLang>): Promise<TxCategoryCityLang> {
+    const txCategoryCityLang = Object.assign(new TxCategoryCityLang(), data);
+    return await txCategoryCityLang.save();
+  }
+
+  static async findByCategoryCityLanguage(categoryId: number, cityId: number, languageId: number): Promise<TxCategoryCityLang | null> {
+    return await TxCategoryCityLang.findOne({
+      where: { category_id: categoryId, city_id: cityId, language_id: languageId },
+      relations: ['category', 'city', 'language'],
+    });
+  }
+
+  static async findByCategory(categoryId: number): Promise<TxCategoryCityLang[]> {
+    return await TxCategoryCityLang.find({
+      where: { category_id: categoryId },
+      relations: ['category', 'city', 'language'],
+    });
+  }
+
+  static async findByCity(cityId: number): Promise<TxCategoryCityLang[]> {
+    return await TxCategoryCityLang.find({
+      where: { city_id: cityId },
+      relations: ['category', 'city', 'language'],
+    });
+  }
+
+  static async findByLanguage(languageId: number): Promise<TxCategoryCityLang[]> {
+    return await TxCategoryCityLang.find({
+      where: { language_id: languageId },
+      relations: ['category', 'city', 'language'],
+    });
+  }
+
+  static async updateTxCategoryCityLang(categoryId: number, cityId: number, languageId: number, data: Partial<TxCategoryCityLang>): Promise<TxCategoryCityLang | null> {
+    const txCategoryCityLang = await TxCategoryCityLang.findByCategoryCityLanguage(categoryId, cityId, languageId);
+    if (!txCategoryCityLang) return null;
+    Object.assign(txCategoryCityLang, data);
+    return await txCategoryCityLang.save();
+  }
+
+  static async deleteTxCategoryCityLang(categoryId: number, cityId: number, languageId: number): Promise<boolean> {
+    const txCategoryCityLang = await TxCategoryCityLang.findByCategoryCityLanguage(categoryId, cityId, languageId);
+    if (!txCategoryCityLang) return false;
+    await txCategoryCityLang.remove();
+    return true;
   }
 }

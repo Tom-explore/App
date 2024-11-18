@@ -1,9 +1,9 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn, BaseEntity } from 'typeorm';
 import { User } from './User';
 import { Place } from '../places/Place';
 
 @Entity('user_places_preferences')
-export class UserPlacesPreferences {
+export class UserPlacesPreference extends BaseEntity {
   @PrimaryColumn()
   user_id!: number;
 
@@ -30,17 +30,44 @@ export class UserPlacesPreferences {
   @JoinColumn({ name: 'place_id' })
   place!: Place;
 
-  constructor(
-    user: User,
-    place: Place,
-    wants_to_visit: boolean = false,
-    visited: boolean = false,
-    not_interested: boolean = false
-  ) {
-    this.user = user;
-    this.place = place;
-    this.wants_to_visit = wants_to_visit;
-    this.visited = visited;
-    this.not_interested = not_interested;
+  constructor() {
+    super();
+  }
+
+  static async createPreference(data: Partial<UserPlacesPreference>): Promise<UserPlacesPreference> {
+    const preference = Object.assign(new UserPlacesPreference(), data);
+    return await preference.save();
+  }
+
+  static async findPreferenceById(userId: number, placeId: number): Promise<UserPlacesPreference | null> {
+    return await UserPlacesPreference.findOne({
+      where: { user_id: userId, place_id: placeId },
+      relations: ['user', 'place'],
+    });
+  }
+
+  static async findPreferencesByUser(userId: number): Promise<UserPlacesPreference[]> {
+    return await UserPlacesPreference.find({
+      where: { user_id: userId },
+      relations: ['user', 'place'],
+    });
+  }
+
+  static async updatePreference(
+    userId: number,
+    placeId: number,
+    data: Partial<UserPlacesPreference>
+  ): Promise<UserPlacesPreference | null> {
+    const preference = await UserPlacesPreference.findPreferenceById(userId, placeId);
+    if (!preference) return null;
+    Object.assign(preference, data);
+    return await preference.save();
+  }
+
+  static async deletePreference(userId: number, placeId: number): Promise<boolean> {
+    const preference = await UserPlacesPreference.findPreferenceById(userId, placeId);
+    if (!preference) return false;
+    await preference.remove();
+    return true;
   }
 }

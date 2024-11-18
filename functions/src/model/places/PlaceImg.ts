@@ -25,20 +25,34 @@ export class PlaceImg extends BaseEntity {
   @Column('varchar', { nullable: true })
   source!: string;
 
-  constructor(
-    place: Place,
-    slug: string,
-    author: string = '',
-    license: string = '',
-    top: number | null = null,
-    source: string = ''
-  ) {
+  constructor() {
     super();
-    this.place = place;
-    this.slug = slug;
-    this.author = author;
-    this.license = license;
-    this.top = top;
-    this.source = source;
+  }
+
+  static async createPlaceImg(data: Partial<PlaceImg>): Promise<PlaceImg> {
+    const placeImg = Object.assign(new PlaceImg(), data);
+    return await placeImg.save();
+  }
+
+  static async findById(id: number): Promise<PlaceImg | null> {
+    return await PlaceImg.findOne({ where: { id }, relations: ['place'] });
+  }
+
+  static async findByPlace(placeId: number): Promise<PlaceImg[]> {
+    return await PlaceImg.find({ where: { place: { id: placeId } }, relations: ['place'] });
+  }
+
+  static async updatePlaceImg(id: number, data: Partial<PlaceImg>): Promise<PlaceImg | null> {
+    const placeImg = await PlaceImg.findById(id);
+    if (!placeImg) return null;
+    Object.assign(placeImg, data);
+    return await placeImg.save();
+  }
+
+  static async deletePlaceImg(id: number): Promise<boolean> {
+    const placeImg = await PlaceImg.findById(id);
+    if (!placeImg) return false;
+    await placeImg.remove();
+    return true;
   }
 }
