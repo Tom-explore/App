@@ -1,9 +1,9 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn, BaseEntity } from 'typeorm';
 import { Place } from '../places/Place';
 import { Attribute } from './Attribute';
 
 @Entity('place_attributes')
-export class PlaceAttributes {
+export class PlaceAttribute extends BaseEntity {
   @PrimaryColumn()
   place_id!: number;
 
@@ -21,9 +21,34 @@ export class PlaceAttributes {
   @JoinColumn({ name: 'attribute_id' })
   attribute!: Attribute;
 
-  constructor(place: Place, attribute: Attribute, value: number) {
-    this.place = place;
-    this.attribute = attribute;
-    this.value = value;
+  constructor() {
+    super();
+  }
+
+  static async createPlaceAttribute(data: Partial<PlaceAttribute>): Promise<PlaceAttribute> {
+    const placeAttribute = Object.assign(new PlaceAttribute(), data);
+    return await placeAttribute.save();
+  }
+
+  static async findByPlaceAndAttribute(placeId: number, attributeId: number): Promise<PlaceAttribute | null> {
+    return await PlaceAttribute.findOne({ where: { place_id: placeId, attribute_id: attributeId }, relations: ['place', 'attribute'] });
+  }
+
+  static async findByPlace(placeId: number): Promise<PlaceAttribute[]> {
+    return await PlaceAttribute.find({ where: { place_id: placeId }, relations: ['place', 'attribute'] });
+  }
+
+  static async updatePlaceAttribute(placeId: number, attributeId: number, data: Partial<PlaceAttribute>): Promise<PlaceAttribute | null> {
+    const placeAttribute = await PlaceAttribute.findByPlaceAndAttribute(placeId, attributeId);
+    if (!placeAttribute) return null;
+    Object.assign(placeAttribute, data);
+    return await placeAttribute.save();
+  }
+
+  static async deletePlaceAttribute(placeId: number, attributeId: number): Promise<boolean> {
+    const placeAttribute = await PlaceAttribute.findByPlaceAndAttribute(placeId, attributeId);
+    if (!placeAttribute) return false;
+    await placeAttribute.remove();
+    return true;
   }
 }

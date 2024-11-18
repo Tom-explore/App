@@ -1,9 +1,9 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn, BaseEntity } from 'typeorm';
 import { Place } from '../places/Place';
 import { Language } from './Language';
 
 @Entity('tx_place')
-export class TxPlace {
+export class TxPlace extends BaseEntity {
   @PrimaryColumn()
   place_id!: number;
 
@@ -33,21 +33,47 @@ export class TxPlace {
   @JoinColumn({ name: 'language_id' })
   language!: Language;
 
-  constructor(
-    place: Place,
-    language: Language,
-    slug: string,
-    name: string,
-    title: string,
-    description: string,
-    meta_description: string
-  ) {
-    this.place = place;
-    this.language = language;
-    this.slug = slug;
-    this.name = name;
-    this.title = title;
-    this.description = description;
-    this.meta_description = meta_description;
+  constructor() {
+    super();
+  }
+
+  static async createTxPlace(data: Partial<TxPlace>): Promise<TxPlace> {
+    const txPlace = Object.assign(new TxPlace(), data);
+    return await txPlace.save();
+  }
+
+  static async findByPlaceAndLanguage(placeId: number, languageId: number): Promise<TxPlace | null> {
+    return await TxPlace.findOne({
+      where: { place_id: placeId, language_id: languageId },
+      relations: ['place', 'language'],
+    });
+  }
+
+  static async findByPlace(placeId: number): Promise<TxPlace[]> {
+    return await TxPlace.find({
+      where: { place_id: placeId },
+      relations: ['place', 'language'],
+    });
+  }
+
+  static async findByLanguage(languageId: number): Promise<TxPlace[]> {
+    return await TxPlace.find({
+      where: { language_id: languageId },
+      relations: ['place', 'language'],
+    });
+  }
+
+  static async updateTxPlace(placeId: number, languageId: number, data: Partial<TxPlace>): Promise<TxPlace | null> {
+    const txPlace = await TxPlace.findByPlaceAndLanguage(placeId, languageId);
+    if (!txPlace) return null;
+    Object.assign(txPlace, data);
+    return await txPlace.save();
+  }
+
+  static async deleteTxPlace(placeId: number, languageId: number): Promise<boolean> {
+    const txPlace = await TxPlace.findByPlaceAndLanguage(placeId, languageId);
+    if (!txPlace) return false;
+    await txPlace.remove();
+    return true;
   }
 }
