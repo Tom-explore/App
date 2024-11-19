@@ -36,24 +36,33 @@ class TouristAttractionController {
     try {
       const { id } = req.params;
       const data = req.body;
-      const attraction = await TouristAttraction.updateTouristAttraction(Number(id), data);
+  
+      const attraction = await TouristAttraction.findById(Number(id)); // Trouver l'attraction
       if (!attraction) return res.status(404).json({ message: 'Tourist attraction not found' });
+  
+      Object.assign(attraction, data); // Mettre à jour les données
+      await attraction.save(); // Sauvegarder dans la base
       return res.status(200).json({ message: 'Tourist attraction updated successfully', attraction });
     } catch (error) {
       return res.status(400).json({ message: 'Error updating tourist attraction', error: error.message });
     }
   }
+  
 
   static async deleteTouristAttraction(req: Request, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
-      const success = await TouristAttraction.deleteTouristAttraction(Number(id));
-      if (!success) return res.status(404).json({ message: 'Tourist attraction not found' });
+  
+      const attraction = await TouristAttraction.findById(Number(id));
+      if (!attraction) return res.status(404).json({ message: 'Tourist attraction not found' });
+  
+      await attraction.remove(); // Suppression
       return res.status(200).json({ message: 'Tourist attraction deleted successfully' });
     } catch (error) {
       return res.status(400).json({ message: 'Error deleting tourist attraction', error: error.message });
     }
   }
+  
 }
 
 export default TouristAttractionController;
