@@ -1,17 +1,32 @@
 import { Request, Response } from 'express';
 import { PostBloc } from '../../model/blog/PostBloc';
+import { Post } from '../../model/blog/Post';
 
 export default class PostBlocController {
   static async createPostBloc(req: Request, res: Response): Promise<Response> {
     try {
-      const data = req.body;
-      const postBloc = await PostBloc.createBloc(data);
+      const { post_id, position, titleType, template, visible } = req.body;
+  
+      const post = await Post.findOneBy({ id: post_id });
+      if (!post) {
+        return res.status(404).json({ message: `Post with ID ${post_id} not found` });
+      }
+  
+      const postBloc = await PostBloc.createBloc({
+        post,
+        position,
+        titleType,
+        template,
+        visible,
+      });
+  
       return res.status(201).json({ message: 'PostBloc created successfully', postBloc });
     } catch (error) {
+      console.error('Error creating PostBloc:', error.message);
       return res.status(400).json({ message: 'Error creating PostBloc', error: error.message });
     }
   }
-
+  
   static async getPostBlocById(req: Request, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
