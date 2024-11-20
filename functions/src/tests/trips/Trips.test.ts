@@ -68,7 +68,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  console.log('Cleaning up created entities...');
+
   for (const placeId of placeIds) {
     await request(app).delete(`/place/${placeId}`);
   }
@@ -82,7 +82,7 @@ afterAll(async () => {
 
   if (AppDataSource.isInitialized) {
     await AppDataSource.destroy();
-    console.log('Database connection closed.');
+
   }
 });
 
@@ -132,7 +132,7 @@ describe('TripController Tests', () => {
       price_range: 2,
     });
 
-    console.log('Trip creation response:', tripResponse.body);
+
     expect(tripResponse.status).toBe(201);
     expect(tripResponse.body.trip).toHaveProperty('id');
     tripId = tripResponse.body.trip.id;
@@ -140,14 +140,14 @@ describe('TripController Tests', () => {
 
   it('should retrieve a trip by id', async () => {
     const tripResponse = await request(app).get(`/trip/${tripId}`);
-    console.log('Trip retrieval response:', tripResponse.body);
+
     expect(tripResponse.status).toBe(200);
     expect(tripResponse.body).toHaveProperty('id', tripId);
   });
 
   it('should retrieve trips by user', async () => {
     const tripsResponse = await request(app).get(`/trip/user/${userId}`);
-    console.log('Trips by user response:', tripsResponse.body);
+
     expect(tripsResponse.status).toBe(200);
     expect(Array.isArray(tripsResponse.body)).toBe(true);
     expect(tripsResponse.body.some((trip: any) => trip.id === tripId)).toBe(true);
@@ -159,7 +159,7 @@ describe('TripController Tests', () => {
       price_range: 3,
     };
     const updateResponse = await request(app).put(`/trip/${tripId}`).send(updatedData);
-    console.log('Trip update response:', updateResponse.body);
+
     expect(updateResponse.status).toBe(200);
     expect(updateResponse.body.trip).toMatchObject(updatedData);
   });
@@ -173,7 +173,7 @@ describe('PeopleController Tests', () => {
       age: 30,
     });
 
-    console.log('Person creation response:', personResponse.body);
+
     expect(personResponse.status).toBe(201);
     expect(personResponse.body.person).toHaveProperty('id');
     peopleId = personResponse.body.person.id;
@@ -181,7 +181,7 @@ describe('PeopleController Tests', () => {
 
   it('should retrieve a person by id', async () => {
     const personResponse = await request(app).get(`/people/${peopleId}`);
-    console.log('Person retrieval response:', personResponse.body);
+
     expect(personResponse.status).toBe(200);
     expect(personResponse.body).toHaveProperty('id', peopleId);
     expect(personResponse.body).toHaveProperty('age', 30);
@@ -189,7 +189,7 @@ describe('PeopleController Tests', () => {
 
   it('should retrieve all people linked to a trip', async () => {
     const peopleResponse = await request(app).get(`/people/trip/${tripId}`);
-    console.log('People by trip response:', peopleResponse.body);
+
     expect(peopleResponse.status).toBe(200);
     expect(Array.isArray(peopleResponse.body)).toBe(true);
     expect(peopleResponse.body.some((person: any) => person.id === peopleId)).toBe(true);
@@ -198,14 +198,14 @@ describe('PeopleController Tests', () => {
   it('should update a person', async () => {
     const updatedData = { age: 35 };
     const updateResponse = await request(app).put(`/people/${peopleId}`).send(updatedData);
-    console.log('Person update response:', updateResponse.body);
+
     expect(updateResponse.status).toBe(200);
     expect(updateResponse.body.person).toHaveProperty('age', 35);
   });
 
   it('should delete a person', async () => {
     const deleteResponse = await request(app).delete(`/people/${peopleId}`);
-    console.log('Person deletion response:', deleteResponse.body);
+
     expect(deleteResponse.status).toBe(200);
     expect(deleteResponse.body).toHaveProperty('message', 'Person deleted successfully');
 
@@ -224,7 +224,7 @@ describe('TripAttributeController Tests', () => {
       trip_id: tripId, // Utilisation du trip existant
       attribute_id: attributeIds[0], // Utilisation du premier attribut créé
     });
-    console.log('TripAttribute creation response:', tripAttributeResponse.body);
+
     expect(tripAttributeResponse.status).toBe(201);
     tripAttributeId = {
       tripId: tripAttributeResponse.body.tripAttribute.trip_id,
@@ -236,16 +236,16 @@ describe('TripAttributeController Tests', () => {
     const response = await request(app).get(
       `/tripattribute/${tripAttributeId.tripId}/${tripAttributeId.attributeId}`
     );
-    console.log('TripAttribute retrieval response:', response.body);
+
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('trip_id', tripAttributeId.tripId);
     expect(response.body).toHaveProperty('attribute_id', tripAttributeId.attributeId);
   });
 
   it('should retrieve all attributes linked to a trip', async () => {
-    console.log('Testing tripId:', tripId);
+
     const response = await request(app).get(`/tripattribute/attributesbytrip/${tripId}`);
-        console.log('Full Payload:', JSON.stringify(response.body, null, 2));
+
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
     expect(response.body.some((attr: any) => attr.attribute_id === attributeIds[0])).toBe(true);
@@ -256,7 +256,7 @@ describe('TripAttributeController Tests', () => {
     const updateResponse = await request(app)
       .put(`/tripattribute/${tripAttributeId.tripId}/${tripAttributeId.attributeId}`)
       .send({ trip_id: tripId, attribute_id: attributeIds[1] }); // Change vers un autre attribut
-    console.log('TripAttribute update response:', updateResponse.body);
+
     expect(updateResponse.status).toBe(200);
     expect(updateResponse.body.updatedAttribute).toHaveProperty('trip_id', tripId);
     expect(updateResponse.body.updatedAttribute).toHaveProperty('attribute_id', attributeIds[1]);
@@ -266,7 +266,7 @@ describe('TripAttributeController Tests', () => {
     const deleteResponse = await request(app).delete(
       `/tripattribute/${tripAttributeId.tripId}/${tripAttributeId.attributeId}`
     );
-    console.log('TripAttribute deletion response:', deleteResponse.body);
+
     expect(deleteResponse.status).toBe(200);
     expect(deleteResponse.body).toHaveProperty('message', 'Trip attribute deleted successfully');
 
@@ -286,7 +286,7 @@ describe('TripCategoryFilterController Tests', () => {
       trip_id: tripId, // Utilise le trip existant
       category_id: categoryId, // Utilise la catégorie existante créée au début
     });
-    console.log('TripCategoryFilter creation response:', tripCategoryFilterResponse.body);
+
     expect(tripCategoryFilterResponse.status).toBe(201);
     tripCategoryId = {
       tripId: tripCategoryFilterResponse.body.tripCategoryFilter.trip_id,
@@ -298,7 +298,7 @@ describe('TripCategoryFilterController Tests', () => {
     const response = await request(app).get(
       `/tripcategoryfilter/${tripCategoryId.tripId}/${tripCategoryId.categoryId}`
     );
-    console.log('TripCategoryFilter retrieval response:', response.body);
+
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('trip_id', tripCategoryId.tripId);
     expect(response.body).toHaveProperty('category_id', tripCategoryId.categoryId);
@@ -306,7 +306,7 @@ describe('TripCategoryFilterController Tests', () => {
 
   it('should retrieve all trip category filters', async () => {
     const response = await request(app).get('/tripcategoryfilter');
-    console.log('All TripCategoryFilters response:', JSON.stringify(response.body, null, 2));
+
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
     expect(
@@ -321,7 +321,7 @@ describe('TripCategoryFilterController Tests', () => {
     const deleteResponse = await request(app).delete(
       `/tripcategoryfilter/${tripCategoryId.tripId}/${tripCategoryId.categoryId}`
     );
-    console.log('TripCategoryFilter deletion response:', deleteResponse.body);
+
     expect(deleteResponse.status).toBe(200);
     expect(deleteResponse.body).toHaveProperty('message', 'Trip category filter deleted successfully');
 
@@ -345,7 +345,7 @@ describe('TripCompositionController Tests', () => {
       datetime: new Date().toISOString(),
       deleted: false,
     });
-    console.log('TripComposition creation response:', tripCompositionResponse.body);
+
     expect(tripCompositionResponse.status).toBe(201);
     tripCompositionData = {
       tripId: tripCompositionResponse.body.composition.trip_id,
@@ -359,7 +359,7 @@ describe('TripCompositionController Tests', () => {
     const response = await request(app).get(
       `/tripcomposition/${tripCompositionData.tripId}/${tripCompositionData.day}/${tripCompositionData.position}`
     );
-    console.log('TripComposition retrieval response:', response.body);
+
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('trip_id', tripCompositionData.tripId);
     expect(response.body).toHaveProperty('day', tripCompositionData.day);
@@ -369,7 +369,7 @@ describe('TripCompositionController Tests', () => {
 
   it('should retrieve all compositions linked to a trip', async () => {
     const response = await request(app).get(`/tripcomposition/trip/${tripCompositionData.tripId}`);
-    console.log('All TripCompositions response:', JSON.stringify(response.body, null, 2));
+
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
     expect(
@@ -392,7 +392,7 @@ describe('TripCompositionController Tests', () => {
         `/tripcomposition/${tripCompositionData.tripId}/${tripCompositionData.day}/${tripCompositionData.position}`
       )
       .send(updatedData);
-    console.log('TripComposition update response:', updateResponse.body);
+
     expect(updateResponse.status).toBe(200);
     expect(updateResponse.body.updatedComposition).toHaveProperty('datetime', updatedData.datetime);
     expect(updateResponse.body.updatedComposition).toHaveProperty('deleted', updatedData.deleted);
@@ -402,7 +402,7 @@ describe('TripCompositionController Tests', () => {
     const deleteResponse = await request(app).delete(
       `/tripcomposition/${tripCompositionData.tripId}/${tripCompositionData.day}/${tripCompositionData.position}`
     );
-    console.log('TripComposition deletion response:', deleteResponse.body);
+
     expect(deleteResponse.status).toBe(200);
     expect(deleteResponse.body).toHaveProperty('message', 'Trip composition deleted successfully');
 
@@ -416,7 +416,7 @@ describe('TripCompositionController Tests', () => {
 
 it('should delete a trip', async () => {
   const deleteResponse = await request(app).delete(`/trip/${tripId}`);
-  console.log('Trip deletion response:', deleteResponse.body);
+
   expect(deleteResponse.status).toBe(200);
   expect(deleteResponse.body).toHaveProperty('message', 'Trip deleted successfully');
 
