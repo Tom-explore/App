@@ -279,7 +279,7 @@ describe('LanguageController Tests', () => {
   
     it('should delete a TxAttribute successfully', async () => {
       const response = await request(app).delete(`/txattribute/${attributeId}/${languageId}`);
-      console.log('TxAttribute deletion response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', 'TxAttribute deleted successfully');
   
@@ -328,7 +328,7 @@ describe('LanguageController Tests', () => {
         meta_description: 'Test meta description',
         title: 'Test Title',
       });
-      console.log('TxCategoryCityLang creation response:', response.body);
+
       expect(response.status).toBe(201);
       expect(response.body.txCategoryCityLang).toHaveProperty('category_id', categoryId);
       expect(response.body.txCategoryCityLang).toHaveProperty('city_id', cityId);
@@ -337,7 +337,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve a TxCategoryCityLang by categoryId, cityId, and languageId', async () => {
       const response = await request(app).get(`/txcategorycitylang/${categoryId}/${cityId}/${languageId}`);
-      console.log('TxCategoryCityLang retrieval response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('category_id', categoryId);
       expect(response.body).toHaveProperty('city_id', cityId);
@@ -346,7 +346,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxCategoryCityLang for a specific category', async () => {
       const response = await request(app).get(`/txcategorycitylang/category/${categoryId}`);
-      console.log('TxCategoryCityLangs by category response:', response.body);
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.category_id === categoryId)).toBe(true);
@@ -354,7 +354,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxCategoryCityLang for a specific city', async () => {
       const response = await request(app).get(`/txcategorycitylang/city/${cityId}`);
-      console.log('TxCategoryCityLangs by city response:', response.body);
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.city_id === cityId)).toBe(true);
@@ -362,7 +362,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxCategoryCityLang for a specific language', async () => {
       const response = await request(app).get(`/txcategorycitylang/language/${languageId}`);
-      console.log('TxCategoryCityLangs by language response:', response.body);
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.language_id === languageId)).toBe(true);
@@ -378,14 +378,14 @@ describe('LanguageController Tests', () => {
       const response = await request(app)
         .put(`/txcategorycitylang/${categoryId}/${cityId}/${languageId}`)
         .send(updatedData);
-      console.log('TxCategoryCityLang update response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body.txCategoryCityLang).toHaveProperty('name', updatedData.name);
     });
   
     it('should delete a TxCategoryCityLang successfully', async () => {
       const response = await request(app).delete(`/txcategorycitylang/${categoryId}/${cityId}/${languageId}`);
-      console.log('TxCategoryCityLang deletion response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', 'TxCategoryCityLang deleted successfully');
   
@@ -427,7 +427,7 @@ describe('LanguageController Tests', () => {
         meta_description: 'Test meta description',
         title: 'Test Title',
       });
-      console.log('TxCategory creation response:', response.body);
+
       expect(response.status).toBe(201);
       expect(response.body.txCategory).toHaveProperty('category_id', categoryId);
       expect(response.body.txCategory).toHaveProperty('language_id', languageId);
@@ -435,7 +435,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve a TxCategory by categoryId and languageId', async () => {
       const response = await request(app).get(`/txcategory/${categoryId}/${languageId}`);
-      console.log('TxCategory retrieval response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('category_id', categoryId);
       expect(response.body).toHaveProperty('language_id', languageId);
@@ -443,7 +443,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxCategories for a specific category', async () => {
       const response = await request(app).get(`/txcategory/category/${categoryId}`);
-      console.log('TxCategories by category response:', response.body);
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.category_id === categoryId)).toBe(true);
@@ -451,7 +451,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxCategories for a specific language', async () => {
       const response = await request(app).get(`/txcategory/language/${languageId}`);
-      console.log('TxCategories by language response:', response.body);
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.language_id === languageId)).toBe(true);
@@ -467,14 +467,14 @@ describe('LanguageController Tests', () => {
       const response = await request(app)
         .put(`/txcategory/${categoryId}/${languageId}`)
         .send(updatedData);
-      console.log('TxCategory update response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body.txCategory).toHaveProperty('name', updatedData.name);
     });
   
     it('should delete a TxCategory successfully', async () => {
       const response = await request(app).delete(`/txcategory/${categoryId}/${languageId}`);
-      console.log('TxCategory deletion response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', 'TxCategory deleted successfully');
   
@@ -518,7 +518,7 @@ describe('LanguageController Tests', () => {
         description: 'Test description',
         meta_description: 'Test meta description',
       });
-      console.log('TxCity creation response:', response.body);
+
       expect(response.status).toBe(201);
       expect(response.body.txCity).toHaveProperty('city_id', cityId);
       expect(response.body.txCity).toHaveProperty('language_id', languageId);
@@ -526,7 +526,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve a TxCity by cityId and languageId', async () => {
       const response = await request(app).get(`/txcity/${cityId}/${languageId}`);
-      console.log('TxCity retrieval response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('city_id', cityId);
       expect(response.body).toHaveProperty('language_id', languageId);
@@ -534,7 +534,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxCities for a specific city', async () => {
       const response = await request(app).get(`/txcity/city/${cityId}`);
-      console.log('TxCities by city response:', response.body);
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.city_id === cityId)).toBe(true);
@@ -542,7 +542,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxCities for a specific language', async () => {
       const response = await request(app).get(`/txcity/language/${languageId}`);
-      console.log('TxCities by language response:', response.body);
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.language_id === languageId)).toBe(true);
@@ -558,14 +558,14 @@ describe('LanguageController Tests', () => {
       const response = await request(app)
         .put(`/txcity/${cityId}/${languageId}`)
         .send(updatedData);
-      console.log('TxCity update response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body.txCity).toHaveProperty('name', updatedData.name);
     });
   
     it('should delete a TxCity successfully', async () => {
       const response = await request(app).delete(`/txcity/${cityId}/${languageId}`);
-      console.log('TxCity deletion response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', 'TxCity deleted successfully');
   
@@ -610,7 +610,7 @@ describe('LanguageController Tests', () => {
         meta_description: 'Test meta description',
         title: 'Test title',
       });
-      console.log('TxCountry creation response:', response.body);
+
       expect(response.status).toBe(201);
       expect(response.body.txCountry).toHaveProperty('country_id', countryId);
       expect(response.body.txCountry).toHaveProperty('language_id', languageId);
@@ -618,7 +618,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve a TxCountry by countryId and languageId', async () => {
       const response = await request(app).get(`/txcountry/${countryId}/${languageId}`);
-      console.log('TxCountry retrieval response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('country_id', countryId);
       expect(response.body).toHaveProperty('language_id', languageId);
@@ -626,7 +626,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxCountries for a specific country', async () => {
       const response = await request(app).get(`/txcountry/country/${countryId}`);
-      console.log('TxCountries by country response:', response.body);
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.country_id === countryId)).toBe(true);
@@ -634,7 +634,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxCountries for a specific language', async () => {
       const response = await request(app).get(`/txcountry/language/${languageId}`);
-      console.log('TxCountries by language response:', response.body);
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.language_id === languageId)).toBe(true);
@@ -651,14 +651,14 @@ describe('LanguageController Tests', () => {
       const response = await request(app)
         .put(`/txcountry/${countryId}/${languageId}`)
         .send(updatedData);
-      console.log('TxCountry update response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body.txCountry).toHaveProperty('name', updatedData.name);
     });
   
     it('should delete a TxCountry successfully', async () => {
       const response = await request(app).delete(`/txcountry/${countryId}/${languageId}`);
-      console.log('TxCountry deletion response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', 'TxCountry deleted successfully');
   
@@ -695,7 +695,7 @@ describe('LanguageController Tests', () => {
         description: 'Translated Description',
         meta_description: 'Translated Meta Description',
       });
-      console.log('TxPlace creation response:', response.body);
+
       expect(response.status).toBe(201);
       expect(response.body.txPlace).toHaveProperty('place_id', placeIds[0]);
       expect(response.body.txPlace).toHaveProperty('language_id', languageId);
@@ -703,7 +703,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve a TxPlace by placeId and languageId', async () => {
       const response = await request(app).get(`/txplace/${placeIds[0]}/${languageId}`);
-      console.log('TxPlace retrieval response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('place_id', placeIds[0]);
       expect(response.body).toHaveProperty('language_id', languageId);
@@ -711,7 +711,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxPlaces for a specific place', async () => {
       const response = await request(app).get(`/txplace/place/${placeIds[0]}`);
-      console.log('TxPlaces by place response:', response.body);
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.place_id === placeIds[0])).toBe(true);
@@ -719,7 +719,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxPlaces for a specific language', async () => {
       const response = await request(app).get(`/txplace/language/${languageId}`);
-      console.log('TxPlaces by language response:', response.body);
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.language_id === languageId)).toBe(true);
@@ -734,14 +734,14 @@ describe('LanguageController Tests', () => {
       const response = await request(app)
         .put(`/txplace/${placeIds[0]}/${languageId}`)
         .send(updatedData);
-      console.log('TxPlace update response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body.txPlace).toHaveProperty('name', updatedData.name);
     });
   
     it('should delete a TxPlace successfully', async () => {
       const response = await request(app).delete(`/txplace/${placeIds[0]}/${languageId}`);
-      console.log('TxPlace deletion response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', 'TxPlace deleted successfully');
   
@@ -774,7 +774,7 @@ describe('LanguageController Tests', () => {
         title: 'Translated Title',
         content: 'Translated Content',
       });
-      console.log('TxPostBloc creation response:', response.body);
+
       expect(response.status).toBe(201);
       expect(response.body.txPostBloc).toHaveProperty('post_bloc_id', postBlocId);
       expect(response.body.txPostBloc).toHaveProperty('language_id', languageId);
@@ -782,7 +782,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve a TxPostBloc by postBlocId and languageId', async () => {
       const response = await request(app).get(`/txpostbloc/${postBlocId}/${languageId}`);
-      console.log('TxPostBloc retrieval response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('post_bloc_id', postBlocId);
       expect(response.body).toHaveProperty('language_id', languageId);
@@ -790,7 +790,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxPostBlocs for a specific postBloc', async () => {
       const response = await request(app).get(`/txpostbloc/postbloc/${postBlocId}`);
-      console.log('TxPostBlocs by postBloc response:', response.body);
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.post_bloc_id === postBlocId)).toBe(true);
@@ -798,7 +798,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxPostBlocs for a specific language', async () => {
       const response = await request(app).get(`/txpostbloc/language/${languageId}`);
-      console.log('TxPostBlocs by language response:', response.body);
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.language_id === languageId)).toBe(true);
@@ -812,14 +812,14 @@ describe('LanguageController Tests', () => {
       const response = await request(app)
         .put(`/txpostbloc/${postBlocId}/${languageId}`)
         .send(updatedData);
-      console.log('TxPostBloc update response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body.txPostBloc).toHaveProperty('title', updatedData.title);
     });
   
     it('should delete a TxPostBloc successfully', async () => {
       const response = await request(app).delete(`/txpostbloc/${postBlocId}/${languageId}`);
-      console.log('TxPostBloc deletion response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', 'TxPostBloc deleted successfully');
   
@@ -852,7 +852,7 @@ describe('LanguageController Tests', () => {
         language_id: languageId,
         alt: 'Example alt text',
       });
-      console.log('TxPostImg creation response:', response.body);
+
       expect(response.status).toBe(201);
       expect(response.body.txPostImg).toHaveProperty('post_img_id', postImgId);
       expect(response.body.txPostImg).toHaveProperty('language_id', languageId);
@@ -860,7 +860,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve a TxPostImg by postImgId and languageId', async () => {
       const response = await request(app).get(`/txpostimg/${postImgId}/${languageId}`);
-      console.log('TxPostImg retrieval response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('post_img_id', postImgId);
       expect(response.body).toHaveProperty('language_id', languageId);
@@ -868,7 +868,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxPostImgs for a specific post image', async () => {
       const response = await request(app).get(`/txpostimg/postimg/${postImgId}`);
-      console.log('TxPostImgs by postImg response:', response.body);
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.post_img_id === postImgId)).toBe(true);
@@ -876,7 +876,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxPostImgs for a specific language', async () => {
       const response = await request(app).get(`/txpostimg/language/${languageId}`);
-      console.log('TxPostImgs by language response:', response.body);
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.language_id === languageId)).toBe(true);
@@ -889,14 +889,14 @@ describe('LanguageController Tests', () => {
       const response = await request(app)
         .put(`/txpostimg/${postImgId}/${languageId}`)
         .send(updatedData);
-      console.log('TxPostImg update response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body.txPostImg).toHaveProperty('alt', updatedData.alt);
     });
   
     it('should delete a TxPostImg successfully', async () => {
       const response = await request(app).delete(`/txpostimg/${postImgId}/${languageId}`);
-      console.log('TxPostImg deletion response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', 'TxPostImg deleted successfully');
   
@@ -942,7 +942,7 @@ describe('LanguageController Tests', () => {
         visible: true,
         slug: 'test-post-translation',
       });
-      console.log('TxPost creation response:', response.body);
+
       expect(response.status).toBe(201);
       expect(response.body.txPost).toHaveProperty('postId', postId);
       expect(response.body.txPost).toHaveProperty('languageId', languageId);
@@ -950,7 +950,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve a TxPost by postId and languageId', async () => {
       const response = await request(app).get(`/txpost/${postId}/${languageId}`);
-      console.log('TxPost retrieval response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('postId', postId);
       expect(response.body).toHaveProperty('languageId', languageId);
@@ -958,7 +958,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxPosts for a specific post', async () => {
       const response = await request(app).get(`/txpost/post/${postId}`);
-      console.log('TxPosts by post response:', response.body);
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.postId === postId)).toBe(true);
@@ -966,7 +966,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxPosts for a specific language', async () => {
       const response = await request(app).get(`/txpost/language/${languageId}`);
-      console.log('TxPosts by language response:', response.body);
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.languageId === languageId)).toBe(true);
@@ -978,7 +978,7 @@ describe('LanguageController Tests', () => {
         visible: false,
       };
       const response = await request(app).put(`/txpost/${postId}/${languageId}`).send(updatedData);
-      console.log('TxPost update response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body.txPost).toHaveProperty('name', updatedData.name);
       expect(response.body.txPost).toHaveProperty('visible', updatedData.visible);
@@ -986,7 +986,7 @@ describe('LanguageController Tests', () => {
   
     it('should delete a TxPost successfully', async () => {
       const response = await request(app).delete(`/txpost/${postId}/${languageId}`);
-      console.log('TxPost deletion response:', response.body);
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', 'TxPost deleted successfully');
   

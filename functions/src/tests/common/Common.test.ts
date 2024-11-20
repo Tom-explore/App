@@ -10,7 +10,7 @@ let languageId: number;
 
 beforeAll(async () => {
   await initializeDataSource();
-  console.log('Database initialized.');
+
 
   // Créer un Language
   const languageResponse = await request(app).post('/language').send({ name: 'English' });
@@ -38,16 +38,16 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  console.log('Cleaning up created entities...');
 
-  await request(app).delete(`/partner/${partnerId}`).then(res => console.log('Partner deletion response:', res.body));
-  await request(app).delete(`/city/${cityId}`).then(res => console.log('City deletion response:', res.body));
-  await request(app).delete(`/country/${countryId}`).then(res => console.log('Country deletion response:', res.body));
-  await request(app).delete(`/language/${languageId}`).then(res => console.log('Language deletion response:', res.body));
+
+
+
+
+
 
   if (AppDataSource.isInitialized) {
     await AppDataSource.destroy();
-    console.log('Database connection closed.');
+
   }
 });
 

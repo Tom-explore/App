@@ -49,7 +49,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  console.log('Cleaning up created entities...');
+
   for (const placeId of placeIds) {
     await request(app).delete(`/place/${placeId}`);
   }
@@ -60,7 +60,7 @@ afterAll(async () => {
 
   if (AppDataSource.isInitialized) {
     await AppDataSource.destroy();
-    console.log('Database connection closed.');
+
   }
 });
 
@@ -71,7 +71,7 @@ describe('UserController Tests', () => {
       name: 'Test User',
       pw: 'password123',
     });
-    console.log('User creation response:', userResponse.body);
+
     expect(userResponse.status).toBe(201);
     expect(userResponse.body.user).toHaveProperty('id');
     userId = userResponse.body.user.id;
@@ -83,14 +83,14 @@ describe('UserController Tests', () => {
       name: 'Another User',
       pw: 'password1234',
     });
-    console.log('Duplicate user creation response:', userResponse.body);
+
     expect(userResponse.status).toBe(400);
     expect(userResponse.body).toHaveProperty('message', 'User with this email already exists');
   });
 
   it('should retrieve a user by ID', async () => {
     const userResponse = await request(app).get(`/user/${userId}`);
-    console.log('User retrieval response:', userResponse.body);
+
     expect(userResponse.status).toBe(200);
     expect(userResponse.body).toHaveProperty('id', userId);
     expect(userResponse.body).toHaveProperty('email', 'testusefefer@exampefefle.com');
@@ -98,7 +98,7 @@ describe('UserController Tests', () => {
 
   it('should retrieve a user by email', async () => {
     const userResponse = await request(app).get(`/user`).query({ email: 'testusefefer@exampefefle.com' });
-    console.log('User by email response:', userResponse.body);
+
     expect(userResponse.status).toBe(200);
     expect(userResponse.body).toHaveProperty('id', userId);
     expect(userResponse.body).toHaveProperty('email', 'testusefefer@exampefefle.com');
@@ -110,7 +110,7 @@ describe('UserController Tests', () => {
       pw: 'newpassword123',
     };
     const updateResponse = await request(app).put(`/user/${userId}`).send(updatedData);
-    console.log('User update response:', updateResponse.body);
+
     expect(updateResponse.status).toBe(200);
     expect(updateResponse.body.updatedUser).toHaveProperty('name', updatedData.name);
   });
@@ -123,7 +123,7 @@ describe('PlacesAddedByUserController Tests', () => {
       user_id: userId,
       place_id: placeIds[0],
     });
-    console.log('Place added by user creation response:', response.body);
+
     expect(response.status).toBe(201);
     expect(response.body.placeAdded).toHaveProperty('user_id', userId);
     expect(response.body.placeAdded).toHaveProperty('place_id', placeIds[0]);
@@ -131,7 +131,7 @@ describe('PlacesAddedByUserController Tests', () => {
 
   it('should retrieve a place added by user by ID', async () => {
     const response = await request(app).get(`/placesaddedbyuser/${userId}/${placeIds[0]}`);
-    console.log('Retrieve place added by user response:', response.body);
+
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('user_id', userId);
     expect(response.body).toHaveProperty('place_id', placeIds[0]);
@@ -139,7 +139,7 @@ describe('PlacesAddedByUserController Tests', () => {
 
   it('should retrieve all places added by a user', async () => {
     const response = await request(app).get(`/placesaddedbyuser/user/${userId}`);
-    console.log('Retrieve all places added by user response:', response.body);
+
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
     expect(response.body.some((place: any) => place.place_id === placeIds[0])).toBe(true);
@@ -150,14 +150,14 @@ describe('PlacesAddedByUserController Tests', () => {
     const response = await request(app)
       .put(`/placesaddedbyuser/${userId}/${placeIds[0]}`)
       .send(updateData);
-    console.log('Update place added by user response:', response.body);
+
     expect(response.status).toBe(200);
     expect(response.body.updatedPlaceAdded).toHaveProperty('added_at', updateData.added_at);
   });
 
   it('should delete a place added by a user', async () => {
     const response = await request(app).delete(`/placesaddedbyuser/${userId}/${placeIds[0]}`);
-    console.log('Delete place added by user response:', response.body);
+
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('message', 'Place added by user successfully deleted');
 
@@ -173,7 +173,7 @@ describe('UserPlacesLikeController Tests', () => {
       place_id: placeIds[0],
       liked: true,
     });
-    console.log('Like creation response:', response.body);
+
     expect(response.status).toBe(201);
     expect(response.body.like).toHaveProperty('user_id', userId);
     expect(response.body.like).toHaveProperty('place_id', placeIds[0]);
@@ -186,14 +186,14 @@ describe('UserPlacesLikeController Tests', () => {
       place_id: placeIds[0],
       liked: true,
     });
-    console.log('Duplicate like creation response:', response.body);
+
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message', 'Like already exists for this user and place');
   });
 
   it('should retrieve a like by user and place ID', async () => {
     const response = await request(app).get(`/userplaceslike/${userId}/${placeIds[0]}`);
-    console.log('Retrieve like response:', response.body);
+
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('user_id', userId);
     expect(response.body).toHaveProperty('place_id', placeIds[0]);
@@ -202,7 +202,7 @@ describe('UserPlacesLikeController Tests', () => {
 
   it('should retrieve all likes for a user', async () => {
     const response = await request(app).get(`/userplaceslike/user/${userId}`);
-    console.log('Retrieve all likes by user response:', response.body);
+
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
     expect(response.body.some((like: any) => like.place_id === placeIds[0])).toBe(true);
@@ -211,14 +211,14 @@ describe('UserPlacesLikeController Tests', () => {
   it('should update a like successfully', async () => {
     const updateData = { liked: false };
     const response = await request(app).put(`/userplaceslike/${userId}/${placeIds[0]}`).send(updateData);
-    console.log('Update like response:', response.body);
+
     expect(response.status).toBe(200);
     expect(response.body.updatedLike).toHaveProperty('liked', false);
   });
 
   it('should delete a like successfully', async () => {
     const response = await request(app).delete(`/userplaceslike/${userId}/${placeIds[0]}`);
-    console.log('Delete like response:', response.body);
+
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('message', 'Like successfully deleted');
 
@@ -236,7 +236,7 @@ describe('UserPlacesPreferenceController Tests', () => {
       visited: false,
       not_interested: false,
     });
-    console.log('Preference creation response:', response.body);
+
     expect(response.status).toBe(201);
     expect(response.body.preference).toHaveProperty('user_id', userId);
     expect(response.body.preference).toHaveProperty('place_id', placeIds[0]);
@@ -249,14 +249,14 @@ describe('UserPlacesPreferenceController Tests', () => {
       place_id: placeIds[0],
       wants_to_visit: true,
     });
-    console.log('Duplicate preference creation response:', response.body);
+
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message', 'Preference already exists for this user and place');
   });
 
   it('should retrieve a preference by user and place ID', async () => {
     const response = await request(app).get(`/userplacespreference/${userId}/${placeIds[0]}`);
-    console.log('Retrieve preference response:', response.body);
+
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('user_id', userId);
     expect(response.body).toHaveProperty('place_id', placeIds[0]);
@@ -265,7 +265,7 @@ describe('UserPlacesPreferenceController Tests', () => {
 
   it('should retrieve all preferences for a user', async () => {
     const response = await request(app).get(`/userplacespreference/user/${userId}`);
-    console.log('Retrieve all preferences by user response:', response.body);
+
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
     expect(response.body.some((pref: any) => pref.place_id === placeIds[0])).toBe(true);
@@ -279,7 +279,7 @@ describe('UserPlacesPreferenceController Tests', () => {
     const response = await request(app)
       .put(`/userplacespreference/${userId}/${placeIds[0]}`)
       .send(updateData);
-    console.log('Update preference response:', response.body);
+
     expect(response.status).toBe(200);
     expect(response.body.updatedPreference).toHaveProperty('wants_to_visit', false);
     expect(response.body.updatedPreference).toHaveProperty('visited', true);
@@ -287,7 +287,7 @@ describe('UserPlacesPreferenceController Tests', () => {
 
   it('should delete a preference successfully', async () => {
     const response = await request(app).delete(`/userplacespreference/${userId}/${placeIds[0]}`);
-    console.log('Delete preference response:', response.body);
+
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('message', 'Preference successfully deleted');
 
@@ -299,7 +299,7 @@ describe('UserPlacesPreferenceController Tests', () => {
 
 it('should delete a user successfully', async () => {
   const deleteResponse = await request(app).delete(`/user/${userId}`);
-  console.log('User deletion response:', deleteResponse.body);
+
   expect(deleteResponse.status).toBe(200);
   expect(deleteResponse.body).toHaveProperty('message', 'User successfully deleted');
 
