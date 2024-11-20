@@ -4,9 +4,9 @@ import TxAttributeController from '../../controller/translations/TxAttributeCont
 const router = Router();
 
 router.post('/', TxAttributeController.createTxAttribute.bind(TxAttributeController));
-router.get('/:attributeId/:languageId', TxAttributeController.getTxAttributeByAttributeAndLanguage.bind(TxAttributeController));
 router.get('/attribute/:attributeId', TxAttributeController.getTxAttributesByAttribute.bind(TxAttributeController));
 router.get('/language/:languageId', TxAttributeController.getTxAttributesByLanguage.bind(TxAttributeController));
+router.get('/:attributeId/:languageId', TxAttributeController.getTxAttributeByAttributeAndLanguage.bind(TxAttributeController));
 router.put('/:attributeId/:languageId', TxAttributeController.updateTxAttribute.bind(TxAttributeController));
 router.delete('/:attributeId/:languageId', TxAttributeController.deleteTxAttribute.bind(TxAttributeController));
 
