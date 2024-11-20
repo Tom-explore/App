@@ -19,17 +19,18 @@ class TripAttributeController {
       if (!tripAttribute) return res.status(404).json({ message: 'Trip attribute not found' });
       return res.status(200).json(tripAttribute);
     } catch (error) {
-      return res.status(400).json({ message: 'Error fetching trip attribute', error: error.message });
+      return res.status(400).json({ message: 'Error fetching trip attribute tra soeur', error: error.message });
     }
   }
 
   static async getAttributesByTrip(req: Request, res: Response): Promise<Response> {
     try {
       const { tripId } = req.params;
+      console.log(tripId);
       const attributes = await TripAttribute.findAttributesByTrip(Number(tripId));
       return res.status(200).json(attributes);
     } catch (error) {
-      return res.status(400).json({ message: 'Error fetching trip attributes', error: error.message });
+      return res.status(400).json({ message: `Error fetching trip attributes for trip id : ${req.params}` , error: error.message,  });
     }
   }
 
