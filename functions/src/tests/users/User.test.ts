@@ -67,7 +67,7 @@ afterAll(async () => {
 describe('UserController Tests', () => {
   it('should create a user successfully', async () => {
     const userResponse = await request(app).post('/user').send({
-      email: 'testusefefer@exampefefle.com',
+      email: 'test@test.com',
       name: 'Test User',
       pw: 'password123',
     });
@@ -79,7 +79,7 @@ describe('UserController Tests', () => {
 
   it('should not allow creating a user with an existing email', async () => {
     const userResponse = await request(app).post('/user').send({
-      email: 'testusefefer@exampefefle.com',
+      email: 'test@test.com',
       name: 'Another User',
       pw: 'password1234',
     });
@@ -93,15 +93,15 @@ describe('UserController Tests', () => {
 
     expect(userResponse.status).toBe(200);
     expect(userResponse.body).toHaveProperty('id', userId);
-    expect(userResponse.body).toHaveProperty('email', 'testusefefer@exampefefle.com');
+    expect(userResponse.body).toHaveProperty('email', 'test@test.com');
   });
 
   it('should retrieve a user by email', async () => {
-    const userResponse = await request(app).get(`/user`).query({ email: 'testusefefer@exampefefle.com' });
+    const userResponse = await request(app).get(`/user`).query({ email: 'test@test.com' });
 
     expect(userResponse.status).toBe(200);
     expect(userResponse.body).toHaveProperty('id', userId);
-    expect(userResponse.body).toHaveProperty('email', 'testusefefer@exampefefle.com');
+    expect(userResponse.body).toHaveProperty('email', 'test@test.com');
   });
 
   it('should update a user successfully', async () => {

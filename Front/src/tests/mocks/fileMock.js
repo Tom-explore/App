@@ -1,1 +1,1 @@
-module.exports = 'test-file-stub';
+module.exports = {}; // Mock vide pour @ionic/react
