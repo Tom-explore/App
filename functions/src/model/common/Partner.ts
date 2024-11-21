@@ -1,8 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, BaseEntity } from 'typeorm';
 import { Language } from '../translations/Language';
 
 @Entity('partners')
-export class Partner {
+export class Partner extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
@@ -28,21 +28,34 @@ export class Partner {
   @JoinColumn({ name: 'favorite_language' })
   favorite_language!: Language;
 
-  constructor(
-    name: string,
-    website: string = '',
-    contact_mail: string = '',
-    phone: string = '',
-    gyg_id: string = '',
-    booking_id: string = '',
-    favorite_language: Language = null
-  ) {
-    this.name = name;
-    this.website = website;
-    this.contact_mail = contact_mail;
-    this.phone = phone;
-    this.gyg_id = gyg_id;
-    this.booking_id = booking_id;
-    this.favorite_language = favorite_language;
+  constructor() {
+    super();
+  }
+
+  static async createPartner(data: Partial<Partner>): Promise<Partner> {
+    const partner = Object.assign(new Partner(), data);
+    return await partner.save();
+  }
+
+  static async findById(id: number): Promise<Partner | null> {
+    return await Partner.findOne({ where: { id }, relations: ['favorite_language'] });
+  }
+
+  static async findAll(): Promise<Partner[]> {
+    return await Partner.find({ relations: ['favorite_language'] });
+  }
+
+  static async updatePartner(id: number, data: Partial<Partner>): Promise<Partner | null> {
+    const partner = await Partner.findById(id);
+    if (!partner) return null;
+    Object.assign(partner, data);
+    return await partner.save();
+  }
+
+  static async deletePartner(id: number): Promise<boolean> {
+    const partner = await Partner.findById(id);
+    if (!partner) return false;
+    await partner.remove();
+    return true;
   }
 }

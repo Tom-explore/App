@@ -1,7 +1,8 @@
-import { Entity, Column, ChildEntity } from 'typeorm';
+import { Entity, Column, ChildEntity, BaseEntity } from 'typeorm';
 import { Place } from './Place';
 import { PlaceType } from '../enums/PlaceType';
 import { City } from '../common/City';
+
 @ChildEntity(PlaceType.HOTEL)
 export class Hotel extends Place {
   @Column('varchar', { nullable: true })
@@ -13,17 +14,34 @@ export class Hotel extends Place {
   @Column('boolean', { default: false })
   pets_authorized!: boolean;
 
-  constructor(
-    city: City,
-    slug: string,
-    booking_link: string,
-    avg_price_per_night: number,
-    pets_authorized: boolean,
-    description_scrapio: string = ''
-  ) {
-    super(city, slug, PlaceType.HOTEL, description_scrapio);
-    this.booking_link = booking_link;
-    this.avg_price_per_night = avg_price_per_night;
-    this.pets_authorized = pets_authorized;
+  constructor() {
+    super();
+  }
+
+  static async createHotel(data: Partial<Hotel>): Promise<Hotel> {
+    const hotel = Object.assign(new Hotel(), data);
+    return await hotel.save();
+  }
+
+  static async findById(id: number): Promise<Hotel | null> {
+    return await Hotel.findOne({ where: { id }, relations: ['city'] });
+  }
+
+  static async findAll(): Promise<Hotel[]> {
+    return await Hotel.find({ relations: ['city'] });
+  }
+
+  static async updateHotel(id: number, data: Partial<Hotel>): Promise<Hotel | null> {
+    const hotel = await Hotel.findById(id);
+    if (!hotel) return null;
+    Object.assign(hotel, data);
+    return await hotel.save();
+  }
+
+  static async deleteHotel(id: number): Promise<boolean> {
+    const hotel = await Hotel.findById(id);
+    if (!hotel) return false;
+    await hotel.remove();
+    return true;
   }
 }

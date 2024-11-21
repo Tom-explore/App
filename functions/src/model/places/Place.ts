@@ -125,70 +125,34 @@ export class Place extends BaseEntity {
   @Column('int', { nullable: true })
   reviews_average_count!: number;
 
-  constructor(
-    city: City,
-    slug: string,
-    type: PlaceType,
-    description_scrapio: string = '',
-    google_id: string = '',
-    google_place_id: string = '',
-    link_insta: string = '',
-    link_fb: string = '',
-    link_maps: string = '',
-    link_website: string = '',
-    link_linkedin: string = '',
-    mails: string[] = [],
-    phone: string = '',
-    lat: number = 0,
-    lng: number = 0,
-    address: string = '',
-    zip_code: string = '',
-    scraped: Date | null = null,
-    last_api_scraped: Date = new Date(),
-    public_flag: boolean = true,
-    price_range: number | null = null,
-    duration: number | null = null,
-    is_closed: boolean = false,
-    set_in_queue: boolean = false,
-    imgs_scraped: boolean = false,
-    reviews_google_rating: number | null = null,
-    reviews_google_count: number | null = null,
-    reviews_user_rating: number | null = null,
-    reviews_user_count: number | null = null,
-    reviews_average_rating: number | null = null,
-    reviews_average_count: number | null = null
-  ) {
+  constructor() {
     super();
-    this.city = city;
-    this.slug = slug;
-    this.type = type;
-    this.description_scrapio = description_scrapio;
-    this.google_id = google_id;
-    this.google_place_id = google_place_id;
-    this.link_insta = link_insta;
-    this.link_fb = link_fb;
-    this.link_maps = link_maps;
-    this.link_website = link_website;
-    this.link_linkedin = link_linkedin;
-    this.mails = mails;
-    this.phone = phone;
-    this.lat = lat;
-    this.lng = lng;
-    this.address = address;
-    this.zip_code = zip_code;
-    this.scraped = scraped;
-    this.last_api_scraped = last_api_scraped;
-    this.public = public_flag;
-    this.price_range = price_range;
-    this.duration = duration;
-    this.is_closed = is_closed;
-    this.set_in_queue = set_in_queue;
-    this.imgs_scraped = imgs_scraped;
-    this.reviews_google_rating = reviews_google_rating;
-    this.reviews_google_count = reviews_google_count;
-    this.reviews_user_rating = reviews_user_rating;
-    this.reviews_user_count = reviews_user_count;
-    this.reviews_average_rating = reviews_average_rating;
-    this.reviews_average_count = reviews_average_count;
+  }
+
+  static async createPlace(data: Partial<Place>): Promise<Place> {
+    const place = Object.assign(new Place(), data);
+    return await place.save();
+  }
+
+  static async findById(id: number): Promise<Place | null> {
+    return await Place.findOne({ where: { id }, relations: ['city'] });
+  }
+
+  static async findAll(): Promise<Place[]> {
+    return await Place.find({ relations: ['city'] });
+  }
+
+  static async updatePlace(id: number, data: Partial<Place>): Promise<Place | null> {
+    const place = await Place.findById(id);
+    if (!place) return null;
+    Object.assign(place, data);
+    return await place.save();
+  }
+
+  static async deletePlace(id: number): Promise<boolean> {
+    const place = await Place.findById(id);
+    if (!place) return false;
+    await place.remove();
+    return true;
   }
 }

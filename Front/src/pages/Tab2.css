@@ -1,0 +1,14 @@
+@import "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+.map-container {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .leaflet-container {
+    height: 100%;
+    width: 100%;
+  }
+  

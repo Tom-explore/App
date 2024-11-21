@@ -14,14 +14,34 @@ export class Attribute extends BaseEntity {
   @Column('boolean', { nullable: true })
   is_atmosphere!: boolean;
 
-  constructor(
-    slug: string,
-    is_food_restriction: boolean = null,
-    is_atmosphere: boolean = null
-  ) {
+  constructor() {
     super();
-    this.slug = slug;
-    this.is_food_restriction = is_food_restriction;
-    this.is_atmosphere = is_atmosphere;
+  }
+
+  static async createAttribute(data: Partial<Attribute>): Promise<Attribute> {
+    const attribute = Object.assign(new Attribute(), data);
+    return await attribute.save();
+  }
+
+  static async findById(id: number): Promise<Attribute | null> {
+    return await Attribute.findOneBy({ id });
+  }
+
+  static async findAll(): Promise<Attribute[]> {
+    return await Attribute.find();
+  }
+
+  static async updateAttribute(id: number, data: Partial<Attribute>): Promise<Attribute | null> {
+    const attribute = await Attribute.findById(id);
+    if (!attribute) return null;
+    Object.assign(attribute, data);
+    return await attribute.save();
+  }
+
+  static async deleteAttribute(id: number): Promise<boolean> {
+    const attribute = await Attribute.findById(id);
+    if (!attribute) return false;
+    await attribute.remove();
+    return true;
   }
 }

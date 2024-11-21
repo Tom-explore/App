@@ -2,6 +2,7 @@ import { Entity, Column, ChildEntity } from 'typeorm';
 import { Place } from './Place';
 import { PlaceType } from '../enums/PlaceType';
 import { City } from '../common/City';
+
 @ChildEntity(PlaceType.TOURIST_ATTRACTION)
 export class TouristAttraction extends Place {
   @Column('varchar', { nullable: true })
@@ -25,25 +26,34 @@ export class TouristAttraction extends Place {
   @Column('varchar', { nullable: true })
   tickets_direct_site!: string;
 
-  constructor(
-    city: City,
-    slug: string,
-    name_original: string,
-    wiki_link: string,
-    price_regular: number,
-    price_children: number,
-    tickets_gyg: boolean,
-    tickets_civitatis: boolean,
-    tickets_direct_site: string,
-    description_scrapio: string = ''
-  ) {
-    super(city, slug, PlaceType.TOURIST_ATTRACTION, description_scrapio);
-    this.name_original = name_original;
-    this.wiki_link = wiki_link;
-    this.price_regular = price_regular;
-    this.price_children = price_children;
-    this.tickets_gyg = tickets_gyg;
-    this.tickets_civitatis = tickets_civitatis;
-    this.tickets_direct_site = tickets_direct_site;
+  constructor() {
+    super();
+  }
+
+  static async createTouristAttraction(data: Partial<TouristAttraction>): Promise<TouristAttraction> {
+    const attraction = Object.assign(new TouristAttraction(), data);
+    return await attraction.save();
+  }
+
+  static async findById(id: number): Promise<TouristAttraction | null> {
+    return await TouristAttraction.findOne({ where: { id }, relations: ['city'] });
+  }
+
+  static async findAll(): Promise<TouristAttraction[]> {
+    return await TouristAttraction.find({ relations: ['city'] });
+  }
+
+  static async updateTouristAttraction(id: number, data: Partial<TouristAttraction>): Promise<TouristAttraction | null> {
+    const attraction = await TouristAttraction.findById(id);
+    if (!attraction) return null;
+    Object.assign(attraction, data);
+    return await attraction.save();
+  }
+
+  static async deleteTouristAttraction(id: number): Promise<boolean> {
+    const attraction = await TouristAttraction.findById(id);
+    if (!attraction) return false;
+    await attraction.remove();
+    return true;
   }
 }

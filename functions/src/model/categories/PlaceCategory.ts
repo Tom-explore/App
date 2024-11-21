@@ -3,7 +3,7 @@ import { Place } from '../places/Place';
 import { Category } from './Category';
 
 @Entity('place_categories')
-export class PlaceCategories extends BaseEntity {
+export class PlaceCategory extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
@@ -18,10 +18,38 @@ export class PlaceCategories extends BaseEntity {
   @Column('boolean', { default: false })
   main!: boolean;
 
-  constructor(place: Place, category: Category, main: boolean = false) {
+  constructor() {
     super();
-    this.place = place;
-    this.category = category;
-    this.main = main;
+  }
+
+  static async createPlaceCategory(data: Partial<PlaceCategory>): Promise<PlaceCategory> {
+    const placeCategory1 = Object.assign(new PlaceCategory(), data);
+    return await placeCategory1.save();
+  }
+
+  static async findById(id: number): Promise<PlaceCategory | null> {
+    return await PlaceCategory.findOne({ where: { id }, relations: ['place', 'category'] });
+  }
+
+  static async findByPlace(placeId: number): Promise<PlaceCategory[]> {
+    return await PlaceCategory.find({ where: { place: { id: placeId } }, relations: ['place', 'category'] });
+  }
+
+  static async findByCategory(categoryId: number): Promise<PlaceCategory[]> {
+    return await PlaceCategory.find({ where: { category: { id: categoryId } }, relations: ['place', 'category'] });
+  }
+
+  static async updatePlaceCategory(id: number, data: Partial<PlaceCategory>): Promise<PlaceCategory | null> {
+    const placeCategory = await PlaceCategory.findById(id);
+    if (!placeCategory) return null;
+    Object.assign(placeCategory, data);
+    return await placeCategory.save();
+  }
+
+  static async deletePlaceCategory(id: number): Promise<boolean> {
+    const placeCategory = await PlaceCategory.findById(id);
+    if (!placeCategory) return false;
+    await placeCategory.remove();
+    return true;
   }
 }
