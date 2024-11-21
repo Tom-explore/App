@@ -18,7 +18,7 @@
   ],
   "hosting": {
     "site": "tomexplore-c1c71",
-    "public": "Front/build",
+"public": "Front/dist",
     "ignore": [
       "firebase.json",
       "**/.*",

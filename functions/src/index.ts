@@ -38,7 +38,7 @@ configureRoutes(app);
 
 
 
-const frontendPath = path.join(__dirname, '../../Front/build');
+const frontendPath = path.join(__dirname, '../../dist/build');
 app.use(express.static(frontendPath));
 
 app.get('*', (req, res) => {

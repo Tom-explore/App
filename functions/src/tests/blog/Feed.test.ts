@@ -6,13 +6,17 @@ import AppDataSource from '../../config/AppDataSource';
 let userId: number;
 let categoryId: number;
 let postId: number;
-
+const generateRandomEmail = (): string => {
+  const randomString = Math.random().toString(36).substring(2, 10); // Génère une chaîne aléatoire
+  return `testuser_${randomString}@example.com`;
+};
 beforeAll(async () => {
   await initializeDataSource();
 
   // Créer un utilisateur
+  const email = generateRandomEmail();
   const userResponse = await request(app).post('/user').send({
-    email: 'testuser55@example.com',
+    email,
     name: 'Test User',
     pw: 'password123',
   });

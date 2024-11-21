@@ -11,7 +11,10 @@ let attributeIds: number[] = [];
 let placeIds: number[] = [];
 let tripId: number;
 let peopleId: number;
-
+const generateRandomEmail = (): string => {
+  const randomString = Math.random().toString(36).substring(2, 10); // Génère une chaîne aléatoire
+  return `testuser_${randomString}@example.com`;
+};
 beforeAll(async () => {
   await initializeDataSource();
 
@@ -27,11 +30,13 @@ beforeAll(async () => {
   let city = cityResponse.body.city;
 
   // Création d'un utilisateur
+  const email = generateRandomEmail();
   const userResponse = await request(app).post('/user').send({
-    name: 'testuegegser',
-    email: 'testuseergerr@examerple.com',
-    pw: 'passworergrd123',
+    email,
+    name: 'Test User',
+    pw: 'password123',
   });
+
   expect(userResponse.status).toBe(201);
   userId = userResponse.body.user.id;
 
