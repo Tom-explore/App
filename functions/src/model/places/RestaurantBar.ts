@@ -1,10 +1,15 @@
-import { Entity, Column, ChildEntity } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn, BaseEntity } from 'typeorm';
 import { Place } from './Place';
-import { PlaceType } from '../enums/PlaceType';
-import { City } from '../common/City';
 
-@ChildEntity(PlaceType.RESTAURANT_BAR)
-export class RestaurantBar extends Place {
+@Entity('restaurant_bars')
+export class RestaurantBar extends BaseEntity {
+  @PrimaryGeneratedColumn()
+  id!: number;
+
+  @OneToOne(() => Place)
+  @JoinColumn({ name: 'place_id' })
+  place!: Place;
+
   @Column('varchar', { nullable: true })
   menu!: string;
 
@@ -17,6 +22,8 @@ export class RestaurantBar extends Place {
   constructor() {
     super();
   }
+
+
 
   static async createRestaurantBar(data: Partial<RestaurantBar>): Promise<RestaurantBar> {
     const restaurantBar = Object.assign(new RestaurantBar(), data);

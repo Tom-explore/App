@@ -6,6 +6,9 @@ export class Language extends BaseEntity {
   id!: number;
 
   @Column('varchar')
+  code!: string;
+
+  @Column('varchar')
   name!: string;
 
   constructor() {

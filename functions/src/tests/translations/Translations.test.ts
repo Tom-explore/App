@@ -164,12 +164,15 @@ describe('Data Initialization Check', () => {
     expect(postImgResponse.status).toBe(200);
   });
 });
+
+
 describe('LanguageController Tests', () => {
     let languageId: number;
   
     it('should create a language successfully', async () => {
       const response = await request(app).post('/language').send({
         name: 'English',
+        code:'en'
       });
       expect(response.status).toBe(201);
       expect(response.body.language).toHaveProperty('id');
@@ -209,13 +212,15 @@ describe('LanguageController Tests', () => {
       expect(verifyResponse.body).toHaveProperty('message', 'Language not found');
     });
   });
+
+
   describe('TxAttributeController Tests', () => {
     let attributeId: number;
     let languageId: number;
   
     beforeAll(async () => {
       // Créer une langue
-      const languageResponse = await request(app).post('/language').send({ name: 'English' });
+      const languageResponse = await request(app).post('/language').send({ name: 'English', code:'en' });
       expect(languageResponse.status).toBe(201);
       languageId = languageResponse.body.language.id;
   
@@ -294,6 +299,9 @@ describe('LanguageController Tests', () => {
       expect(verifyResponse.body).toHaveProperty('message', 'TxAttribute not found');
     });
   });
+
+
+
   describe('TxCategoryCityLangController Tests', () => {
     let categoryId: number;
     let cityId: number;
@@ -301,7 +309,7 @@ describe('LanguageController Tests', () => {
   
     beforeAll(async () => {
       // Création d'une langue
-      const languageResponse = await request(app).post('/language').send({ name: 'English' });
+      const languageResponse = await request(app).post('/language').send({ name: 'English', code: 'en' });
       expect(languageResponse.status).toBe(201);
       languageId = languageResponse.body.language.id;
   
@@ -400,25 +408,26 @@ describe('LanguageController Tests', () => {
       expect(verifyResponse.body).toHaveProperty('message', 'TxCategoryCityLang not found');
     });
   });
+
+
+
   describe('TxCategoryController Tests', () => {
     let categoryId: number;
     let languageId: number;
   
     beforeAll(async () => {
-      // Création d'une langue
-      const languageResponse = await request(app).post('/language').send({ name: 'French' });
+      const languageResponse = await request(app).post('/language').send({ name: 'French', code: 'fr' });
       expect(languageResponse.status).toBe(201);
       languageId = languageResponse.body.language.id;
   
-      // Création d'une catégorie
       const categoryResponse = await request(app).post('/category').send({ name: 'Test Category', slug: 'test-category' });
       expect(categoryResponse.status).toBe(201);
       categoryId = categoryResponse.body.category.id;
     });
   
     afterAll(async () => {
-      // Suppression des entités créées
       await request(app).delete(`/language/${languageId}`);
+  
       await request(app).delete(`/category/${categoryId}`);
     });
   
@@ -432,7 +441,7 @@ describe('LanguageController Tests', () => {
         meta_description: 'Test meta description',
         title: 'Test Title',
       });
-
+  
       expect(response.status).toBe(201);
       expect(response.body.txCategory).toHaveProperty('category_id', categoryId);
       expect(response.body.txCategory).toHaveProperty('language_id', languageId);
@@ -440,7 +449,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve a TxCategory by categoryId and languageId', async () => {
       const response = await request(app).get(`/txcategory/${categoryId}/${languageId}`);
-
+  
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('category_id', categoryId);
       expect(response.body).toHaveProperty('language_id', languageId);
@@ -448,7 +457,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxCategories for a specific category', async () => {
       const response = await request(app).get(`/txcategory/category/${categoryId}`);
-
+  
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.category_id === categoryId)).toBe(true);
@@ -456,7 +465,7 @@ describe('LanguageController Tests', () => {
   
     it('should retrieve all TxCategories for a specific language', async () => {
       const response = await request(app).get(`/txcategory/language/${languageId}`);
-
+  
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.language_id === languageId)).toBe(true);
@@ -469,33 +478,37 @@ describe('LanguageController Tests', () => {
         meta_description: 'Updated meta description',
         title: 'Updated Title',
       };
-      const response = await request(app)
-        .put(`/txcategory/${categoryId}/${languageId}`)
-        .send(updatedData);
-
+  
+      const response = await request(app).put(`/txcategory/${categoryId}/${languageId}`).send(updatedData);
+  
       expect(response.status).toBe(200);
       expect(response.body.txCategory).toHaveProperty('name', updatedData.name);
     });
   
     it('should delete a TxCategory successfully', async () => {
       const response = await request(app).delete(`/txcategory/${categoryId}/${languageId}`);
-
+  
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', 'TxCategory deleted successfully');
   
-      // Vérifier que le TxCategory a bien été supprimé
       const verifyResponse = await request(app).get(`/txcategory/${categoryId}/${languageId}`);
+  
       expect(verifyResponse.status).toBe(404);
       expect(verifyResponse.body).toHaveProperty('message', 'TxCategory not found');
     });
   });
+  
+
+
+
+
   describe('TxCityController Tests', () => {
     let cityId: number;
     let languageId: number;
   
     beforeAll(async () => {
       // Création d'une langue
-      const languageResponse = await request(app).post('/language').send({ name: 'English' });
+      const languageResponse = await request(app).post('/language').send({ name: 'English', code:'en' });
       expect(languageResponse.status).toBe(201);
       languageId = languageResponse.body.language.id;
   
@@ -580,13 +593,15 @@ describe('LanguageController Tests', () => {
       expect(verifyResponse.body).toHaveProperty('message', 'TxCity not found');
     });
   });
+
+
   describe('TxCountryController Tests', () => {
     let countryId: number;
     let languageId: number;
   
     beforeAll(async () => {
       // Création d'une langue
-      const languageResponse = await request(app).post('/language').send({ name: 'French' });
+      const languageResponse = await request(app).post('/language').send({ name: 'French', code:'fr' });
       expect(languageResponse.status).toBe(201);
       languageId = languageResponse.body.language.id;
   
@@ -673,12 +688,14 @@ describe('LanguageController Tests', () => {
       expect(verifyResponse.body).toHaveProperty('message', 'TxCountry not found');
     });
   });
+
+
   describe('TxPlaceController Tests', () => {
     let languageId: number;
   
     beforeAll(async () => {
       // Création d'une langue
-      const languageResponse = await request(app).post('/language').send({ name: 'English' });
+      const languageResponse = await request(app).post('/language').send({ name: 'English', code:'en' });
       expect(languageResponse.status).toBe(201);
       languageId = languageResponse.body.language.id;
   
@@ -756,11 +773,14 @@ describe('LanguageController Tests', () => {
       expect(verifyResponse.body).toHaveProperty('message', 'TxPlace not found');
     });
   });
+
+
+
   describe('TxPostBlocController Tests', () => {
     let languageId: number;
 
     beforeAll(async () => {
-      const languageResponse = await request(app).post('/language').send({ name: 'English' });
+      const languageResponse = await request(app).post('/language').send({ name: 'English', code:'en' });
       expect(languageResponse.status).toBe(201);
       languageId = languageResponse.body.language.id;
   
@@ -839,7 +859,7 @@ describe('LanguageController Tests', () => {
   
     beforeAll(async () => {
       // Création d'une langue
-      const languageResponse = await request(app).post('/language').send({ name: 'English' });
+      const languageResponse = await request(app).post('/language').send({ name: 'English', code:'en' });
       expect(languageResponse.status).toBe(201);
       languageId = languageResponse.body.language.id;
 
@@ -915,28 +935,49 @@ describe('LanguageController Tests', () => {
     let postId: number;
     let languageId: number;
   
+    let userId: number; // Ajout de l'ID utilisateur
+
     beforeAll(async () => {
-      // Création d'une langue
-      const languageResponse = await request(app).post('/language').send({ name: 'English' });
+      console.log('Creating language...');
+      const languageResponse = await request(app).post('/language').send({ name: 'English', code: 'en' });
+      console.log('Language Response:', languageResponse.body);
       expect(languageResponse.status).toBe(201);
       languageId = languageResponse.body.language.id;
-  
-      // Création d'un post
+    
+      console.log('Creating user...');
+      const userResponse = await request(app).post('/user').send({
+        email: 'test@test.com',
+        name: 'Test User',
+        pw: 'password123',
+      });
+      console.log('User Response:', userResponse.body);
+      expect(userResponse.status).toBe(201);
+      userId = userResponse.body.user.id;
+    
+      console.log('Creating post...');
       const postResponse = await request(app).post('/post').send({
-        userId: 1, // Assurez-vous d'avoir un utilisateur valide
+        userId,
         slug: 'test-post',
       });
+      console.log('Post Response:', postResponse.body);
       expect(postResponse.status).toBe(201);
       postId = postResponse.body.post.id;
     });
-  
+    
     afterAll(async () => {
-      // Suppression des entités créées
-      await request(app).delete(`/language/${languageId}`);
+      console.log('Deleting post...');
       await request(app).delete(`/post/${postId}`);
+    
+      console.log('Deleting user...');
+      await request(app).delete(`/user/${userId}`);
+    
+      console.log('Deleting language...');
+      await request(app).delete(`/language/${languageId}`);
     });
+    
   
     it('should create a TxPost successfully', async () => {
+      console.log('Creating TxPost...');
       const response = await request(app).post('/txpost').send({
         postId,
         languageId,
@@ -947,31 +988,38 @@ describe('LanguageController Tests', () => {
         visible: true,
         slug: 'test-post-translation',
       });
-
+      console.log('TxPost Create Response:', response.body);
+  
       expect(response.status).toBe(201);
       expect(response.body.txPost).toHaveProperty('postId', postId);
       expect(response.body.txPost).toHaveProperty('languageId', languageId);
     });
   
     it('should retrieve a TxPost by postId and languageId', async () => {
+      console.log('Fetching TxPost by postId and languageId...');
       const response = await request(app).get(`/txpost/${postId}/${languageId}`);
-
+      console.log('TxPost Fetch Response:', response.body);
+  
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('postId', postId);
       expect(response.body).toHaveProperty('languageId', languageId);
     });
   
     it('should retrieve all TxPosts for a specific post', async () => {
+      console.log('Fetching all TxPosts for postId...');
       const response = await request(app).get(`/txpost/post/${postId}`);
-
+      console.log('TxPosts for Post Response:', response.body);
+  
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.postId === postId)).toBe(true);
     });
   
     it('should retrieve all TxPosts for a specific language', async () => {
+      console.log('Fetching all TxPosts for languageId...');
       const response = await request(app).get(`/txpost/language/${languageId}`);
-
+      console.log('TxPosts for Language Response:', response.body);
+  
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.some((tx: any) => tx.languageId === languageId)).toBe(true);
@@ -982,23 +1030,30 @@ describe('LanguageController Tests', () => {
         name: 'Updated Test Post Translation',
         visible: false,
       };
+  
+      console.log('Updating TxPost...');
       const response = await request(app).put(`/txpost/${postId}/${languageId}`).send(updatedData);
-
+      console.log('TxPost Update Response:', response.body);
+  
       expect(response.status).toBe(200);
       expect(response.body.txPost).toHaveProperty('name', updatedData.name);
       expect(response.body.txPost).toHaveProperty('visible', updatedData.visible);
     });
   
     it('should delete a TxPost successfully', async () => {
+      console.log('Deleting TxPost...');
       const response = await request(app).delete(`/txpost/${postId}/${languageId}`);
-
+      console.log('TxPost Delete Response:', response.body);
+  
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', 'TxPost deleted successfully');
   
-      // Vérifier que le TxPost a bien été supprimé
+      console.log('Verifying deletion...');
       const verifyResponse = await request(app).get(`/txpost/${postId}/${languageId}`);
+      console.log('Verify Deletion Response:', verifyResponse.body);
+  
       expect(verifyResponse.status).toBe(404);
       expect(verifyResponse.body).toHaveProperty('message', 'TxPost not found');
     });
   });
-  
+    

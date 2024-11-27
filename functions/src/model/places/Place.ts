@@ -5,15 +5,12 @@ import {
   UpdateDateColumn,
   CreateDateColumn,
   BaseEntity,
-  TableInheritance,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { PlaceType } from '../enums/PlaceType';
 import { City } from '../common/City';
 
 @Entity('places')
-@TableInheritance({ column: { type: 'varchar', name: 'type' } })
 export class Place extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
@@ -25,12 +22,6 @@ export class Place extends BaseEntity {
   @Column('varchar', { nullable: true })
   description_scrapio!: string;
 
-  @Column({
-    type: 'enum',
-    enum: PlaceType,
-    nullable: false,
-  })
-  type!: PlaceType;
 
   @Column('varchar', { nullable: false })
   slug!: string;
@@ -125,9 +116,11 @@ export class Place extends BaseEntity {
   @Column('int', { nullable: true })
   reviews_average_count!: number;
 
+
   constructor() {
     super();
   }
+
 
   static async createPlace(data: Partial<Place>): Promise<Place> {
     const place = Object.assign(new Place(), data);

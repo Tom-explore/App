@@ -16,7 +16,7 @@ export class PlaceCategory extends BaseEntity {
   category!: Category;
 
   @Column('boolean', { default: false })
-  main!: boolean;
+  best_for!: boolean;
 
   constructor() {
     super();
