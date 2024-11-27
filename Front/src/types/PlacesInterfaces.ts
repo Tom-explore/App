@@ -46,12 +46,7 @@ export interface Place {
     hour: string;
     status: CrowdStatus;
   }
-  
-  export interface Hotel extends Place {
-    booking_link?: string;
-    avg_price_per_night?: number;
-    pets_authorized: boolean;
-  }
+
   
   export interface OpeningHours {
     id: number;
@@ -72,14 +67,22 @@ export interface Place {
     top?: number;
     source?: string;
   }
+  export interface Hotel {
+    place: Place; // Objet Place imbriqué
+    booking_link?: string;
+    avg_price_per_night?: number;
+    pets_authorized: boolean;
+  }
   
-  export interface RestaurantBar extends Place {
+  export interface RestaurantBar {
+    place: Place; // Objet Place imbriqué
     menu?: string;
     price_min?: number;
     price_max?: number;
   }
   
-  export interface TouristAttraction extends Place {
+  export interface TouristAttraction {
+    place: Place; // Objet Place imbriqué
     name_original?: string;
     wiki_link?: string;
     price_regular?: number;
@@ -88,4 +91,3 @@ export interface Place {
     tickets_civitatis: boolean;
     tickets_direct_site?: string;
   }
-  

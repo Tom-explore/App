@@ -1,10 +1,15 @@
-import { Entity, Column, ChildEntity, BaseEntity } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn, BaseEntity } from 'typeorm';
 import { Place } from './Place';
-import { PlaceType } from '../enums/PlaceType';
-import { City } from '../common/City';
 
-@ChildEntity(PlaceType.HOTEL)
-export class Hotel extends Place {
+@Entity('hotels')
+export class Hotel extends BaseEntity {
+  @PrimaryGeneratedColumn()
+  id!: number;
+
+  @OneToOne(() => Place)
+  @JoinColumn({ name: 'place_id' })
+  place!: Place;
+
   @Column('varchar', { nullable: true })
   booking_link!: string;
 
@@ -14,9 +19,12 @@ export class Hotel extends Place {
   @Column('boolean', { default: false })
   pets_authorized!: boolean;
 
+
   constructor() {
     super();
   }
+
+
 
   static async createHotel(data: Partial<Hotel>): Promise<Hotel> {
     const hotel = Object.assign(new Hotel(), data);

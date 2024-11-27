@@ -5,18 +5,20 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "allowJs": false,
     "skipLibCheck": true,
-    "esModuleInterop": true, // Active l'interopérabilité pour éviter des erreurs liées aux modules
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
+    "strict": true, // Garde la rigueur pour un meilleur contrôle des types
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "typeRoots": ["node_modules/@types"], // Gère les types pour npm
-    "jsx": "react-jsx"
+    "typeRoots": ["./node_modules/@types"], // Vérifie que les types des dépendances sont pris en compte
+    "types": ["node", "react", "react-dom"], // Charge explicitement les types React et Node.js
+    "jsx": "react-jsx" // Compatible avec React 17+
   },
-  "include": ["src"], // Garde uniquement le dossier source
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"], // Exclut les dossiers inutiles pour la compilation
   "references": [{ "path": "./tsconfig.node.json" }]
 }
