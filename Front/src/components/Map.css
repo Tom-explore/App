@@ -1,0 +1,48 @@
+.map-container {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .leaflet-container {
+    height: 100%;
+    width: 100%;
+  }
+  
+  .leaflet-marker-icon {
+    transition: width 0.8s ease, height 0.8s ease, transform 0.8s ease;
+  }
+  
+  .popup-content {
+    text-align: center;
+    max-width: 200px;
+    padding: 10px;
+    font-family: Arial, sans-serif;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .popup-image {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+  
+  .popup-title {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+  }
+  
+  .popup-description {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+    line-height: 1.4;
+  }
+  
