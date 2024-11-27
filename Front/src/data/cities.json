@@ -1671,44 +1671,7 @@
             ]
         }
     },
-    {
-        "id": 45,
-        "lat": 47.5181,
-        "lng": -2.30273,
-        "slug": "la-roche-bernard",
-        "translations": [
-            {
-                "language": 1,
-                "name": "La Roche-Bernard",
-                "description": "La Roche-Bernard is classified among the most beautiful villages in Morbihan under the city of character label. Nestled not far from the Vilaine estuary, La Roche-Bernard was built on a rocky outcrop. Famous for its port and its 3 bridges walk, enjoy the charm of this small village.",
-                "metaDescription": "La Roche-Bernard is classified among the most beautiful villages in Morbihan under the city of character label. Nestled not far from the Vilaine estuary, La Roche-Bernard was built on a rocky outcrop. Famous for its port and its 3 bridges walk, enjoy the charm of this small village."
-            },
-            {
-                "language": 2,
-                "name": "La Roche-Bernard",
-                "description": "La Roche-Bernard est classé parmi les plus beaux villages du Morbihan sous le label cité de caractère. Niché non loin de l\\'estuaire de la Vilaine, la Roche-Bernard a été construit sur un éperon rocheux. Célèbre pour son port et sa balade des 3 ponts, goutez au charme de ce petit village.",
-                "metaDescription": "La Roche-Bernard est classé parmi les plus beaux villages du Morbihan sous le label cité de caractère. Niché non loin de l\\'estuaire de la Vilaine, la Roche-Bernard a été construit sur un éperon rocheux. Célèbre pour son port et sa balade des 3 ponts, goutez au charme de ce petit village."
-            }
-        ],
-        "country": {
-            "id": 6,
-            "code": "fr",
-            "translations": [
-                {
-                    "language": 1,
-                    "name": "France",
-                    "description": "France, home to Paris, the Eiffel Tower, and fine wine, offers timeless elegance, culture, and art.",
-                    "metaDescription": "Discover France: Paris, fine wine, and timeless culture."
-                },
-                {
-                    "language": 2,
-                    "name": "France",
-                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l\\'art.",
-                    "metaDescription": "Découvrez la France : Paris, grands vins et culture intemporelle."
-                }
-            ]
-        }
-    },
+  
     {
         "id": 46,
         "lat": 46.1583,

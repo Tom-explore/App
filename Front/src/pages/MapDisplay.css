@@ -11,4 +11,7 @@
     height: 100%;
     width: 100%;
   }
+  .leaflet-marker-icon {
+    transition: width 0.8s ease, height 0.8s ease, transform 0.8s ease;
+  }
   

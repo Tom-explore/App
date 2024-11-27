@@ -1,0 +1,41 @@
+.city-list-grid {
+    max-width: 1400px; /* Largeur maximale */
+    margin: 0 auto; /* Centre le contenu */
+    padding: 10px; /* Espacement */
+  }
+  
+  .city-list-row {
+    display: flex;
+    flex-wrap: wrap; /* Permet le retour à la ligne */
+    justify-content: center; /* Centre les colonnes */
+    gap: 5px; /* Ajoute de l'espacement */
+  }
+  
+  .city-list-col {
+    flex: 0 0 300px; /* Largeur fixe de 300px */
+    max-width: 300px; /* Largeur maximale */
+    box-sizing: border-box; /* Inclut les bordures et paddings */
+    display: flex;
+    justify-content: center; /* Centre chaque carte */
+    
+  }
+  
+  /* Adaptation pour tablettes */
+  @media (max-width: 1023px) {
+    .city-list-row {
+      justify-content: space-around; /* Ajuste l'espacement pour tablette */
+    }
+  }
+  
+  /* Adaptation pour mobiles */
+  @media (max-width: 767px) {
+    .city-list-row {
+      justify-content: center; /* Centre les cartes sur mobile */
+    }
+  
+    .city-list-col {
+      flex: 0 0 300px; /* Largeur fixe pour les cartes sur mobile */
+      max-width: 300px; /* Largeur maximale fixe */
+    }
+  }
+  
