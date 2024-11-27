@@ -21,5 +21,10 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       setupFiles: './src/setupTests.ts',
     },
+    server: {
+      host: '0.0.0.0', // Permet d'écouter sur toutes les interfaces réseau
+      port: 5173, // Définit le port du serveur de développement
+      strictPort: true, // Empêche Vite de basculer sur un autre port si le port est occupé
+    },
   }
 })
