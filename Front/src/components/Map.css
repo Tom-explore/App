@@ -4,18 +4,19 @@
     display: flex;
     justify-content: center;
     align-items: center;
-  }
-  
-  .leaflet-container {
+}
+
+.leaflet-container {
     height: 100%;
     width: 100%;
-  }
-  
-  .leaflet-marker-icon {
-    transition: width 0.8s ease, height 0.8s ease, transform 0.8s ease;
-  }
-  
-  .popup-content {
+}
+
+.custom-marker-icon {
+    transition: height 0.5s ease-in-out, width 0.5s ease-in-out, transform 0.5s ease-in-out;
+    transform-origin: center bottom;
+}
+
+.popup-content {
     text-align: center;
     max-width: 200px;
     padding: 10px;
@@ -23,26 +24,53 @@
     border: 1px solid #ccc;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .popup-image {
+}
+
+.popup-image {
     width: 100%;
     height: auto;
     border-radius: 8px;
     margin-bottom: 10px;
-  }
-  
-  .popup-title {
+}
+
+.popup-title {
     font-size: 16px;
     color: #333;
     margin-bottom: 8px;
     display: block;
-  }
-  
-  .popup-description {
+}
+
+.popup-description {
     font-size: 14px;
     color: #666;
     margin: 0;
     line-height: 1.4;
-  }
-  
+}
+
+/* Styles spécifiques pour les appareils mobiles */
+@media (max-width: 768px) {
+    .custom-marker-icon {
+        transition: none !important; /* Supprime les transitions pour éviter les problèmes */
+    }
+
+    .popup-content {
+        max-width: 150px; /* Réduit la largeur de la popup */
+        padding: 8px; /* Ajuste l'espace intérieur */
+    }
+
+    .popup-title {
+        font-size: 14px; /* Réduit la taille du texte pour mobile */
+    }
+
+    .popup-description {
+        font-size: 12px; /* Réduit également la description */
+    }
+
+    .popup-image {
+        border-radius: 6px; /* Ajuste le rayon des coins de l'image */
+    }
+
+    .leaflet-container {
+        touch-action: none; /* Améliore le comportement du tactile */
+    }
+}

@@ -2,9 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import './Map.css';
+
 import L from 'leaflet';
 import citiesData from '../data/cities.json';
 import { useIonViewDidEnter } from '@ionic/react';
+import SearchBar from './SearchBar';
 
 interface City {
   id: number;
@@ -18,9 +20,10 @@ interface City {
 
 const Map: React.FC = () => {
   const [cities, setCities] = useState<City[]>([]);
-  const [zoomLevel, setZoomLevel] = useState<number>(5);
-
-  const position: [number, number] = [48.134, 11.5799];
+  const [searchActive, setSearchActive] = useState(false); // Nouvel état pour gérer la recherche
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const [zoomLevel, setZoomLevel] = useState<number>(isMobile ? 3.5 : 5);
+  const position: [number, number] = (isMobile ? [45.466, 9.18752] : [48.134, 11.5799]);
   const mapRef = useRef<any>(null);
 
   const calculateMarkerSize = (zoom: number): [number, number] => {
@@ -29,17 +32,26 @@ const Map: React.FC = () => {
     const size = baseSize + (zoom - 6) * scaleFactor;
     return [Math.max(size, 20), Math.max(size * 1.2, 24)];
   };
-
   const MapZoomHandler = () => {
-    useMapEvents({
+    const map = useMapEvents({
+      zoomstart: () => {
+        if (isMobile) {
+          document.querySelector('.leaflet-container')?.classList.add('disable-animations');
+        }
+      },
       zoomend: () => {
-        if (mapRef.current) {
-          setZoomLevel(mapRef.current.getZoom());
+        if (isMobile) {
+          document.querySelector('.leaflet-container')?.classList.remove('disable-animations');
+        }
+          if (mapRef.current) {
+          setZoomLevel(map.getZoom());
         }
       },
     });
+  
     return null;
   };
+  
   useIonViewDidEnter(() => {
     if (mapRef.current) {
       setTimeout(() => {
@@ -47,6 +59,7 @@ const Map: React.FC = () => {
       }, 100);
     }
   });
+
   useEffect(() => {
     const citiesWithLanguage2 = citiesData.map((city: any) => {
       const translation = city.translations.find((t: any) => t.language === 2);
@@ -64,32 +77,59 @@ const Map: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const updateMarkerSizes = () => {
-      cities.forEach((city) => {
-        const markerElement = document.querySelector(
-          `.leaflet-marker-icon[src="${city.markerIcon}"]`
-        ) as HTMLElement;
+    if (!searchActive && mapRef.current) {
+      mapRef.current.setView(position, 5, { animate: true });
+    }
+  }, [searchActive]);
 
-        if (markerElement) {
-          const [width, height] = calculateMarkerSize(zoomLevel);
-          markerElement.style.width = `${width}px`;
-          markerElement.style.height = `${height}px`;
-        }
-      });
-    };
+  const handleSearch = (query: string) => {
+    if (!mapRef.current) return;
 
-    updateMarkerSizes();
-  }, [zoomLevel, cities]);
+    if (!query.trim()) {
+      setSearchActive(false);
+      return;
+    }
+
+    setSearchActive(true);
+
+    const match = cities.find((city) =>
+      city.name.toLowerCase().includes(query.toLowerCase())
+    );
+
+    if (match) {
+      const map = mapRef.current;
+    
+      if (isMobile) {
+        // Calculer un offset vertical pour déplacer la vue au-dessus du clavier
+        const offset = [0, -100]; // Décalage de -100 pixels vers le haut
+        const point = map.project([match.lat, match.lng], map.getZoom()).subtract(offset);
+        const newLatLng = map.unproject(point, map.getZoom());
+    
+        map.setView(newLatLng, 10, { animate: true });
+      } else {
+        // Comportement par défaut sur desktop
+        map.setView([match.lat, match.lng], 10, { animate: true });
+      }
+    }
+    
+  };
 
   return (
     <div className="map-container">
+      <SearchBar onSearch={handleSearch} />
       <MapContainer
-        center={position}
-        zoom={zoomLevel}
-        scrollWheelZoom
-        ref={mapRef}
-        className="leaflet-container"
-      >
+  center={position}
+  zoom={zoomLevel}
+  scrollWheelZoom={!isMobile}
+  zoomAnimation={!isMobile}
+  zoomControl={false}
+  preferCanvas={isMobile}
+  ref={mapRef}
+  className="leaflet-container"
+>
+
+
+
         <TileLayer
           url={`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}${
             L.Browser.retina ? '@2x.png' : '.png'
@@ -104,11 +144,14 @@ const Map: React.FC = () => {
           const customIcon = L.icon({
             iconUrl: city.markerIcon,
             iconSize: [iconWidth, iconHeight],
-            iconAnchor: [iconWidth / 2, iconHeight],
+            iconAnchor: [iconWidth / 2, iconHeight], // Centre-bas
             popupAnchor: [0, -iconHeight],
+            className: 'custom-marker-icon', // Classe pour appliquer les transitions
           });
+          
 
           return (
+            
             <Marker key={city.id} position={[city.lat, city.lng]} icon={customIcon}>
               <Popup>
                 <div className="popup-content">

@@ -1,4 +1,3 @@
-@import "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
 .map-container {
     height: 100vh;
     width: 100%;
@@ -11,7 +10,3 @@
     height: 100%;
     width: 100%;
   }
-  .leaflet-marker-icon {
-    transition: width 0.8s ease, height 0.8s ease, transform 0.8s ease;
-  }
-  
