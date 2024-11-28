@@ -31,7 +31,7 @@
                 {
                     "language": 2,
                     "name": "Pays-Bas",
-                    "description": "Les Pays-Bas, célèbres pour leurs canaux, tulipes, moulins et musées, offrent un mélange unique de charme historique et d\\'innovation moderne.",
+                    "description": "Les Pays-Bas, célèbres pour leurs canaux, tulipes, moulins et musées, offrent un mélange unique de charme historique et d'innovation moderne.",
                     "metaDescription": "Découvrez les Pays-Bas : canaux, tulipes, moulins à vent et musées mondialement connus."
                 }
             ]
@@ -69,7 +69,7 @@
                 {
                     "language": 2,
                     "name": "Belgique",
-                    "description": "La Belgique, cœur de l\\'Europe, est réputée pour ses villes médiévales, ses délicieux chocolats et sa scène culturelle dynamique.",
+                    "description": "La Belgique, cœur de l'Europe, est réputée pour ses villes médiévales, ses délicieux chocolats et sa scène culturelle dynamique.",
                     "metaDescription": "Explorez la Belgique : villes médiévales, chocolats et culture vibrante."
                 }
             ]
@@ -90,8 +90,8 @@
             {
                 "language": 2,
                 "name": "Athènes",
-                "description": "Athènes, capitale grecque ancienne et moderne, est réputée pour ses sites archéologiques légendaires tels que l\\'Acropole et le Parthénon, ainsi que pour sa riche histoire culturelle et artistique.",
-                "metaDescription": "Athènes, capitale grecque ancienne et moderne, est réputée pour ses sites archéologiques légendaires tels que l\\'Acropole et le Parthénon, ainsi que pour sa riche histoire culturelle et artistique."
+                "description": "Athènes, capitale grecque ancienne et moderne, est réputée pour ses sites archéologiques légendaires tels que l'Acropole et le Parthénon, ainsi que pour sa riche histoire culturelle et artistique.",
+                "metaDescription": "Athènes, capitale grecque ancienne et moderne, est réputée pour ses sites archéologiques légendaires tels que l'Acropole et le Parthénon, ainsi que pour sa riche histoire culturelle et artistique."
             }
         ],
         "country": {
@@ -145,8 +145,8 @@
                 {
                     "language": 2,
                     "name": "Espagne",
-                    "description": "L\\'Espagne charme avec ses plages ensoleillées, ses festivals vibrants, ses monuments historiques et sa cuisine mondialement reconnue.",
-                    "metaDescription": "Découvrez l\\'Espagne : plages ensoleillées, festivals et monuments historiques."
+                    "description": "L'Espagne charme avec ses plages ensoleillées, ses festivals vibrants, ses monuments historiques et sa cuisine mondialement reconnue.",
+                    "metaDescription": "Découvrez l'Espagne : plages ensoleillées, festivals et monuments historiques."
                 }
             ]
         }
@@ -183,8 +183,8 @@
                 {
                     "language": 2,
                     "name": "Allemagne",
-                    "description": "L\\'Allemagne, un mélange de villes médiévales et modernes, se distingue par son histoire riche, son art et son ingénierie de classe mondiale.",
-                    "metaDescription": "Découvrez l\\'Allemagne : villes médiévales, art et ingénierie."
+                    "description": "L'Allemagne, un mélange de villes médiévales et modernes, se distingue par son histoire riche, son art et son ingénierie de classe mondiale.",
+                    "metaDescription": "Découvrez l'Allemagne : villes médiévales, art et ingénierie."
                 }
             ]
         }
@@ -221,7 +221,7 @@
                 {
                     "language": 2,
                     "name": "France",
-                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l\\'art.",
+                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l'art.",
                     "metaDescription": "Découvrez la France : Paris, grands vins et culture intemporelle."
                 }
             ]
@@ -242,8 +242,8 @@
             {
                 "language": 2,
                 "name": "Bruxelles",
-                "description": "Bruxelles, capitale belge, séduit par son mélange harmonieux de culture, d\\'histoire et de gastronomie. Connue pour ses célèbres chocolats, ses bières artisanales et son architecture remarquable, elle offre une expérience européenne inoubliable.",
-                "metaDescription": "Bruxelles, capitale belge, séduit par son mélange harmonieux de culture, d\\'histoire et de gastronomie. Connue pour ses célèbres chocolats, ses bières artisanales et son architecture remarquable, elle offre une expérience européenne inoubliable."
+                "description": "Bruxelles, capitale belge, séduit par son mélange harmonieux de culture, d'histoire et de gastronomie. Connue pour ses célèbres chocolats, ses bières artisanales et son architecture remarquable, elle offre une expérience européenne inoubliable.",
+                "metaDescription": "Bruxelles, capitale belge, séduit par son mélange harmonieux de culture, d'histoire et de gastronomie. Connue pour ses célèbres chocolats, ses bières artisanales et son architecture remarquable, elle offre une expérience européenne inoubliable."
             }
         ],
         "country": {
@@ -259,7 +259,7 @@
                 {
                     "language": 2,
                     "name": "Belgique",
-                    "description": "La Belgique, cœur de l\\'Europe, est réputée pour ses villes médiévales, ses délicieux chocolats et sa scène culturelle dynamique.",
+                    "description": "La Belgique, cœur de l'Europe, est réputée pour ses villes médiévales, ses délicieux chocolats et sa scène culturelle dynamique.",
                     "metaDescription": "Explorez la Belgique : villes médiévales, chocolats et culture vibrante."
                 }
             ]
@@ -329,7 +329,7 @@
                 {
                     "language": 1,
                     "name": "Hungary",
-                    "description": "Hungary impresses with Budapest\\'s thermal baths, the Danube River, and rich cultural heritage.",
+                    "description": "Hungary impresses with Budapest's thermal baths, the Danube River, and rich cultural heritage.",
                     "metaDescription": "Explore Hungary: Budapest, the Danube, and cultural treasures."
                 },
                 {
@@ -443,13 +443,13 @@
                 {
                     "language": 1,
                     "name": "Poland",
-                    "description": "Poland, from Krakow\\'s old town to Warsaw\\'s resilience, is a land of vibrant history and warm hospitality.",
+                    "description": "Poland, from Krakow's old town to Warsaw's resilience, is a land of vibrant history and warm hospitality.",
                     "metaDescription": "Explore Poland: Krakow, Warsaw, and vibrant history."
                 },
                 {
                     "language": 2,
                     "name": "Pologne",
-                    "description": "La Pologne, de la vieille ville de Cracovie à la résilience de Varsovie, est un pays d\\'histoire vivante et d\\'hospitalité.",
+                    "description": "La Pologne, de la vieille ville de Cracovie à la résilience de Varsovie, est un pays d'histoire vivante et d'hospitalité.",
                     "metaDescription": "Explorez la Pologne : Cracovie, Varsovie et histoire vibrante."
                 }
             ]
@@ -464,8 +464,8 @@
             {
                 "language": 1,
                 "name": "Dublin",
-                "description": "Dublin, Ireland\\'s bustling capital, enchants with its literary heritage, friendly pubs, captivating museums, Georgian architecture and warm hospitality, offering a unique cultural experience.",
-                "metaDescription": "Dublin, Ireland\\'s bustling capital, enchants with its literary heritage, friendly pubs, captivating museums, Georgian architecture and warm hospitality, offering a unique cultural experience."
+                "description": "Dublin, Ireland's bustling capital, enchants with its literary heritage, friendly pubs, captivating museums, Georgian architecture and warm hospitality, offering a unique cultural experience.",
+                "metaDescription": "Dublin, Ireland's bustling capital, enchants with its literary heritage, friendly pubs, captivating museums, Georgian architecture and warm hospitality, offering a unique cultural experience."
             },
             {
                 "language": 2,
@@ -487,8 +487,8 @@
                 {
                     "language": 2,
                     "name": "Irlande",
-                    "description": "L\\'Irlande séduit par ses paysages verdoyants, son folklore légendaire, ses châteaux historiques et son hospitalité chaleureuse.",
-                    "metaDescription": "Découvrez l\\'Irlande : paysages verdoyants, châteaux et folklore."
+                    "description": "L'Irlande séduit par ses paysages verdoyants, son folklore légendaire, ses châteaux historiques et son hospitalité chaleureuse.",
+                    "metaDescription": "Découvrez l'Irlande : paysages verdoyants, châteaux et folklore."
                 }
             ]
         }
@@ -540,14 +540,14 @@
             {
                 "language": 1,
                 "name": "Florence",
-                "description": "Florence, Italy\\'s birthplace of the Renaissance, enchants with its artistic masterpieces, elegant architecture, iconic cathedral and romantic atmosphere steeped in history and culture.",
-                "metaDescription": "Florence, Italy\\'s birthplace of the Renaissance, enchants with its artistic masterpieces, elegant architecture, iconic cathedral and romantic atmosphere steeped in history and culture."
+                "description": "Florence, Italy's birthplace of the Renaissance, enchants with its artistic masterpieces, elegant architecture, iconic cathedral and romantic atmosphere steeped in history and culture.",
+                "metaDescription": "Florence, Italy's birthplace of the Renaissance, enchants with its artistic masterpieces, elegant architecture, iconic cathedral and romantic atmosphere steeped in history and culture."
             },
             {
                 "language": 2,
                 "name": "Florence",
-                "description": "Florence, ville italienne berceau de la Renaissance, enchante par ses chefs-d\\'œuvre artistiques, son architecture élégante, sa cathédrale emblématique et son atmosphère romantique imprégnée d\\'histoire et de culture.",
-                "metaDescription": "Florence, ville italienne berceau de la Renaissance, enchante par ses chefs-d\\'œuvre artistiques, son architecture élégante, sa cathédrale emblématique et son atmosphère romantique imprégnée d\\'histoire et de culture."
+                "description": "Florence, ville italienne berceau de la Renaissance, enchante par ses chefs-d'œuvre artistiques, son architecture élégante, sa cathédrale emblématique et son atmosphère romantique imprégnée d'histoire et de culture.",
+                "metaDescription": "Florence, ville italienne berceau de la Renaissance, enchante par ses chefs-d'œuvre artistiques, son architecture élégante, sa cathédrale emblématique et son atmosphère romantique imprégnée d'histoire et de culture."
             }
         ],
         "country": {
@@ -563,8 +563,8 @@
                 {
                     "language": 2,
                     "name": "Italie",
-                    "description": "L\\'Italie charme avec son art de la Renaissance, ses monuments historiques, ses paysages magnifiques et sa cuisine réputée.",
-                    "metaDescription": "Découvrez l\\'Italie : art, histoire et cuisine raffinée."
+                    "description": "L'Italie charme avec son art de la Renaissance, ses monuments historiques, ses paysages magnifiques et sa cuisine réputée.",
+                    "metaDescription": "Découvrez l'Italie : art, histoire et cuisine raffinée."
                 }
             ]
         }
@@ -595,13 +595,13 @@
                 {
                     "language": 1,
                     "name": "Poland",
-                    "description": "Poland, from Krakow\\'s old town to Warsaw\\'s resilience, is a land of vibrant history and warm hospitality.",
+                    "description": "Poland, from Krakow's old town to Warsaw's resilience, is a land of vibrant history and warm hospitality.",
                     "metaDescription": "Explore Poland: Krakow, Warsaw, and vibrant history."
                 },
                 {
                     "language": 2,
                     "name": "Pologne",
-                    "description": "La Pologne, de la vieille ville de Cracovie à la résilience de Varsovie, est un pays d\\'histoire vivante et d\\'hospitalité.",
+                    "description": "La Pologne, de la vieille ville de Cracovie à la résilience de Varsovie, est un pays d'histoire vivante et d'hospitalité.",
                     "metaDescription": "Explorez la Pologne : Cracovie, Varsovie et histoire vibrante."
                 }
             ]
@@ -639,8 +639,8 @@
                 {
                     "language": 2,
                     "name": "Allemagne",
-                    "description": "L\\'Allemagne, un mélange de villes médiévales et modernes, se distingue par son histoire riche, son art et son ingénierie de classe mondiale.",
-                    "metaDescription": "Découvrez l\\'Allemagne : villes médiévales, art et ingénierie."
+                    "description": "L'Allemagne, un mélange de villes médiévales et modernes, se distingue par son histoire riche, son art et son ingénierie de classe mondiale.",
+                    "metaDescription": "Découvrez l'Allemagne : villes médiévales, art et ingénierie."
                 }
             ]
         }
@@ -677,7 +677,7 @@
                 {
                     "language": 2,
                     "name": "France",
-                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l\\'art.",
+                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l'art.",
                     "metaDescription": "Découvrez la France : Paris, grands vins et culture intemporelle."
                 }
             ]
@@ -736,8 +736,8 @@
             {
                 "language": 2,
                 "name": "Londres",
-                "description": "Londres, capitale britannique fascinante, séduit par son mélange éclectique de culture, d\\'histoire et de modernité, ses emblématiques monuments, ses théâtres renommés et son ambiance cosmopolite inégalée.",
-                "metaDescription": "Londres, capitale britannique fascinante, séduit par son mélange éclectique de culture, d\\'histoire et de modernité, ses emblématiques monuments, ses théâtres renommés et son ambiance cosmopolite inégalée."
+                "description": "Londres, capitale britannique fascinante, séduit par son mélange éclectique de culture, d'histoire et de modernité, ses emblématiques monuments, ses théâtres renommés et son ambiance cosmopolite inégalée.",
+                "metaDescription": "Londres, capitale britannique fascinante, séduit par son mélange éclectique de culture, d'histoire et de modernité, ses emblématiques monuments, ses théâtres renommés et son ambiance cosmopolite inégalée."
             }
         ],
         "country": {
@@ -774,8 +774,8 @@
             {
                 "language": 2,
                 "name": "Lyon",
-                "description": "Lyon, ville française historique, fascine par son mélange harmonieux d\\'histoire et de modernité, sa cuisine renommée, ses quartiers pittoresques et sa beauté architecturale, notamment la Basilique de Fourvière.",
-                "metaDescription": "Lyon, ville française historique, fascine par son mélange harmonieux d\\'histoire et de modernité, sa cuisine renommée, ses quartiers pittoresques et sa beauté architecturale, notamment la Basilique de Fourvière."
+                "description": "Lyon, ville française historique, fascine par son mélange harmonieux d'histoire et de modernité, sa cuisine renommée, ses quartiers pittoresques et sa beauté architecturale, notamment la Basilique de Fourvière.",
+                "metaDescription": "Lyon, ville française historique, fascine par son mélange harmonieux d'histoire et de modernité, sa cuisine renommée, ses quartiers pittoresques et sa beauté architecturale, notamment la Basilique de Fourvière."
             }
         ],
         "country": {
@@ -791,7 +791,7 @@
                 {
                     "language": 2,
                     "name": "France",
-                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l\\'art.",
+                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l'art.",
                     "metaDescription": "Découvrez la France : Paris, grands vins et culture intemporelle."
                 }
             ]
@@ -812,8 +812,8 @@
             {
                 "language": 2,
                 "name": "Madrid",
-                "description": "Madrid, capitale animée de l\\'Espagne, est réputée pour son art, sa vie nocturne, ses musées de renommée mondiale et son architecture impressionnante, dont le Palais Royal et la Plaza Mayor.",
-                "metaDescription": "Madrid, capitale animée de l\\'Espagne, est réputée pour son art, sa vie nocturne, ses musées de renommée mondiale et son architecture impressionnante, dont le Palais Royal et la Plaza Mayor."
+                "description": "Madrid, capitale animée de l'Espagne, est réputée pour son art, sa vie nocturne, ses musées de renommée mondiale et son architecture impressionnante, dont le Palais Royal et la Plaza Mayor.",
+                "metaDescription": "Madrid, capitale animée de l'Espagne, est réputée pour son art, sa vie nocturne, ses musées de renommée mondiale et son architecture impressionnante, dont le Palais Royal et la Plaza Mayor."
             }
         ],
         "country": {
@@ -829,8 +829,8 @@
                 {
                     "language": 2,
                     "name": "Espagne",
-                    "description": "L\\'Espagne charme avec ses plages ensoleillées, ses festivals vibrants, ses monuments historiques et sa cuisine mondialement reconnue.",
-                    "metaDescription": "Découvrez l\\'Espagne : plages ensoleillées, festivals et monuments historiques."
+                    "description": "L'Espagne charme avec ses plages ensoleillées, ses festivals vibrants, ses monuments historiques et sa cuisine mondialement reconnue.",
+                    "metaDescription": "Découvrez l'Espagne : plages ensoleillées, festivals et monuments historiques."
                 }
             ]
         }
@@ -867,7 +867,7 @@
                 {
                     "language": 2,
                     "name": "France",
-                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l\\'art.",
+                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l'art.",
                     "metaDescription": "Découvrez la France : Paris, grands vins et culture intemporelle."
                 }
             ]
@@ -888,8 +888,8 @@
             {
                 "language": 2,
                 "name": "Milan",
-                "description": "Milan, ville italienne élégante et cosmopolite, est célèbre pour sa mode, son architecture impressionnante, ses musées d\\'art renommés et sa scène artistique vibrante, en faisant un centre culturel incontournable.",
-                "metaDescription": "Milan, ville italienne élégante et cosmopolite, est célèbre pour sa mode, son architecture impressionnante, ses musées d\\'art renommés et sa scène artistique vibrante, en faisant un centre culturel incontournable."
+                "description": "Milan, ville italienne élégante et cosmopolite, est célèbre pour sa mode, son architecture impressionnante, ses musées d'art renommés et sa scène artistique vibrante, en faisant un centre culturel incontournable.",
+                "metaDescription": "Milan, ville italienne élégante et cosmopolite, est célèbre pour sa mode, son architecture impressionnante, ses musées d'art renommés et sa scène artistique vibrante, en faisant un centre culturel incontournable."
             }
         ],
         "country": {
@@ -905,8 +905,8 @@
                 {
                     "language": 2,
                     "name": "Italie",
-                    "description": "L\\'Italie charme avec son art de la Renaissance, ses monuments historiques, ses paysages magnifiques et sa cuisine réputée.",
-                    "metaDescription": "Découvrez l\\'Italie : art, histoire et cuisine raffinée."
+                    "description": "L'Italie charme avec son art de la Renaissance, ses monuments historiques, ses paysages magnifiques et sa cuisine réputée.",
+                    "metaDescription": "Découvrez l'Italie : art, histoire et cuisine raffinée."
                 }
             ]
         }
@@ -943,8 +943,8 @@
                 {
                     "language": 2,
                     "name": "Allemagne",
-                    "description": "L\\'Allemagne, un mélange de villes médiévales et modernes, se distingue par son histoire riche, son art et son ingénierie de classe mondiale.",
-                    "metaDescription": "Découvrez l\\'Allemagne : villes médiévales, art et ingénierie."
+                    "description": "L'Allemagne, un mélange de villes médiévales et modernes, se distingue par son histoire riche, son art et son ingénierie de classe mondiale.",
+                    "metaDescription": "Découvrez l'Allemagne : villes médiévales, art et ingénierie."
                 }
             ]
         }
@@ -981,7 +981,7 @@
                 {
                     "language": 2,
                     "name": "France",
-                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l\\'art.",
+                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l'art.",
                     "metaDescription": "Découvrez la France : Paris, grands vins et culture intemporelle."
                 }
             ]
@@ -1002,8 +1002,8 @@
             {
                 "language": 2,
                 "name": "Naples",
-                "description": "Naples, ville italienne authentique, charme par son patrimoine historique, ses ruelles animées, sa pizza délicieuse, son folklore vivant et sa proximité avec les sites archéologiques de Pompéi et d\\'Herculanum.",
-                "metaDescription": "Naples, ville italienne authentique, charme par son patrimoine historique, ses ruelles animées, sa pizza délicieuse, son folklore vivant et sa proximité avec les sites archéologiques de Pompéi et d\\'Herculanum."
+                "description": "Naples, ville italienne authentique, charme par son patrimoine historique, ses ruelles animées, sa pizza délicieuse, son folklore vivant et sa proximité avec les sites archéologiques de Pompéi et d'Herculanum.",
+                "metaDescription": "Naples, ville italienne authentique, charme par son patrimoine historique, ses ruelles animées, sa pizza délicieuse, son folklore vivant et sa proximité avec les sites archéologiques de Pompéi et d'Herculanum."
             }
         ],
         "country": {
@@ -1019,8 +1019,8 @@
                 {
                     "language": 2,
                     "name": "Italie",
-                    "description": "L\\'Italie charme avec son art de la Renaissance, ses monuments historiques, ses paysages magnifiques et sa cuisine réputée.",
-                    "metaDescription": "Découvrez l\\'Italie : art, histoire et cuisine raffinée."
+                    "description": "L'Italie charme avec son art de la Renaissance, ses monuments historiques, ses paysages magnifiques et sa cuisine réputée.",
+                    "metaDescription": "Découvrez l'Italie : art, histoire et cuisine raffinée."
                 }
             ]
         }
@@ -1057,7 +1057,7 @@
                 {
                     "language": 2,
                     "name": "France",
-                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l\\'art.",
+                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l'art.",
                     "metaDescription": "Découvrez la France : Paris, grands vins et culture intemporelle."
                 }
             ]
@@ -1095,7 +1095,7 @@
                 {
                     "language": 2,
                     "name": "France",
-                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l\\'art.",
+                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l'art.",
                     "metaDescription": "Découvrez la France : Paris, grands vins et culture intemporelle."
                 }
             ]
@@ -1171,7 +1171,7 @@
                 {
                     "language": 2,
                     "name": "France",
-                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l\\'art.",
+                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l'art.",
                     "metaDescription": "Découvrez la France : Paris, grands vins et culture intemporelle."
                 }
             ]
@@ -1209,8 +1209,8 @@
                 {
                     "language": 2,
                     "name": "Italie",
-                    "description": "L\\'Italie charme avec son art de la Renaissance, ses monuments historiques, ses paysages magnifiques et sa cuisine réputée.",
-                    "metaDescription": "Découvrez l\\'Italie : art, histoire et cuisine raffinée."
+                    "description": "L'Italie charme avec son art de la Renaissance, ses monuments historiques, ses paysages magnifiques et sa cuisine réputée.",
+                    "metaDescription": "Découvrez l'Italie : art, histoire et cuisine raffinée."
                 }
             ]
         }
@@ -1247,7 +1247,7 @@
                 {
                     "language": 2,
                     "name": "Pays-Bas",
-                    "description": "Les Pays-Bas, célèbres pour leurs canaux, tulipes, moulins et musées, offrent un mélange unique de charme historique et d\\'innovation moderne.",
+                    "description": "Les Pays-Bas, célèbres pour leurs canaux, tulipes, moulins et musées, offrent un mélange unique de charme historique et d'innovation moderne.",
                     "metaDescription": "Découvrez les Pays-Bas : canaux, tulipes, moulins à vent et musées mondialement connus."
                 }
             ]
@@ -1285,8 +1285,8 @@
                 {
                     "language": 2,
                     "name": "Espagne",
-                    "description": "L\\'Espagne charme avec ses plages ensoleillées, ses festivals vibrants, ses monuments historiques et sa cuisine mondialement reconnue.",
-                    "metaDescription": "Découvrez l\\'Espagne : plages ensoleillées, festivals et monuments historiques."
+                    "description": "L'Espagne charme avec ses plages ensoleillées, ses festivals vibrants, ses monuments historiques et sa cuisine mondialement reconnue.",
+                    "metaDescription": "Découvrez l'Espagne : plages ensoleillées, festivals et monuments historiques."
                 }
             ]
         }
@@ -1323,7 +1323,7 @@
                 {
                     "language": 2,
                     "name": "Suède",
-                    "description": "La Suède, terre d\\'innovation et de beauté naturelle, offre des archipels spectaculaires, des aurores boréales et un riche patrimoine culturel.",
+                    "description": "La Suède, terre d'innovation et de beauté naturelle, offre des archipels spectaculaires, des aurores boréales et un riche patrimoine culturel.",
                     "metaDescription": "Découvrez la Suède : nature, innovation et culture."
                 }
             ]
@@ -1361,7 +1361,7 @@
                 {
                     "language": 2,
                     "name": "France",
-                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l\\'art.",
+                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l'art.",
                     "metaDescription": "Découvrez la France : Paris, grands vins et culture intemporelle."
                 }
             ]
@@ -1399,8 +1399,8 @@
                 {
                     "language": 2,
                     "name": "Estonie",
-                    "description": "L\\'Estonie allie le charme médiéval de Tallinn à des forêts préservées, en faisant un joyau caché en Europe.",
-                    "metaDescription": "Explorez l\\'Estonie : Tallinn et nature préservée."
+                    "description": "L'Estonie allie le charme médiéval de Tallinn à des forêts préservées, en faisant un joyau caché en Europe.",
+                    "metaDescription": "Explorez l'Estonie : Tallinn et nature préservée."
                 }
             ]
         }
@@ -1475,7 +1475,7 @@
                 {
                     "language": 2,
                     "name": "France",
-                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l\\'art.",
+                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l'art.",
                     "metaDescription": "Découvrez la France : Paris, grands vins et culture intemporelle."
                 }
             ]
@@ -1513,8 +1513,8 @@
                 {
                     "language": 2,
                     "name": "Espagne",
-                    "description": "L\\'Espagne charme avec ses plages ensoleillées, ses festivals vibrants, ses monuments historiques et sa cuisine mondialement reconnue.",
-                    "metaDescription": "Découvrez l\\'Espagne : plages ensoleillées, festivals et monuments historiques."
+                    "description": "L'Espagne charme avec ses plages ensoleillées, ses festivals vibrants, ses monuments historiques et sa cuisine mondialement reconnue.",
+                    "metaDescription": "Découvrez l'Espagne : plages ensoleillées, festivals et monuments historiques."
                 }
             ]
         }
@@ -1551,7 +1551,7 @@
                 {
                     "language": 2,
                     "name": "France",
-                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l\\'art.",
+                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l'art.",
                     "metaDescription": "Découvrez la France : Paris, grands vins et culture intemporelle."
                 }
             ]
@@ -1572,8 +1572,8 @@
             {
                 "language": 2,
                 "name": "Varsovie",
-                "description": "Varsovie, capitale polonaise dynamique, séduit par son mélange unique d\\'histoire et de modernité, son architecture reconstruite, ses parcs verdoyants et son esprit résilient.",
-                "metaDescription": "Varsovie, capitale polonaise dynamique, séduit par son mélange unique d\\'histoire et de modernité, son architecture reconstruite, ses parcs verdoyants et son esprit résilient."
+                "description": "Varsovie, capitale polonaise dynamique, séduit par son mélange unique d'histoire et de modernité, son architecture reconstruite, ses parcs verdoyants et son esprit résilient.",
+                "metaDescription": "Varsovie, capitale polonaise dynamique, séduit par son mélange unique d'histoire et de modernité, son architecture reconstruite, ses parcs verdoyants et son esprit résilient."
             }
         ],
         "country": {
@@ -1583,13 +1583,13 @@
                 {
                     "language": 1,
                     "name": "Poland",
-                    "description": "Poland, from Krakow\\'s old town to Warsaw\\'s resilience, is a land of vibrant history and warm hospitality.",
+                    "description": "Poland, from Krakow's old town to Warsaw's resilience, is a land of vibrant history and warm hospitality.",
                     "metaDescription": "Explore Poland: Krakow, Warsaw, and vibrant history."
                 },
                 {
                     "language": 2,
                     "name": "Pologne",
-                    "description": "La Pologne, de la vieille ville de Cracovie à la résilience de Varsovie, est un pays d\\'histoire vivante et d\\'hospitalité.",
+                    "description": "La Pologne, de la vieille ville de Cracovie à la résilience de Varsovie, est un pays d'histoire vivante et d'hospitalité.",
                     "metaDescription": "Explorez la Pologne : Cracovie, Varsovie et histoire vibrante."
                 }
             ]
@@ -1610,8 +1610,8 @@
             {
                 "language": 2,
                 "name": "Venise",
-                "description": "Venise est une ville emblématique en Italie, célèbre pour ses canaux sinueux et ses magnifiques palais construits sur l\\'eau, offrant une atmosphère romantique et unique au monde.",
-                "metaDescription": "Venise est une ville emblématique en Italie, célèbre pour ses canaux sinueux et ses magnifiques palais construits sur l\\'eau, offrant une atmosphère romantique et unique au monde."
+                "description": "Venise est une ville emblématique en Italie, célèbre pour ses canaux sinueux et ses magnifiques palais construits sur l'eau, offrant une atmosphère romantique et unique au monde.",
+                "metaDescription": "Venise est une ville emblématique en Italie, célèbre pour ses canaux sinueux et ses magnifiques palais construits sur l'eau, offrant une atmosphère romantique et unique au monde."
             }
         ],
         "country": {
@@ -1627,8 +1627,8 @@
                 {
                     "language": 2,
                     "name": "Italie",
-                    "description": "L\\'Italie charme avec son art de la Renaissance, ses monuments historiques, ses paysages magnifiques et sa cuisine réputée.",
-                    "metaDescription": "Découvrez l\\'Italie : art, histoire et cuisine raffinée."
+                    "description": "L'Italie charme avec son art de la Renaissance, ses monuments historiques, ses paysages magnifiques et sa cuisine réputée.",
+                    "metaDescription": "Découvrez l'Italie : art, histoire et cuisine raffinée."
                 }
             ]
         }
@@ -1665,8 +1665,8 @@
                 {
                     "language": 2,
                     "name": "Autriche",
-                    "description": "L\\'Autriche, avec ses paysages alpins, Vienne historique et son riche héritage musical, fascine les visiteurs.",
-                    "metaDescription": "Découvrez l\\'Autriche : Alpes, Vienne et héritage musical."
+                    "description": "L'Autriche, avec ses paysages alpins, Vienne historique et son riche héritage musical, fascine les visiteurs.",
+                    "metaDescription": "Découvrez l'Autriche : Alpes, Vienne et héritage musical."
                 }
             ]
         }
@@ -1704,7 +1704,7 @@
                 {
                     "language": 2,
                     "name": "France",
-                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l\\'art.",
+                    "description": "La France, avec Paris, la tour Eiffel et ses grands vins, offre une élégance intemporelle, une culture riche et de l'art.",
                     "metaDescription": "Découvrez la France : Paris, grands vins et culture intemporelle."
                 }
             ]
@@ -1719,14 +1719,14 @@
             {
                 "language": 1,
                 "name": "Edinburgh",
-                "description": "Edinburgh, Scotland\\'s capital, blends history with modernity. Its famous castle atop an ancient volcanic rock offers stunning views. Explore the historic Royal Mile, Holyroodhouse Palace, and Georgian architecture. A delightful mix of culture, history, and nature.",
-                "metaDescription": "Edinburgh, Scotland\\'s capital, blends history with modernity. Its famous castle atop an ancient volcanic rock offers stunning views. Explore the historic Royal Mile, Holyroodhouse Palace, and Georgian architecture. A delightful mix of culture, history, and nature."
+                "description": "Edinburgh, Scotland's capital, blends history with modernity. Its famous castle atop an ancient volcanic rock offers stunning views. Explore the historic Royal Mile, Holyroodhouse Palace, and Georgian architecture. A delightful mix of culture, history, and nature.",
+                "metaDescription": "Edinburgh, Scotland's capital, blends history with modernity. Its famous castle atop an ancient volcanic rock offers stunning views. Explore the historic Royal Mile, Holyroodhouse Palace, and Georgian architecture. A delightful mix of culture, history, and nature."
             },
             {
                 "language": 2,
                 "name": "Édimbourg",
-                "description": "Édimbourg, capitale de l\\'Écosse, allie histoire et modernité. Son célèbre château surplombe la ville depuis un rocher volcanique, offrant des vues magnifiques. Découvrez le Royal Mile historique, le palais de Holyroodhouse, et l\\'architecture géorgienne. Un mélange charmant de culture, histoire, et nature.",
-                "metaDescription": "Édimbourg, capitale de l\\'Écosse, allie histoire et modernité. Son célèbre château surplombe la ville depuis un rocher volcanique, offrant des vues magnifiques. Découvrez le Royal Mile historique, le palais de Holyroodhouse, et l\\'architecture géorgienne. Un mélange charmant de culture, histoire, et nature."
+                "description": "Édimbourg, capitale de l'Écosse, allie histoire et modernité. Son célèbre château surplombe la ville depuis un rocher volcanique, offrant des vues magnifiques. Découvrez le Royal Mile historique, le palais de Holyroodhouse, et l'architecture géorgienne. Un mélange charmant de culture, histoire, et nature.",
+                "metaDescription": "Édimbourg, capitale de l'Écosse, allie histoire et modernité. Son célèbre château surplombe la ville depuis un rocher volcanique, offrant des vues magnifiques. Découvrez le Royal Mile historique, le palais de Holyroodhouse, et l'architecture géorgienne. Un mélange charmant de culture, histoire, et nature."
             }
         ],
         "country": {
@@ -1757,14 +1757,14 @@
             {
                 "language": 1,
                 "name": "Prague",
-                "description": "Prague, the capital of the Czech Republic, enchants visitors with its well-preserved medieval architecture, cobblestone streets, and historic bridges. Dominated by the Prague Castle, a national symbol, the city is renowned for its unique astronomical clock. Prague\\'s romantic and cultural ambiance makes it a top destination in Europe.",
-                "metaDescription": "Prague, the capital of the Czech Republic, enchants visitors with its well-preserved medieval architecture, cobblestone streets, and historic bridges. Dominated by the Prague Castle, a national symbol, the city is renowned for its unique astronomical clock. Prague\\'s romantic and cultural ambiance makes it a top destination in Europe."
+                "description": "Prague, the capital of the Czech Republic, enchants visitors with its well-preserved medieval architecture, cobblestone streets, and historic bridges. Dominated by the Prague Castle, a national symbol, the city is renowned for its unique astronomical clock. Prague's romantic and cultural ambiance makes it a top destination in Europe.",
+                "metaDescription": "Prague, the capital of the Czech Republic, enchants visitors with its well-preserved medieval architecture, cobblestone streets, and historic bridges. Dominated by the Prague Castle, a national symbol, the city is renowned for its unique astronomical clock. Prague's romantic and cultural ambiance makes it a top destination in Europe."
             },
             {
                 "language": 2,
                 "name": "Prague",
-                "description": "Prague, la capitale de la République tchèque, charme ses visiteurs avec son architecture médiévale préservée, ses ruelles pavées et ses ponts historiques. La ville est dominée par le château de Prague, un emblème national, et est célèbre pour son horloge astronomique unique. L\\'atmosphère romantique et culturelle de Prague en fait une destination européenne de premier plan.",
-                "metaDescription": "Prague, la capitale de la République tchèque, charme ses visiteurs avec son architecture médiévale préservée, ses ruelles pavées et ses ponts historiques. La ville est dominée par le château de Prague, un emblème national, et est célèbre pour son horloge astronomique unique. L\\'atmosphère romantique et culturelle de Prague en fait une destination européenne de premier plan."
+                "description": "Prague, la capitale de la République tchèque, charme ses visiteurs avec son architecture médiévale préservée, ses ruelles pavées et ses ponts historiques. La ville est dominée par le château de Prague, un emblème national, et est célèbre pour son horloge astronomique unique. L'atmosphère romantique et culturelle de Prague en fait une destination européenne de premier plan.",
+                "metaDescription": "Prague, la capitale de la République tchèque, charme ses visiteurs avec son architecture médiévale préservée, ses ruelles pavées et ses ponts historiques. La ville est dominée par le château de Prague, un emblème national, et est célèbre pour son horloge astronomique unique. L'atmosphère romantique et culturelle de Prague en fait une destination européenne de premier plan."
             }
         ],
         "country": {
@@ -1774,7 +1774,7 @@
                 {
                     "language": 1,
                     "name": "Czech Republic",
-                    "description": "The Czech Republic enchants with Prague\\'s Gothic charm, fairy-tale castles, and lush Bohemian forests.",
+                    "description": "The Czech Republic enchants with Prague's Gothic charm, fairy-tale castles, and lush Bohemian forests.",
                     "metaDescription": "Discover the Czech Republic: Prague and castles."
                 },
                 {
@@ -1818,8 +1818,8 @@
                 {
                     "language": 2,
                     "name": "Allemagne",
-                    "description": "L\\'Allemagne, un mélange de villes médiévales et modernes, se distingue par son histoire riche, son art et son ingénierie de classe mondiale.",
-                    "metaDescription": "Découvrez l\\'Allemagne : villes médiévales, art et ingénierie."
+                    "description": "L'Allemagne, un mélange de villes médiévales et modernes, se distingue par son histoire riche, son art et son ingénierie de classe mondiale.",
+                    "metaDescription": "Découvrez l'Allemagne : villes médiévales, art et ingénierie."
                 }
             ]
         }
@@ -1839,8 +1839,8 @@
             {
                 "language": 2,
                 "name": "Cologne",
-                "description": "Cologne, avec sa magnifique cathédrale, classée au patrimoine mondial de l\\'UNESCO, ses galeries d\\'art vivantes et ses brasseries animées, incarne le mélange de profondeur historique et de dynamisme contemporain, ce qui en fait un pôle culturel remarquable en Europe.",
-                "metaDescription": "Cologne, avec sa magnifique cathédrale, classée au patrimoine mondial de l\\'UNESCO, ses galeries d\\'art vivantes et ses brasseries animées, incarne le mélange de profondeur historique et de dynamisme contemporain, ce qui en fait un pôle culturel remarquable en Europe."
+                "description": "Cologne, avec sa magnifique cathédrale, classée au patrimoine mondial de l'UNESCO, ses galeries d'art vivantes et ses brasseries animées, incarne le mélange de profondeur historique et de dynamisme contemporain, ce qui en fait un pôle culturel remarquable en Europe.",
+                "metaDescription": "Cologne, avec sa magnifique cathédrale, classée au patrimoine mondial de l'UNESCO, ses galeries d'art vivantes et ses brasseries animées, incarne le mélange de profondeur historique et de dynamisme contemporain, ce qui en fait un pôle culturel remarquable en Europe."
             }
         ],
         "country": {
@@ -1856,8 +1856,8 @@
                 {
                     "language": 2,
                     "name": "Allemagne",
-                    "description": "L\\'Allemagne, un mélange de villes médiévales et modernes, se distingue par son histoire riche, son art et son ingénierie de classe mondiale.",
-                    "metaDescription": "Découvrez l\\'Allemagne : villes médiévales, art et ingénierie."
+                    "description": "L'Allemagne, un mélange de villes médiévales et modernes, se distingue par son histoire riche, son art et son ingénierie de classe mondiale.",
+                    "metaDescription": "Découvrez l'Allemagne : villes médiévales, art et ingénierie."
                 }
             ]
         }
@@ -1877,8 +1877,8 @@
             {
                 "language": 2,
                 "name": "Istanbul",
-                "description": "Istanbul, métropole emblématique de la Turquie, séduit par son mélange unique de cultures, ses mosquées majestueuses, ses bazars animés et son histoire millénaire. À cheval entre l\\'Europe et l\\'Asie, cette ville vibrante et diversifiée offre une expérience inoubliable au carrefour des continents.",
-                "metaDescription": "Istanbul, métropole emblématique de la Turquie, séduit par son mélange unique de cultures, ses mosquées majestueuses, ses bazars animés et son histoire millénaire. À cheval entre l\\'Europe et l\\'Asie, cette ville vibrante et diversifiée offre une expérience inoubliable au carrefour des continents."
+                "description": "Istanbul, métropole emblématique de la Turquie, séduit par son mélange unique de cultures, ses mosquées majestueuses, ses bazars animés et son histoire millénaire. À cheval entre l'Europe et l'Asie, cette ville vibrante et diversifiée offre une expérience inoubliable au carrefour des continents.",
+                "metaDescription": "Istanbul, métropole emblématique de la Turquie, séduit par son mélange unique de cultures, ses mosquées majestueuses, ses bazars animés et son histoire millénaire. À cheval entre l'Europe et l'Asie, cette ville vibrante et diversifiée offre une expérience inoubliable au carrefour des continents."
             }
         ],
         "country": {
@@ -1888,13 +1888,13 @@
                 {
                     "language": 1,
                     "name": "Turkey",
-                    "description": "Turkey bridges Europe and Asia with Istanbul\\'s history, Cappadocia\\'s landscapes, and rich traditions.",
+                    "description": "Turkey bridges Europe and Asia with Istanbul's history, Cappadocia's landscapes, and rich traditions.",
                     "metaDescription": "Explore Turkey: Istanbul, Cappadocia, and traditions."
                 },
                 {
                     "language": 2,
                     "name": "Turquie",
-                    "description": "La Turquie, pont entre l\\'Europe et l\\'Asie, fascine avec l\\'histoire d\\'Istanbul, les paysages de Cappadoce et ses traditions riches.",
+                    "description": "La Turquie, pont entre l'Europe et l'Asie, fascine avec l'histoire d'Istanbul, les paysages de Cappadoce et ses traditions riches.",
                     "metaDescription": "Découvrez la Turquie : Istanbul, Cappadoce et traditions."
                 }
             ]

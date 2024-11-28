@@ -9,9 +9,12 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
   const [query, setQuery] = useState('');
 
   useEffect(() => {
-    // Déclenche la recherche à chaque modification du champ
     onSearch(query);
   }, [query, onSearch]);
+
+  const clearQuery = () => {
+    setQuery('');
+  };
 
   return (
     <div className="search-bar-container">
@@ -22,6 +25,11 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
+      {query && (
+        <button className="clear-button" onClick={clearQuery}>
+          ✕
+        </button>
+      )}
     </div>
   );
 };
