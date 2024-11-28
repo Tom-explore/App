@@ -29,7 +29,15 @@ export interface Country {
     link_bike_rental?: string;
     country: Country;
   }
-  
+  export interface CityMap {
+    id: number;
+    name: string;
+    description: string;
+    markerIcon: string;
+    img: string;
+    lat: number;
+    lng: number;
+  }
   export interface Partner {
     id: number;
     name: string;
