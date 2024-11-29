@@ -47,9 +47,17 @@ const MapCityDisplay: React.FC = () => {
       return;
     }
 
-    const match = cities.find((city) =>
+    // Prioritize cities starting with the query
+    const prioritizedMatch = cities.find((city) =>
+      city.name.toLowerCase().startsWith(query.toLowerCase())
+    );
+
+    // If no prioritized match, fallback to partial match
+    const fallbackMatch = cities.find((city) =>
       city.name.toLowerCase().includes(query.toLowerCase())
     );
+
+    const match = prioritizedMatch || fallbackMatch;
 
     if (match && zoomCounter === 0) {
       const { lat, lng } = match;

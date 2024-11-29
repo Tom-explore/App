@@ -1,41 +1,82 @@
 .city-list-grid {
-    max-width: 1400px; /* Largeur maximale */
-    margin: 0 auto; /* Centre le contenu */
-    padding: 10px; /* Espacement */
-  }
-  
+  max-width: 1400px; /* Largeur maximale */
+  margin: 0 auto; /* Centre le contenu */
+  padding: 10px; /* Espacement */
+}
+
+.city-list-row {
+  display: flex;
+  flex-wrap: wrap; /* Permet le retour à la ligne */
+  justify-content: center; /* Centre les colonnes */
+  gap: 20px; /* Ajoute un espacement visible entre les colonnes */
+}
+
+.city-list-col {
+  flex: 0 0 300px; /* Largeur fixe de 300px */
+  max-width: 300px; /* Largeur maximale */
+  box-sizing: border-box; /* Inclut les bordures et paddings */
+  display: flex;
+  justify-content: center; /* Centre chaque carte */
+}
+
+.search-bar-container-cityList {
+  width: 100%; /* La barre de recherche prend toute la largeur disponible */
+  margin-bottom: 70px !important;
+  display: flex; /* Permet de gérer l'alignement */
+  justify-content: center; /* Centre la barre */
+  box-sizing: border-box; /* Assure le padding dans la largeur totale */
+}
+.no-results {
+  display: flex;
+  justify-content: center; /* Centre le texte horizontalement */
+  align-items: center; /* Centre le texte verticalement */
+  text-align: center; /* Centre le texte à l'intérieur */
+  width: 100%; /* Prend toute la largeur */
+  height: 200px; /* Hauteur minimale pour occuper l'espace */
+  font-size: 32px; /* Texte plus grand */
+  font-weight: bold; /* Met le texte en gras */
+  margin: 20px auto; /* Ajoute un peu d'espace autour */
+}
+
+.no-results span {
+  font-size: 36px; /* Emoji plus grand */
+  margin-right: 10px; /* Espacement entre l'emoji et le texte */
+}
+
+.search-bar-container input {
+  width: 100%; /* Assure que l'input occupe toute la largeur du conteneur */
+  max-width: 600px; /* Limite la largeur de la barre de recherche */
+  height: 40px; /* Ajuste la hauteur de la barre */
+  border-radius: 20px; /* Ajoute des coins arrondis */
+  border: 1px solid #ccc; /* Bordure légère */
+  padding: 0 15px; /* Espacement intérieur */
+  font-size: 16px; /* Taille de la police */
+  outline: none; /* Supprime le contour par défaut */
+}
+
+/* Adaptation pour tablettes */
+@media (max-width: 1023px) {
   .city-list-row {
-    display: flex;
-    flex-wrap: wrap; /* Permet le retour à la ligne */
-    justify-content: center; /* Centre les colonnes */
-    gap: 5px; /* Ajoute de l'espacement */
+    justify-content: space-around; /* Ajuste l'espacement pour tablette */
   }
-  
+
+  .search-bar-container input {
+    max-width: 500px; /* Réduit la largeur maximale sur tablettes */
+  }
+}
+
+/* Adaptation pour mobiles */
+@media (max-width: 767px) {
+  .city-list-row {
+    justify-content: center; /* Centre les cartes sur mobile */
+  }
+
   .city-list-col {
-    flex: 0 0 300px; /* Largeur fixe de 300px */
-    max-width: 300px; /* Largeur maximale */
-    box-sizing: border-box; /* Inclut les bordures et paddings */
-    display: flex;
-    justify-content: center; /* Centre chaque carte */
-    
+    flex: 0 0 90%; /* Largeur adaptative pour mobile */
+    max-width: 90%; /* Largeur maximale sur mobile */
   }
-  
-  /* Adaptation pour tablettes */
-  @media (max-width: 1023px) {
-    .city-list-row {
-      justify-content: space-around; /* Ajuste l'espacement pour tablette */
-    }
+
+  .search-bar-container input {
+    max-width: 100%; /* Prend toute la largeur sur mobile */
   }
-  
-  /* Adaptation pour mobiles */
-  @media (max-width: 767px) {
-    .city-list-row {
-      justify-content: center; /* Centre les cartes sur mobile */
-    }
-  
-    .city-list-col {
-      flex: 0 0 300px; /* Largeur fixe pour les cartes sur mobile */
-      max-width: 300px; /* Largeur maximale fixe */
-    }
-  }
-  
+}

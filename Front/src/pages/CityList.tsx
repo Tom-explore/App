@@ -1,16 +1,13 @@
-import {
-  IonContent,
-  IonPage,
-} from '@ionic/react';
+import { IonContent, IonPage } from '@ionic/react';
 import CityCard from '../components/CityCard';
 import './CityList.css';
 import citiesData from '../data/cities.json';
 import SearchBar from '../components/SearchBar';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CityList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const cityRefs = useRef<{ [key: string]: HTMLDivElement | null }>({}); // Références pour chaque ville
 
   const cities = citiesData.map((city: any) => {
     const translation = city.translations.find((t: any) => t.language === 2);
@@ -27,47 +24,69 @@ const CityList: React.FC = () => {
     };
   });
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-
-    const match = cities.find((city) =>
-      city.name.toLowerCase().includes(query.toLowerCase())
-    );
-
-    if (match) {
-      const targetRef = cityRefs.current[match.id];
-      if (targetRef) {
-        targetRef.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+  const filteredCities = cities.filter((city) => {
+    const lowerCaseQuery = searchQuery.toLowerCase();
+    if (city.name.toLowerCase().startsWith(lowerCaseQuery)) {
+      return true;
     }
+    if (city.name.toLowerCase().includes(lowerCaseQuery)) {
+      return true;
+    }
+    return false;
+  });
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query.trim());
   };
 
   return (
     <IonPage>
-
-      <SearchBar onSearch={handleSearch} />
+      <div className="search-bar-container-cityList">
+        <SearchBar onSearch={handleSearch} />
+      </div>
       <IonContent fullscreen>
         <div className="city-list-grid">
           <div className="city-list-row">
-            {cities.map((city) => (
-              <div
-                className="city-list-col"
-                key={city.id}
-                ref={(el) => (cityRefs.current[city.id] = el)} // Associe une référence à chaque ville
-              >
-                <CityCard
-                  id={city.id}
-                  name={city.name}
-                  country={city.country}
-                  description={city.description}
-                  img={city.img}
-                />
-              </div>
-            ))}
+            <AnimatePresence>
+              {filteredCities.length > 0 ? (
+                filteredCities.map((city) => (
+                  <motion.div
+                    className="city-list-col"
+                    key={city.id}
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 50 }}
+                    transition={{
+                      duration: 0.2,
+                      ease: "easeOut",
+                    }}
+                    layout
+                  >
+                    <CityCard
+                      id={city.id}
+                      name={city.name}
+                      country={city.country}
+                      description={city.description}
+                      img={city.img}
+                    />
+                  </motion.div>
+                ))
+              ) : (
+                <motion.div
+                  className="no-results"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <p>🤭 Oups, on dirait que cette ville n'est pas encore disponible !</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </IonContent>
     </IonPage>
+
   );
 };
 
