@@ -24,16 +24,18 @@ const CityList: React.FC = () => {
     };
   });
 
-  const filteredCities = cities.filter((city) => {
-    const lowerCaseQuery = searchQuery.toLowerCase();
-    if (city.name.toLowerCase().startsWith(lowerCaseQuery)) {
-      return true;
-    }
-    if (city.name.toLowerCase().includes(lowerCaseQuery)) {
-      return true;
-    }
-    return false;
-  });
+  const filteredCities = cities
+    .filter((city) =>
+      city.name.toLowerCase().startsWith(searchQuery.toLowerCase())
+    )
+    .concat(
+      cities.filter(
+        (city) =>
+          !city.name.toLowerCase().startsWith(searchQuery.toLowerCase()) &&
+          city.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+
 
   const handleSearch = (query: string) => {
     setSearchQuery(query.trim());
@@ -78,7 +80,7 @@ const CityList: React.FC = () => {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <p>🤭 Oups, on dirait que cette ville n'est pas encore disponible !</p>
+                  <span>🤭</span> Oups, on dirait que cette ville n'est pas encore disponible !
                 </motion.div>
               )}
             </AnimatePresence>
