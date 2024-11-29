@@ -14,23 +14,23 @@ interface MapProps {
   center?: [number, number];
   zoom?: number;
   isMobile?: boolean;
+  children?: React.ReactNode;
 }
 const Map = React.forwardRef<any, MapProps>(
   (
     {
-      citiesData = [],
       initialZoom = 5,
       initialPosition = [48.134, 11.5799],
       center,
       zoom,
-      isMobile
+      isMobile,
+      children,
     },
     ref
   ) => {
-    const [cities, setCities] = useState<CityMap[]>([]);
     const [zoomLevel, setZoomLevel] = useState<number>(initialZoom);
     const mapRef = useRef<any>(null);
-
+    //gestionnaire de zoom - désactive animations mobile
     const MapZoomHandler = () => {
       const map = useMapEvents({
         zoom: () => {
@@ -38,23 +38,27 @@ const Map = React.forwardRef<any, MapProps>(
         },
         zoomstart: () => {
           if (isMobile) {
-            document.querySelector('.leaflet-container')?.classList.add('disable-animations');
+            document
+              .querySelector('.leaflet-container')
+              ?.classList.add('disable-animations');
           }
         },
         zoomend: () => {
           if (isMobile) {
-            document.querySelector('.leaflet-container')?.classList.remove('disable-animations');
+            document
+              .querySelector('.leaflet-container')
+              ?.classList.remove('disable-animations');
           }
         },
       });
 
       return null;
     };
-
+    //getmap ref
     useImperativeHandle(ref, () => ({
       getMap: () => mapRef.current,
     }));
-
+    //nécessaire pr affichage du dom
     useIonViewDidEnter(() => {
       if (mapRef.current) {
         setTimeout(() => {
@@ -62,13 +66,7 @@ const Map = React.forwardRef<any, MapProps>(
         }, 100);
       }
     });
-
-    useEffect(() => {
-      if (citiesData) {
-        setCities(citiesData);
-      }
-    }, [citiesData]);
-
+    //recherche ville et zoom dessus
     useEffect(() => {
       if (mapRef.current) {
         if (center) {
@@ -96,11 +94,13 @@ const Map = React.forwardRef<any, MapProps>(
             maxZoom={19}
           />
           <MapZoomHandler />
-          {cities.length > 0 && <CityMarkers cities={cities} zoomLevel={zoomLevel} />}
+          {children &&
+            React.cloneElement(children as React.ReactElement, { zoomLevel })}
         </MapContainer>
       </div>
     );
   }
 );
+
 
 export default Map;

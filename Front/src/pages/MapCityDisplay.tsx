@@ -4,18 +4,18 @@ import Map from '../components/Map';
 import SearchBar from '../components/SearchBar';
 import citiesData from '../data/cities.json';
 import { CityMap } from '../types/CommonInterfaces';
+import CityMarkers from '../components/CityMarkers';
 
 const MapCityDisplay: React.FC = () => {
   const [cities, setCities] = useState<CityMap[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [center, setCenter] = useState<[number, number] | null>(null);
-  const [searchActive, setSearchActive] = useState(false);
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   const [zoom, setZoom] = useState<number>(isMobile ? 3.5 : 5);
   const position: [number, number] = isMobile ? [38.134, 11.5799] : [48.134, 11.5799];
   const [zoomCounter, setZoomCounter] = useState(0);
   const [lastQuery, setLastQuery] = useState('');
-  const mapRef = useRef<any>(null); // Crée une référence pour la carte
+  const mapRef = useRef<any>(null);
 
   useEffect(() => {
     const citiesWithLanguage2 = citiesData.map((city: any) => {
@@ -66,19 +66,20 @@ const MapCityDisplay: React.FC = () => {
     }
   };
 
-
   return (
     <IonPage>
       <IonContent fullscreen>
         <SearchBar onSearch={handleSearch} />
         <Map
-          ref={mapRef} // Transmet la référence à Map
+          ref={mapRef}
           citiesData={cities}
           initialZoom={zoom}
           initialPosition={position}
           center={center || undefined}
           isMobile={isMobile}
-        />
+        >
+          <CityMarkers cities={cities} zoomLevel={zoom} />
+        </Map>
       </IonContent>
     </IonPage>
   );
