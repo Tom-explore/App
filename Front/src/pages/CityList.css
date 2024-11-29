@@ -1,3 +1,4 @@
+/* Styles Desktop */
 .city-list-grid {
   max-width: 1400px; /* Largeur maximale */
   margin: 0 auto; /* Centre le contenu */
@@ -26,6 +27,7 @@
   justify-content: center; /* Centre la barre */
   box-sizing: border-box; /* Assure le padding dans la largeur totale */
 }
+
 .no-results {
   display: flex;
   justify-content: center; /* Centre le texte horizontalement */
@@ -62,21 +64,5 @@
 
   .search-bar-container input {
     max-width: 500px; /* Réduit la largeur maximale sur tablettes */
-  }
-}
-
-/* Adaptation pour mobiles */
-@media (max-width: 767px) {
-  .city-list-row {
-    justify-content: center; /* Centre les cartes sur mobile */
-  }
-
-  .city-list-col {
-    flex: 0 0 90%; /* Largeur adaptative pour mobile */
-    max-width: 90%; /* Largeur maximale sur mobile */
-  }
-
-  .search-bar-container input {
-    max-width: 100%; /* Prend toute la largeur sur mobile */
   }
 }
