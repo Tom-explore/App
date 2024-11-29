@@ -14,6 +14,7 @@ import { newspaper, location, briefcase, person, airplane, airplaneSharp, person
 import Tab1 from './pages/Tab1';
 import MapDisplay from './pages/MapCityDisplay';
 import Tab3 from './pages/Tab3';
+import CitiesDisplay from './pages/CitiesDisplay';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -58,7 +59,6 @@ import '@ionic/react/css/display.css';
 import '@ionic/react/css/palettes/dark.system.css';
 /* Theme variables */
 import Test from './pages/Test';
-import CityList from './pages/CityList';
 
 setupIonicReact();
 
@@ -74,7 +74,7 @@ const App: React.FC = () => (
             <MapDisplay />
           </Route>
           <Route path="/trips">
-            <CityList />
+            <CitiesDisplay />
           </Route>
           <Route exact path="/account">
             <Test />

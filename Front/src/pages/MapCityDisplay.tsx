@@ -8,16 +8,18 @@ import CityMarkers from '../components/CityMarkers';
 
 const MapCityDisplay: React.FC = () => {
   const [cities, setCities] = useState<CityMap[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [center, setCenter] = useState<[number, number] | null>(null);
+  const [filteredCities, setFilteredCities] = useState<CityMap[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>(''); // Recherche
+  const [center, setCenter] = useState<[number, number] | null>(null); // Centre de la carte
+  const [zoom, setZoom] = useState<number>(3.5); // Niveau de zoom
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  const [zoom, setZoom] = useState<number>(isMobile ? 3.5 : 5);
+  const initialZoom = isMobile ? 3.5 : 5;
   const position: [number, number] = isMobile ? [38.134, 11.5799] : [48.134, 11.5799];
-  const [zoomCounter, setZoomCounter] = useState(0);
-  const [lastQuery, setLastQuery] = useState('');
-  const mapRef = useRef<any>(null);
+
+  const lastQueryRef = useRef<string>(''); // Dernière requête
 
   useEffect(() => {
+    // Charger les villes avec la langue appropriée
     const citiesWithLanguage2 = citiesData.map((city: any) => {
       const translation = city.translations.find((t: any) => t.language === 2);
       return {
@@ -31,46 +33,55 @@ const MapCityDisplay: React.FC = () => {
       };
     });
     setCities(citiesWithLanguage2);
+    setFilteredCities(citiesWithLanguage2);
   }, []);
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-
-    if (query !== lastQuery) {
-      setZoomCounter(0);
-      setLastQuery(query);
-    }
-
-    if (!query.trim()) {
+  // Effet déclenché lorsque `searchQuery` change
+  useEffect(() => {
+    if (searchQuery === '') {
+      setFilteredCities(cities);
       setCenter(null);
-      setZoom(isMobile ? 3.5 : 5);
+      setZoom(initialZoom);
       return;
     }
 
-    // Prioritize cities starting with the query
-    const prioritizedMatch = cities.find((city) =>
-      city.name.toLowerCase().startsWith(query.toLowerCase())
+    // Filtrer les villes correspondant à la recherche
+    const matchedCities = cities.filter((city) =>
+      city.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // If no prioritized match, fallback to partial match
-    const fallbackMatch = cities.find((city) =>
-      city.name.toLowerCase().includes(query.toLowerCase())
-    );
+    setFilteredCities(matchedCities);
 
-    const match = prioritizedMatch || fallbackMatch;
-
-    if (match && zoomCounter === 0) {
-      const { lat, lng } = match;
-
-      if (isMobile) {
-        const adjustedLat = lat - 0.1;
+    if (matchedCities.length > 0) {
+      if (matchedCities.length === 1) {
+        const { lat, lng } = matchedCities[0];
+        const adjustedLat = isMobile ? lat - 0.1 : lat;
         setCenter([adjustedLat, lng]);
+        setZoom(9);
       } else {
-        setCenter([lat, lng]);
-      }
+        const latitudes = matchedCities.map((city) => city.lat);
+        const longitudes = matchedCities.map((city) => city.lng);
+        const avgLat =
+          latitudes.reduce((sum, lat) => sum + lat, 0) / latitudes.length;
+        const avgLng =
+          longitudes.reduce((sum, lng) => sum + lng, 0) / longitudes.length;
 
-      setZoom(10);
-      setZoomCounter(1);
+        setCenter(isMobile ? [avgLat - 10, avgLng] : [avgLat, avgLng]);
+        setZoom(isMobile ? 3 : 6);
+      }
+    } else {
+      setCenter(null);
+      setZoom(initialZoom);
+    }
+  }, [searchQuery, cities, isMobile]);
+
+  // Gestion de la recherche
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+
+    // Réinitialiser la requête si elle change
+    if (query !== lastQueryRef.current) {
+      lastQueryRef.current = query;
     }
   };
 
@@ -79,14 +90,14 @@ const MapCityDisplay: React.FC = () => {
       <IonContent fullscreen>
         <SearchBar onSearch={handleSearch} />
         <Map
-          ref={mapRef}
-          citiesData={cities}
-          initialZoom={zoom}
+          citiesData={filteredCities}
+          initialZoom={initialZoom}
           initialPosition={position}
           center={center || undefined}
+          zoom={zoom}
           isMobile={isMobile}
         >
-          <CityMarkers cities={cities} zoomLevel={zoom} />
+          <CityMarkers cities={filteredCities} zoomLevel={zoom} />
         </Map>
       </IonContent>
     </IonPage>

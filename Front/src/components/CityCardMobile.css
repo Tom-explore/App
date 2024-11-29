@@ -1,0 +1,38 @@
+/* Container principal pour l'élément */
+.city-card-mobile {
+    width: 100%; /* Prend toute la largeur */
+    box-sizing: border-box; /* Inclut le padding dans la largeur */
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #eee; /* Ligne de séparation discrète */
+  }
+  
+  /* Image de la ville */
+  .city-card-mobile-thumbnail {
+    width: 70px;
+    height: 70px;
+    overflow: hidden; /* Empêche le dépassement */
+  }
+  
+  .city-card-mobile-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Conserve les proportions */
+  }
+  
+  /* Informations de la ville */
+  .city-card-mobile-label {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .city-card-mobile-name {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .city-card-mobile-country {
+    font-size: 14px;
+    color: #555;
+    margin-top: 2px; /* Espacement avec le nom */
+  }

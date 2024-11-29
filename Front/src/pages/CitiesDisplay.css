@@ -1,0 +1,74 @@
+/* Conteneur principal pour le header (switch + recherche) */
+.cities-display-header {
+    padding: 15px; /* Augmente le padding */
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Ajoute de l'espace entre les éléments */
+    z-index: 999;
+    top: 0;
+}
+
+/* Conteneur pour la barre de recherche */
+.search-bar-container {
+    flex-grow: 1; /* La barre de recherche prend toute la place restante */
+    display: flex;
+    justify-content: center;
+}
+
+/* Ajustement du Switch */
+.switch-container {
+    margin-right: 15px; /* Espace entre le switch et la barre de recherche */
+    display: flex;
+    align-items: center;
+}
+
+ion-segment {
+    --background: #ffffff; /* Couleur de fond */
+    --indicator-color: #007bff; /* Couleur de l'indicateur actif */
+    --indicator-height: 4px; /* Épaisseur de l'indicateur */
+    --color-selected: #007bff; /* Couleur du texte sélectionné */
+    --color: #6c757d; /* Couleur du texte non sélectionné */
+    --border-radius: 25px; /* Coins arrondis */
+    width: 90%; /* Largeur ajustée */
+    height: 45px; /* Hauteur */
+}
+
+.switch-map-list-city {
+    border: 2px solid #007bff; /* Bordure autour du switch */
+    border-radius: 25px; /* Arrondir les coins */
+    background: #fff; /* Fond blanc */
+}
+.switch-container {
+    margin-right: 15px; /* Espace entre le switch et la barre de recherche */
+    display: flex;
+    align-items: center;
+}
+
+@media (max-width: 767px) {
+    .switch-container {
+        margin-right: 0; /* Supprime l'espace supplémentaire */
+        width: 100%; /* Prend toute la largeur */
+        justify-content: center; /* Centre le switch */
+        margin-bottom: 100px; /* Ajoute un espace entre le switch et la barre de recherche */
+    }
+
+    .switch-map-list-city {
+        width: auto; /* Ajuste la largeur automatiquement */
+        padding: 5px; /* Ajuste le padding */
+        border-radius: 20px; /* Coins légèrement moins arrondis */
+    }
+
+    .switch-button {
+        font-size: 14px; /* Taille de texte réduite */
+        padding: 5px; /* Réduit l'espacement interne */
+    }
+
+    ion-icon {
+        font-size: 16px; /* Réduit la taille des icônes */
+    }
+
+    .search-bar-container {
+        width: 100%; /* La barre de recherche prend toute la largeur disponible */
+        margin-top: 0; /* Supprime les marges inutiles */
+    }
+}
