@@ -2,84 +2,11 @@
     margin-bottom: 2rem;
     position: relative;
     padding: 0 1rem;
-    /* Ajouter du padding pour les petits écrans */
 }
 
 .swiper-wrapper {
     display: flex;
     align-items: stretch;
-    /* Forcer des hauteurs uniformes */
-}
-
-.place-card {
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    text-align: left;
-    width: 100%;
-    max-width: 240px;
-    /* Taille max pour éviter trop de largeur sur les grands écrans */
-    height: 320px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.place-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
-
-.place-card img {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
-    border-bottom: 1px solid #ddd;
-}
-
-.place-info {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    flex-grow: 1;
-}
-
-.place-info h3 {
-    margin: 0;
-    font-size: 1rem;
-    color: #222;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    /* Gérer les titres longs */
-}
-
-.place-info p {
-    margin: 0.5rem 0;
-    color: #555;
-    font-size: 0.85rem;
-    line-height: 1.4;
-}
-
-.place-info .rating {
-    font-size: 0.85rem;
-    color: #777;
-    margin-top: auto;
-}
-
-.place-info .website-link {
-    color: #007bff;
-    font-weight: bold;
-    text-decoration: none;
-    margin-top: 0.5rem;
-}
-
-.place-info .website-link:hover {
-    text-decoration: underline;
 }
 
 .swiper-pagination {
@@ -93,8 +20,8 @@
 .swiper-pagination-bullet {
     background: #ccc;
     opacity: 1;
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     margin: 0 5px;
     border-radius: 50%;
     transition: background 0.3s ease;
@@ -161,60 +88,5 @@
 
     100% {
         background-position: 200px 0;
-    }
-}
-
-/* RESPONSIVE DESIGN */
-
-@media (max-width: 1024px) {
-    .place-card {
-        height: 300px;
-    }
-
-    .place-info h3 {
-        font-size: 0.95rem;
-    }
-
-    .place-info p {
-        font-size: 0.8rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .place-card {
-        height: 280px;
-    }
-
-    .place-info h3 {
-        font-size: 0.9rem;
-    }
-
-    .place-info p {
-        font-size: 0.75rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .place-card {
-        max-width: 100%;
-        height: auto;
-        /* Ajuste automatiquement la hauteur */
-    }
-
-    .place-info {
-        padding: 0.75rem;
-    }
-
-    .place-info h3 {
-        font-size: 0.85rem;
-    }
-
-    .place-info p {
-        font-size: 0.7rem;
-    }
-
-    .swiper-pagination-bullet {
-        width: 8px;
-        height: 8px;
     }
 }

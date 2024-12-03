@@ -5,20 +5,9 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import './PlaceCarousel.css';
+import PlaceCard from './PlaceCard';
+import { Place } from '../types/PlacesInterfaces';
 
-interface Place {
-    id: number;
-    slug: string;
-    translation?: {
-        name: string;
-    };
-    description: string;
-    address: string;
-    link_website: string;
-    reviews_google_rating: number;
-    reviews_google_count: number;
-    images: { id: number; slug: string; top: number }[];
-}
 
 interface PlaceCarouselProps {
     title: string;
@@ -50,49 +39,21 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({ title, places, loading })
                 pagination={{ clickable: true, dynamicBullets: true }}
                 breakpoints={{
                     20: { slidesPerView: 1 },
-
                     320: { slidesPerView: 2 },
                     480: { slidesPerView: 3 },
                     768: { slidesPerView: 4 },
                     1024: { slidesPerView: 5 },
                     1200: { slidesPerView: 6 },
                 }}
-
                 loop={false}
             >
                 {loading && places.length === 0
-                    ? renderSkeletons(4).map((skeleton) => (
-                        <SwiperSlide key={skeleton.key}>{skeleton}</SwiperSlide>
+                    ? renderSkeletons(4).map((skeleton, index) => (
+                        <SwiperSlide key={`skeleton-${index}`}>{skeleton}</SwiperSlide>
                     ))
                     : places.map((place) => (
-                        <SwiperSlide
-                            key={`place-${place.id}`}
-                            className="place-card"
-                        >
-                            <img
-                                src={`https://lh3.googleusercontent.com/p/${place.images[0]?.slug}`}
-                                alt={place.translation?.name || "Image"}
-                                className="place-image"
-                            />
-                            <div className="place-info">
-                                <h3>{place.translation?.name || "No Name"}</h3>
-                                <p className="address">{place.address || "No address available"}</p>
-                                <div className="rating">
-                                    <span>
-                                        {place.reviews_google_rating}⭐ ({place.reviews_google_count} reviews)
-                                    </span>
-                                </div>
-                                {place.link_website && (
-                                    <a
-                                        href={place.link_website}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="website-link"
-                                    >
-                                        Visit Website
-                                    </a>
-                                )}
-                            </div>
+                        <SwiperSlide key={`place-${place.id}`}>
+                            <PlaceCard place={place} />
                         </SwiperSlide>
                     ))}
             </Swiper>
