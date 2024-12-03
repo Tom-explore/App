@@ -6,10 +6,6 @@ export class TouristAttraction extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @OneToOne(() => Place)
-  @JoinColumn({ name: 'place_id' })
-  place!: Place;
-
   @Column('varchar', { nullable: true })
   name_original!: string;
 
@@ -30,6 +26,10 @@ export class TouristAttraction extends BaseEntity {
 
   @Column('varchar', { nullable: true })
   tickets_direct_site!: string;
+
+  @OneToOne(() => Place)
+  @JoinColumn({ name: 'place_id' })
+  place!: Place;
 
   constructor() {
     super();

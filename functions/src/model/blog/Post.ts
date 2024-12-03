@@ -13,12 +13,12 @@ export class Post extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
+  @Column('varchar', { nullable: false })
+  slug!: string;
+
   @ManyToOne(() => User, { onDelete: 'CASCADE', nullable: false })
   @JoinColumn({ name: 'user_id' })
   user!: User;
-
-  @Column('varchar', { nullable: false })
-  slug!: string;
 
   constructor() {
     super();

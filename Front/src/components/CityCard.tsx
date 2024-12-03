@@ -6,6 +6,7 @@ import {
   IonCardSubtitle,
   IonCardTitle,
 } from '@ionic/react';
+import { Link } from 'react-router-dom';
 import './CityCard.css';
 
 interface CityCardProps {
@@ -14,10 +15,12 @@ interface CityCardProps {
   country: string;
   description: string;
   img: string;
+  slug: string; // Ajoutez le slug ici
 }
 
-const CityCard: React.FC<CityCardProps> = ({ name, country, description, img }) => {
+const CityCard: React.FC<CityCardProps> = ({ id, name, country, description, img, slug }) => {
   return (
+
     <IonCard className="city-card">
       <div className="city-card-image-container">
         <img src={img} alt={name} className="city-card-image" />

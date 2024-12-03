@@ -12,10 +12,10 @@ export class Category extends BaseEntity {
   place_type!: boolean;
 
   @Column('boolean', { default: false })
-  for_trip_form!: boolean;
+  for_feed!: boolean;
 
   @Column('boolean', { default: false })
-  for_feed!: boolean;
+  for_trip_form!: boolean;
 
   @Column('boolean', { default: false })
   for_posts!: boolean;

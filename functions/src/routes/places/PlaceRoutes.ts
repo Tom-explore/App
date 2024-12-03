@@ -3,7 +3,7 @@ import PlaceController from '../../controller/places/PlaceController';
 
 const router = Router();
 
-
+router.get('/cities/:citySlug/all-places', PlaceController.getAllPlacesByCity.bind(PlaceController));
 router.get('/cities/:cityId/places', PlaceController.getPlacesByCity.bind(PlaceController));
 router.post('/', PlaceController.createPlace.bind(PlaceController));
 router.get('/:id', PlaceController.getPlaceById.bind(PlaceController));

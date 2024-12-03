@@ -6,10 +6,6 @@ export class RestaurantBar extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @OneToOne(() => Place)
-  @JoinColumn({ name: 'place_id' })
-  place!: Place;
-
   @Column('varchar', { nullable: true })
   menu!: string;
 
@@ -19,6 +15,9 @@ export class RestaurantBar extends BaseEntity {
   @Column('smallint', { nullable: true })
   price_max!: number;
 
+  @OneToOne(() => Place)
+  @JoinColumn({ name: 'place_id' })
+  place!: Place;
   constructor() {
     super();
   }

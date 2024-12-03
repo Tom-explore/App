@@ -31,6 +31,7 @@ export interface Country {
   }
   export interface CityMap {
     id: number;
+    slug: string;
     name: string;
     description: string;
     markerIcon: string;

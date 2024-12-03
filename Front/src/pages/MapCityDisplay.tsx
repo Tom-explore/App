@@ -24,6 +24,7 @@ const MapCityDisplay: React.FC = () => {
       const translation = city.translations.find((t: any) => t.language === 2);
       return {
         id: city.id,
+        slug: city.slug,
         name: translation?.name || 'Unknown',
         description: translation?.description || 'No description available',
         markerIcon: `../assets/img/${city.country.code}/${city.slug}/marker/${city.slug}-marker.png`,

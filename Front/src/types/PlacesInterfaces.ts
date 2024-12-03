@@ -37,8 +37,12 @@ export interface Place {
     reviews_user_count?: number;
     reviews_average_rating?: number;
     reviews_average_count?: number;
+    img: string;
+    category: string;
+    description: string;
   }
-  
+
+
   export interface CrowdLevels {
     id: number;
     place: Place;

@@ -34,6 +34,44 @@
     margin: 0;
     line-height: 1.4;
 }
+.popup-content {
+    text-align: center;
+}
+
+.popup-image {
+    width: 100%;
+    height: auto;
+    max-width: 150px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.popup-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+.popup-description {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.visit-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.visit-button:hover {
+    background-color: #0056b3;
+}
 
 /* Styles spécifiques pour les appareils mobiles */
 @media (max-width: 768px) {
@@ -63,4 +101,43 @@
     .leaflet-container {
         touch-action: none; /* Améliore le comportement du tactile */
     }
+    .popup-content {
+        text-align: center;
+    }
+    
+    .popup-image {
+        width: 100%;
+        height: auto;
+        max-width: 150px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+    
+    .popup-title {
+        font-size: 16px;
+        font-weight: bold;
+        margin: 5px 0;
+    }
+    
+    .popup-description {
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 10px;
+    }
+    
+    .visit-button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+    }
+    
+    .visit-button:hover {
+        background-color: #0056b3;
+    }
+    
 }

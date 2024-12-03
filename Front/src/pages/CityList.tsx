@@ -1,4 +1,4 @@
-import { IonContent, IonPage } from '@ionic/react';
+import { IonContent, IonPage, useIonRouter } from '@ionic/react';
 import CityCard from '../components/CityCard';
 import './CityList.css';
 import citiesData from '../data/cities.json';
@@ -10,6 +10,7 @@ import CityCardMobile from '../components/CityCardMobile';
 const CityList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const router = useIonRouter(); // Utilise Ionic Router
 
   const cities = citiesData.map((city: any) => {
     const translation = city.translations.find((t: any) => t.language === 2);
@@ -21,6 +22,7 @@ const CityList: React.FC = () => {
       id: city.id,
       name: translation?.name || 'Unknown',
       country: countryTranslation?.name || 'Unknown',
+      slug: city.slug,
       img: `../assets/img/${city.country.code}/${city.slug}/main/${city.slug}-500.jpg`,
       description: translation?.description || 'No description available',
     };
@@ -41,6 +43,11 @@ const CityList: React.FC = () => {
   const handleSearch = (query: string) => {
     setSearchQuery(query.trim());
   };
+
+  const handleCityClick = (slug: string) => {
+    router.push(`/city/${slug}`, 'forward', 'replace'); // Navigation basée sur le slug
+  };
+
 
   return (
     <IonPage>
@@ -64,6 +71,7 @@ const CityList: React.FC = () => {
                         duration: 0.1,
                         ease: 'easeInOut',
                       }}
+                      onClick={() => handleCityClick(city.slug)} // Navigue au clic
                     >
                       <CityCardMobile
                         id={city.id}
@@ -84,9 +92,11 @@ const CityList: React.FC = () => {
                         ease: 'easeInOut',
                       }}
                       layout
+                      onClick={() => handleCityClick(city.slug)} // Navigue au clic
                     >
                       <CityCard
                         id={city.id}
+                        slug={city.slug}
                         name={city.name}
                         country={city.country}
                         description={city.description}
@@ -105,7 +115,6 @@ const CityList: React.FC = () => {
                   <span>🤭</span> Oups, on dirait que cette ville n'est pas encore disponible !
                 </motion.div>
               )}
-
             </AnimatePresence>
           </div>
         </div>
