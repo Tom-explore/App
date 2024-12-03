@@ -14,9 +14,6 @@ export class CrowdLevels extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(() => Place, { nullable: false })
-  @JoinColumn({ name: 'place_id' })
-  place!: Place;
 
   @Column('smallint', { nullable: false })
   day_of_week!: number;
@@ -30,6 +27,10 @@ export class CrowdLevels extends BaseEntity {
     nullable: false,
   })
   status!: CrowdStatus;
+
+  @ManyToOne(() => Place, { nullable: false })
+  @JoinColumn({ name: 'place_id' })
+  place!: Place;
 
   constructor() {
     super();

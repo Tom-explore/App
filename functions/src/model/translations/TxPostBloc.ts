@@ -11,10 +11,10 @@ export class TxPostBloc extends BaseEntity {
   language_id!: number;
 
   @Column('varchar')
-  content!: string;
+  title!: string;
 
   @Column('varchar')
-  title!: string;
+  content!: string;
 
   @ManyToOne(() => PostBloc)
   @JoinColumn({ name: 'post_bloc_id' })

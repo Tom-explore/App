@@ -17,13 +17,13 @@ export class TxCountry extends BaseEntity {
   name!: string;
 
   @Column('varchar')
+  title!: string;
+
+  @Column('varchar')
   description!: string;
 
   @Column('varchar')
   meta_description!: string;
-
-  @Column('varchar')
-  title!: string;
 
   @ManyToOne(() => Country)
   @JoinColumn({ name: 'country_id' })

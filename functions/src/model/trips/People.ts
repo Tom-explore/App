@@ -6,12 +6,12 @@ export class People extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
+  @Column('smallint', { nullable: true })
+  age!: number;
+
   @ManyToOne(() => Trip, { nullable: false })
   @JoinColumn({ name: 'trip_id' })
   trip!: Trip;
-
-  @Column('smallint', { nullable: true })
-  age!: number;
 
   constructor() {
     super();

@@ -15,13 +15,6 @@ export class Place extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(() => City, { nullable: false })
-  @JoinColumn({ name: 'city_id' })
-  city!: City;
-
-  @Column('varchar', { nullable: true })
-  description_scrapio!: string;
-
 
   @Column('varchar', { nullable: false })
   slug!: string;
@@ -31,6 +24,15 @@ export class Place extends BaseEntity {
 
   @Column('varchar', { nullable: true })
   google_place_id!: string;
+
+  @Column('varchar', { nullable: true })
+  description_scrapio!: string;
+
+  @Column('varchar', { nullable: true })
+  meta_title_scrapio!: string;
+
+  @Column('varchar', { nullable: true })
+  meta_description_scrapio!: string;  
 
   @Column('varchar', { nullable: true })
   link_insta!: string;
@@ -65,8 +67,11 @@ export class Place extends BaseEntity {
   @Column('varchar', { nullable: true })
   zip_code!: string;
 
-  @Column('timestamp', { default: null })
-  scraped!: Date;
+  @Column('varchar', { nullable: true })
+  city_address!: string;
+
+  @Column('varchar', { nullable: true })
+  district!: string;
 
   @UpdateDateColumn()
   updated!: Date;
@@ -75,10 +80,13 @@ export class Place extends BaseEntity {
   created!: Date;
 
   @Column('timestamp', { default: null })
-  verified!: Date;
+  scraped!: Date;
 
   @Column('timestamp', { nullable: false })
   last_api_scraped!: Date;
+
+  @Column('timestamp', { default: null })
+  verified!: Date;
 
   @Column('boolean', { default: true })
   public!: boolean;
@@ -116,6 +124,10 @@ export class Place extends BaseEntity {
   @Column('int', { nullable: true })
   reviews_average_count!: number;
 
+  @ManyToOne(() => City, { nullable: false })
+  @JoinColumn({ name: 'city_id' })
+  city!: City;
+  
 
   constructor() {
     super();

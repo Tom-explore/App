@@ -2,21 +2,20 @@
   "name": "root",
   "private": true,
   "version": "0.0.1",
-"scripts": {
-  "set-env-dev": "node updateEnv.js true",
-  "set-env-prod": "node updateEnv.js false",
-  "test:frontend": "npm run test --prefix Front",
-  "test:backend": "npm test --prefix functions -- --runInBand",
-  "build:backend": "npm run build --prefix functions",
-  "emulators": "firebase emulators:start",
-  "docker-up": "docker-compose up -d --build",
-  "serve": "npm run set-env-dev && npm run docker-up && npm run build:backend && concurrently \"npm run dev --prefix Front\" \"npm run dev --prefix functions\" \"npm run emulators\"",
-  "check-env": "node -e \"const dotenv = require('dotenv'); dotenv.config({ path: './functions/.env' }); const isDevBackend = process.env.IS_DEV === 'false'; dotenv.config({ path: './Front/.env' }); const isDevFrontend = process.env.REACT_APP_IS_DEV === 'false'; if (!isDevBackend || !isDevFrontend) { console.error('Deployment blocked: IS_DEV or REACT_APP_IS_DEV is still set to true'); process.exit(1); } else { console.log('Environment check passed'); }\"",
-  "build:frontend": "npm run build --prefix Front",
-  "predeploy": "npm run set-env-dev && npm run test:backend && npm run test:frontend && npm run set-env-prod && npm run build:frontend && npm run build:backend",
-  "deploy": "npm run check-env && firebase deploy"
-},
-
+  "scripts": {
+    "set-env-dev": "node updateEnv.js true",
+    "set-env-prod": "node updateEnv.js false",
+    "test:frontend": "npm run test --prefix Front",
+    "test:backend": "npm test --prefix functions -- --runInBand",
+    "build:backend": "npm run build --prefix functions",
+    "emulators": "firebase emulators:start",
+    "docker-up": "docker-compose up -d --build",
+    "serve": "npm run set-env-dev && npm run docker-up && npm run build:backend && concurrently \"npm run dev --prefix Front\" \"npm run dev --prefix functions\" \"npm run emulators\"",
+    "check-env": "node -e \"const dotenv = require('dotenv'); dotenv.config({ path: './functions/.env' }); const isDevBackend = process.env.IS_DEV === 'false'; dotenv.config({ path: './Front/.env' }); const isDevFrontend = process.env.REACT_APP_IS_DEV === 'false'; if (!isDevBackend || !isDevFrontend) { console.error('Deployment blocked: IS_DEV or REACT_APP_IS_DEV is still set to true'); process.exit(1); } else { console.log('Environment check passed'); }\"",
+    "build:frontend": "npm run build --prefix Front",
+    "predeploy": "npm run set-env-dev && npm run test:backend && npm run test:frontend && npm run set-env-prod && npm run build:frontend && npm run build:backend",
+    "deploy": "npm run check-env && firebase deploy"
+  },
   "devDependencies": {
     "concurrently": "^7.0.0",
     "wait-on": "^8.0.1"
@@ -25,8 +24,10 @@
     "@firebase/app-check-interop-types": "^0.3.2",
     "@firebase/auth-interop-types": "^0.2.3",
     "@firebase/data-connect": "^0.1.1",
+    "@ionic/react-router": "^8.4.1",
     "axios": "^1.7.7",
     "dotenv": "^16.4.5",
-    "firebase": "^11.0.1"
+    "firebase": "^11.0.1",
+    "react-router-dom": "^7.0.1"
   }
 }

@@ -6,19 +6,15 @@ export class Hotel extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @OneToOne(() => Place)
-  @JoinColumn({ name: 'place_id' })
-  place!: Place;
-
   @Column('varchar', { nullable: true })
   booking_link!: string;
 
   @Column('smallint', { nullable: true })
   avg_price_per_night!: number;
 
-  @Column('boolean', { default: false })
-  pets_authorized!: boolean;
-
+  @OneToOne(() => Place)
+  @JoinColumn({ name: 'place_id' })
+  place!: Place;
 
   constructor() {
     super();

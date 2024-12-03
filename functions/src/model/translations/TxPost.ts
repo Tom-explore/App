@@ -28,7 +28,13 @@ export class TxPost extends BaseEntity {
   language!: Language;
 
   @Column('varchar', { nullable: false })
+  slug!: string;
+
+  @Column('varchar', { nullable: false })
   name!: string;
+
+  @Column('varchar', { nullable: true })
+  title!: string;
 
   @Column('varchar', { nullable: true })
   description!: string;
@@ -36,14 +42,8 @@ export class TxPost extends BaseEntity {
   @Column('varchar', { nullable: true })
   metaDescription!: string;
 
-  @Column('varchar', { nullable: true })
-  title!: string;
-
   @Column('boolean', { default: false })
   visible!: boolean;
-
-  @Column('varchar', { nullable: false })
-  slug!: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

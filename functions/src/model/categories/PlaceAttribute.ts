@@ -7,6 +7,10 @@ export class PlaceAttribute extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
+
+
+  @Column('smallint', { nullable: false })
+  value!: number;
   @ManyToOne(() => Place, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'place_id' })
   place!: Place;
@@ -14,10 +18,6 @@ export class PlaceAttribute extends BaseEntity {
   @ManyToOne(() => Attribute, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'attribute_id' })
   attribute!: Attribute;
-
-  @Column('smallint', { nullable: false })
-  value!: number;
-
   constructor() {
     super();
   }
