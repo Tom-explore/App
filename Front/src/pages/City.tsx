@@ -4,20 +4,7 @@ import { IonContent, IonPage, IonHeader, IonBackButton, IonButtons } from '@ioni
 import apiClient from '../config/apiClient';
 import PlaceCarousel from '../components/PlaceCarousel';
 import './City.css';
-
-interface Place {
-    id: number;
-    slug: string;
-    translation?: {
-        name: string;
-    };
-    description: string;
-    address: string;
-    link_website: string;
-    reviews_google_rating: number;
-    reviews_google_count: number;
-    images: { id: number; slug: string; top: number }[];
-}
+import { Place } from '../types/PlacesInterfaces';
 
 const PLACE_CATEGORIES = {
     RESTAURANTS_BARS: 'restaurantsBars',
@@ -35,7 +22,7 @@ const City: React.FC = () => {
         [PLACE_CATEGORIES.HOTELS]: [] as Place[],
         [PLACE_CATEGORIES.TOURIST_ATTRACTIONS]: [] as Place[],
     });
-
+    console.log(data);
     const [offsets, setOffsets] = useState({
         [PLACE_CATEGORIES.RESTAURANTS_BARS]: LIMIT,
         [PLACE_CATEGORIES.HOTELS]: LIMIT,
@@ -50,15 +37,34 @@ const City: React.FC = () => {
 
     const transformPlaceData = (place: any): Place => ({
         id: place.id,
+        lat: place.lat || 0,
+        lng: place.lng || 0,
         slug: place.slug,
-        translation: place.translation || { name: place.name || "Unknown Name" },
-        description: place.description_scrapio || "No description available",
-        address: place.address || "No address available",
-        link_website: place.link_website || "",
+        translation: {
+            slug: place.translation.slug,
+            name: place.translation.name,
+            title: place.translation.title,
+            description: place.translation.description,
+            meta_description: place.translation.meta_description,
+        },
+        description: place.description_scrapio,
+        address: place.address,
+        link_website: place.link_website || null,
+        link_insta: place.link_insta || null,
+        link_fb: place.link_fb || null,
+        link_maps: place.link_maps || null,
         reviews_google_rating: place.reviews_google_rating || 0,
         reviews_google_count: place.reviews_google_count || 0,
-        images: place.images || [],
+        images: (place.images || []).map((img: any) => ({
+            id: img.id,
+            slug: img.slug,
+            author: img.author || null,
+            license: img.license || null,
+            top: img.top || 0,
+            source: img.source || null,
+        })),
     });
+
 
     const fetchCategory = async (category: string, offset: number, append = false) => {
         try {
