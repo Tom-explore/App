@@ -46,7 +46,7 @@ app.get('*', (req, res) => {
 });
 
 initializeDataSource().then(() => {
-  console.log('Base de données initialisée. API prête à recevoir des requêtes.');
+  console.log('Base de données initialisée. API prête à recevoir des requêtees.');
 }).catch((error) => {
   console.error('Échec de l\'initialisation de la base de données :', error);
 });

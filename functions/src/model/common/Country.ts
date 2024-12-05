@@ -6,10 +6,13 @@ export class Country extends BaseEntity {
   id!: number;
 
   @Column('varchar')
-  slug!: string;
+  code!: string;
 
   @Column('varchar')
-  code!: string;
+  slug!: string;
+
+  @Column('varchar', { nullable: true })
+  currency!: string;
 
   constructor() {
     super();

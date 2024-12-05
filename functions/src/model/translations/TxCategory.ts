@@ -11,19 +11,19 @@ export class TxCategory extends BaseEntity {
   language_id!: number;
 
   @Column('varchar', { nullable: false })
-  name!: string;
+  slug!: string;
 
   @Column('varchar', { nullable: false })
-  slug!: string;
+  name!: string;
+
+  @Column('varchar', { nullable: true })
+  title!: string;
 
   @Column('varchar', { nullable: true })
   description!: string;
 
   @Column('varchar', { nullable: true })
   meta_description!: string;
-
-  @Column('varchar', { nullable: true })
-  title!: string;
 
   @ManyToOne(() => Category, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'category_id' })

@@ -20,6 +20,7 @@ export interface People {
     price_range?: number;
     created: Date;
     modified: Date;
+    tripCompositions: TripComposition[];
   }
   
   export interface TripAttribute {
@@ -37,13 +38,10 @@ export interface People {
   }
   
   export interface TripComposition {
-    trip_id: number;
     day: number;
     position: number;
-    place_id: number;
     datetime?: Date;
     deleted?: boolean;
-    trip: Trip;
     place: Place;
   }
   

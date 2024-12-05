@@ -13,7 +13,7 @@ beforeAll(async () => {
 
 
   // Créer un Language
-  const languageResponse = await request(app).post('/language').send({ name: 'English' });
+  const languageResponse = await request(app).post('/language').send({code : 'EN', name: 'English' });
   expect(languageResponse.status).toBe(201);
   languageId = languageResponse.body.language.id;
 

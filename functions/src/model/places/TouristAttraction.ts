@@ -1,10 +1,11 @@
-import { Entity, Column, ChildEntity } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn, BaseEntity } from 'typeorm';
 import { Place } from './Place';
-import { PlaceType } from '../enums/PlaceType';
-import { City } from '../common/City';
 
-@ChildEntity(PlaceType.TOURIST_ATTRACTION)
-export class TouristAttraction extends Place {
+@Entity('tourist_attractions')
+export class TouristAttraction extends BaseEntity {
+  @PrimaryGeneratedColumn()
+  id!: number;
+
   @Column('varchar', { nullable: true })
   name_original!: string;
 
@@ -26,9 +27,14 @@ export class TouristAttraction extends Place {
   @Column('varchar', { nullable: true })
   tickets_direct_site!: string;
 
+  @OneToOne(() => Place)
+  @JoinColumn({ name: 'place_id' })
+  place!: Place;
+
   constructor() {
     super();
   }
+
 
   static async createTouristAttraction(data: Partial<TouristAttraction>): Promise<TouristAttraction> {
     const attraction = Object.assign(new TouristAttraction(), data);

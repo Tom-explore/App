@@ -11,19 +11,19 @@ export class TxAttribute extends BaseEntity {
   language_id!: number;
 
   @Column('varchar')
-  name!: string;
-
-  @Column('varchar')
   slug!: string;
 
   @Column('varchar')
-  description!: string;
-
-  @Column('varchar')
-  meta_description!: string;
+  name!: string;
 
   @Column('varchar')
   title!: string;
+
+  @Column('varchar', { nullable: true })
+  description!: string;
+
+  @Column('varchar', { nullable: true })
+  meta_description!: string;
 
   @ManyToOne(() => Attribute)
   @JoinColumn({ name: 'attribute_id' })

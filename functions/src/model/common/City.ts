@@ -6,9 +6,6 @@ export class City extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column('int', { nullable: true })
-  parent_city_id?: number;
-
   @Column('varchar')
   slug!: string;
 
@@ -60,6 +57,8 @@ export class City extends BaseEntity {
   @ManyToOne(() => Country)
   @JoinColumn({ name: 'country_id' })
   country!: Country;
+
+
 
   constructor() {
     super();

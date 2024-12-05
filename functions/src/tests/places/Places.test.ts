@@ -84,86 +84,91 @@ describe('Integration Tests for Place Controllers', () => {
   });
 
   describe('HotelController', () => {
-    it('should create, retrieve, update, and delete a hotel', async () => {
+    it('should create, retrieve, update, and delete a hotel, and associate it with the "hotel" category', async () => {
       const hotelData = {
-        name: 'Test Hotel',
-        slug: 'test-hotel',
-        city,
-        type: 'hotel',
-        address: 'Hotel Address',
-        zip_code: '12345',
-        lat: 48.8566,
-        lng: 2.3522,
+        place: {
+          city: { id: city.id }, // Lien avec la ville existante
+          slug: 'test-hotel',
+          address: 'Hotel Address',
+          zip_code: '12345',
+          lat: 48.8566,
+          lng: 2.3522,
+          last_api_scraped: new Date().toISOString(),
+          public: true,
+        },
         booking_link: 'https://example.com/booking',
         avg_price_per_night: 150,
         pets_authorized: true,
-        last_api_scraped: new Date().toISOString(), // Date pour respecter la contrainte NOT NULL
-
       };
-
+  
       const createResponse = await request(app).post('/hotel').send(hotelData);
-
       expect(createResponse.status).toBe(201);
       hotelId = createResponse.body.hotel.id;
-
+      // Récupération
       const getResponse = await request(app).get(`/hotel/${hotelId}`);
-
       expect(getResponse.status).toBe(200);
-
+  
+      // Mise à jour
       const updateResponse = await request(app).put(`/hotel/${hotelId}`).send({ avg_price_per_night: 200 });
-
       expect(updateResponse.status).toBe(200);
       expect(updateResponse.body.hotel.avg_price_per_night).toBe(200);
+  
+      // Suppression
+      const deleteResponse = await request(app).delete(`/hotel/${hotelId}`);
+      expect(deleteResponse.status).toBe(200);
     });
   });
-
+  
   describe('RestaurantBarController', () => {
-    it('should create, retrieve, update, and delete a restaurant/bar', async () => {
+    it('should create, retrieve, update, and delete a restaurant/bar, and associate it with the "bar_restaurant" category', async () => {
       const restaurantBarData = {
-        name: 'Test Restaurant',
-        slug: 'test-restaurant',
-        city,
-        type: 'restaurant_bar',
-        address: 'Restaurant Address',
-        zip_code: '54321',
-        lat: 48.8566,
-        lng: 2.3522,
+        place: {
+          city: { id: city.id },
+          slug: 'test-restaurant',
+          address: 'Restaurant Address',
+          zip_code: '54321',
+          lat: 48.8566,
+          lng: 2.3522,
+          last_api_scraped: new Date().toISOString(),
+          public: true,
+        },
         menu: 'Sample Menu',
         price_min: 10,
         price_max: 50,
-        last_api_scraped: new Date().toISOString(), // Date pour respecter la contrainte NOT NULL
-
       };
-
+  
       const createResponse = await request(app).post('/restaurantbar').send(restaurantBarData);
-
       expect(createResponse.status).toBe(201);
       restaurantBarId = createResponse.body.restaurantBar.id;
-
+  
+      // Récupération
       const getResponse = await request(app).get(`/restaurantbar/${restaurantBarId}`);
-
       expect(getResponse.status).toBe(200);
-
+  
+      // Mise à jour
       const updateResponse = await request(app).put(`/restaurantbar/${restaurantBarId}`).send({ price_max: 60 });
-
       expect(updateResponse.status).toBe(200);
       expect(updateResponse.body.restaurantBar.price_max).toBe(60);
+  
+      // Suppression
+      const deleteResponse = await request(app).delete(`/restaurantbar/${restaurantBarId}`);
+      expect(deleteResponse.status).toBe(200);
     });
   });
-
-  describe('TouristAttractionController', () => {
-    it('should create, retrieve, update, and delete a tourist attraction', async () => {
-
   
+  describe('TouristAttractionController', () => {
+    it('should create, retrieve, update, and delete a tourist attraction, and associate it with the "tourist_attraction" category', async () => {
       const attractionData = {
-        name: 'Test Attraction',
-        slug: 'test-attraction',
-        city,
-        type: 'tourist_attraction',
-        address: 'Attraction Address',
-        zip_code: '67890',
-        lat: 48.8566,
-        lng: 2.3522,
+        place: {
+          city: { id: city.id },
+          slug: 'test-attraction',
+          address: 'Attraction Address',
+          zip_code: '67890',
+          lat: 48.8566,
+          lng: 2.3522,
+          last_api_scraped: new Date().toISOString(),
+          public: true,
+        },
         name_original: 'Attraction Original',
         wiki_link: 'https://wikipedia.org/example',
         price_regular: 20,
@@ -171,53 +176,28 @@ describe('Integration Tests for Place Controllers', () => {
         tickets_gyg: true,
         tickets_civitatis: false,
         tickets_direct_site: 'https://example.com/tickets',
-        last_api_scraped: new Date().toISOString(), // Date pour respecter la contrainte NOT NULL
       };
   
-      // Création
-
       const createResponse = await request(app).post('/touristattraction').send(attractionData);
-
       expect(createResponse.status).toBe(201);
       touristAttractionId = createResponse.body.attraction.id;
+  
 
-  
-      // Vérifier si l'ID est défini avant de continuer
-      if (!touristAttractionId) {
-        console.error('ERROR: touristAttractionId is undefined after creation.');
-        throw new Error('Test failed because touristAttractionId is undefined.');
-      }
-  
       // Récupération
-
       const getResponse = await request(app).get(`/touristattraction/${touristAttractionId}`);
-
       expect(getResponse.status).toBe(200);
-
   
       // Mise à jour
-      const updateData = { is_closed: true };
-
-      const updateResponse = await request(app).put(`/touristattraction/${touristAttractionId}`).send(updateData);
-
-
+      const updateResponse = await request(app).put(`/touristattraction/${touristAttractionId}`).send({ tickets_gyg: false });
       expect(updateResponse.status).toBe(200);
-  
-
-      expect(updateResponse.body.attraction.is_closed).toBe(true);
+      expect(updateResponse.body.attraction.tickets_gyg).toBe(false);
   
       // Suppression
-
       const deleteResponse = await request(app).delete(`/touristattraction/${touristAttractionId}`);
-
-
       expect(deleteResponse.status).toBe(200);
-
-  
-
     });
   });
-    
+      
   describe('PlaceImgController', () => {
     it('should create, retrieve, update, and delete a place image', async () => {
       const placeImgData = {

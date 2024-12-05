@@ -6,10 +6,6 @@ export class PlaceImg extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(() => Place, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'place_id' })
-  place!: Place;
-
   @Column('varchar', { nullable: false })
   slug!: string;
 
@@ -24,6 +20,10 @@ export class PlaceImg extends BaseEntity {
 
   @Column('varchar', { nullable: true })
   source!: string;
+
+  @ManyToOne(() => Place, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'place_id' })
+  place!: Place;
 
   constructor() {
     super();

@@ -30,13 +30,13 @@ export class TxCategoryCityLang extends BaseEntity {
   name!: string;
 
   @Column('varchar', { nullable: true })
+  title!: string;
+
+  @Column('varchar', { nullable: true })
   description!: string;
 
   @Column('varchar', { nullable: true })
   meta_description!: string;
-
-  @Column('varchar', { nullable: true })
-  title!: string;
 
   constructor() {
     super();

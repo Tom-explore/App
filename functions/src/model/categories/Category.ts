@@ -9,16 +9,16 @@ export class Category extends BaseEntity {
   slug!: string;
 
   @Column('boolean', { default: false })
-  main!: boolean;
+  place_type!: boolean;
+
+  @Column('boolean', { default: false })
+  for_feed!: boolean;
 
   @Column('boolean', { default: false })
   for_trip_form!: boolean;
 
   @Column('boolean', { default: false })
   for_posts!: boolean;
-
-  @Column('varchar', { nullable: true })
-  scrapio_name!: string;
 
   constructor() {
     super();

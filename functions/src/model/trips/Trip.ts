@@ -16,17 +16,6 @@ export class Trip extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(() => User, { nullable: false })
-  @JoinColumn({ name: 'user_id' })
-  user!: User;
-
-  @ManyToOne(() => City, { nullable: false })
-  @JoinColumn({ name: 'city_id' })
-  city!: City;
-
-  @Column('int', { nullable: true })
-  partner_id!: number;
-
   @Column('boolean', { default: false })
   public!: boolean;
 
@@ -44,6 +33,17 @@ export class Trip extends BaseEntity {
 
   @UpdateDateColumn()
   modified!: Date;
+
+  @ManyToOne(() => User, { nullable: false })
+  @JoinColumn({ name: 'user_id' })
+  user!: User;
+
+  @ManyToOne(() => City, { nullable: false })
+  @JoinColumn({ name: 'city_id' })
+  city!: City;
+
+  @Column('int', { nullable: true })
+  partner_id!: number;
 
   constructor() {
     super();

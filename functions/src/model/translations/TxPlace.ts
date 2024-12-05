@@ -19,10 +19,10 @@ export class TxPlace extends BaseEntity {
   @Column('varchar')
   title!: string;
 
-  @Column('varchar')
+  @Column('varchar', { nullable: true })
   description!: string;
 
-  @Column('varchar')
+  @Column('varchar', { nullable: true })
   meta_description!: string;
 
   @ManyToOne(() => Place)

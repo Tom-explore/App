@@ -20,18 +20,6 @@ export class PostBloc extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(() => Post, { onDelete: 'CASCADE', nullable: false })
-  @JoinColumn({ name: 'post_id' })
-  post!: Post;
-
-  @ManyToOne(() => PostImg, { nullable: true })
-  @JoinColumn({ name: 'post_img_id' })
-  postImg!: PostImg;
-
-  @ManyToOne(() => PlaceImg, { nullable: true })
-  @JoinColumn({ name: 'place_img_id' })
-  placeImg!: PlaceImg;
-
   @Column('smallint', { nullable: false })
   position!: number;
 
@@ -49,6 +37,9 @@ export class PostBloc extends BaseEntity {
   })
   template!: Template;
 
+  @Column('boolean', { default: true })
+  visible!: boolean;
+
   @ManyToOne(() => City, { nullable: true })
   @JoinColumn({ name: 'city_id' })
   city!: City;
@@ -61,8 +52,17 @@ export class PostBloc extends BaseEntity {
   @JoinColumn({ name: 'country_id' })
   country!: Country;
 
-  @Column('boolean', { default: true })
-  visible!: boolean;
+  @ManyToOne(() => Post, { onDelete: 'CASCADE', nullable: false })
+  @JoinColumn({ name: 'post_id' })
+  post!: Post;
+
+  @ManyToOne(() => PostImg, { nullable: true })
+  @JoinColumn({ name: 'post_img_id' })
+  postImg!: PostImg;
+
+  @ManyToOne(() => PlaceImg, { nullable: true })
+  @JoinColumn({ name: 'place_img_id' })
+  placeImg!: PlaceImg;
 
   constructor() {
     super();
