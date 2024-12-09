@@ -6,6 +6,8 @@ import { TouristAttraction } from '../../model/places/TouristAttraction';
 import { TxPlace } from '../../model/translations/TxPlace';
 import { PlaceImg } from '../../model/places/PlaceImg';
 import { City } from '../../model/common/City';
+import { TxCity } from '../../model/translations/TxCity';
+import { TxCountry } from '../../model/translations/TxCountry';
 
 class PlaceController {
   static async createPlace(req: Request, res: Response): Promise<Response> {
@@ -140,43 +142,59 @@ class PlaceController {
   static async getAllPlacesByCity(req: Request, res: Response): Promise<Response> {
     try {
       const { citySlug } = req.params;
+
       const {
         languageId,
-        limitRestaurantsBars = 8,
-        limitHotels = 8,
-        limitTouristAttractions = 8,
-        offsetRestaurantsBars = 0,
-        offsetHotels = 0,
-        offsetTouristAttractions = 0,
+        limit: genericLimit = 8,
+        offset: genericOffset = 0,
+        limitRestaurantsBars = genericLimit,
+        offsetRestaurantsBars = genericOffset,
+        limitHotels = genericLimit,
+        offsetHotels = genericOffset,
+        limitTouristAttractions = genericLimit,
+        offsetTouristAttractions = genericOffset,
       } = req.query;
 
-      console.log('Request received with params:', { citySlug });
-      console.log('Query params:', {
+      console.log('Received query params:', {
+        citySlug,
         languageId,
         limitRestaurantsBars,
-        limitHotels,
-        limitTouristAttractions,
         offsetRestaurantsBars,
+        limitHotels,
         offsetHotels,
+        limitTouristAttractions,
         offsetTouristAttractions,
       });
 
-      if (!citySlug) {
-        return res.status(400).json({ message: 'City slug is required' });
+      if (!citySlug || !languageId) {
+        console.error('Missing required parameters');
+        return res.status(400).json({ message: 'City slug and language ID are required' });
       }
 
-      if (!languageId) {
-        return res.status(400).json({ message: 'Language ID is required' });
-      }
+      const city = await City.findOne({
+        where: { slug: citySlug },
+        relations: ['country'],
+      });
 
-      const city = await City.findOne({ where: { slug: citySlug } });
       if (!city) {
+        console.error('City not found:', citySlug);
         return res.status(404).json({ message: 'City not found' });
       }
 
-      console.log('City found:', city);
+      // Fetch the city translation
+      const txCity = await TxCity.findByCityAndLanguage(city.id, Number(languageId));
+      if (!txCity) {
+        console.error('TxCity not found for language ID:', languageId);
+        return res.status(404).json({ message: 'City translation not found' });
+      }
 
-      // Convert query parameters to numbers
+      // Fetch the country translation
+      const txCountry = await TxCountry.findByCountryAndLanguage(city.country.id, Number(languageId));
+      if (!txCountry) {
+        console.error('TxCountry not found for language ID:', languageId);
+        return res.status(404).json({ message: 'Country translation not found' });
+      }
+
       const limitRB = parseInt(limitRestaurantsBars as string, 10);
       const offsetRB = parseInt(offsetRestaurantsBars as string, 10);
       const limitH = parseInt(limitHotels as string, 10);
@@ -184,24 +202,30 @@ class PlaceController {
       const limitTA = parseInt(limitTouristAttractions as string, 10);
       const offsetTA = parseInt(offsetTouristAttractions as string, 10);
 
-      // Fetch restaurants/bars
-      const [restaurantBars, totalRB] = await RestaurantBar.findAndCount({
+      console.log('Parsed pagination params:', {
+        limitRB,
+        offsetRB,
+        limitH,
+        offsetH,
+        limitTA,
+        offsetTA,
+      });
+
+      const [restaurantBars] = await RestaurantBar.findAndCount({
         relations: ['place'],
         where: { place: { city: { id: city.id } } },
         skip: offsetRB,
         take: limitRB,
       });
 
-      // Fetch hotels
-      const [hotels, totalH] = await Hotel.findAndCount({
+      const [hotels] = await Hotel.findAndCount({
         relations: ['place'],
         where: { place: { city: { id: city.id } } },
         skip: offsetH,
         take: limitH,
       });
 
-      // Fetch tourist attractions
-      const [touristAttractions, totalTA] = await TouristAttraction.findAndCount({
+      const [touristAttractions] = await TouristAttraction.findAndCount({
         relations: ['place'],
         where: { place: { city: { id: city.id } } },
         skip: offsetTA,
@@ -249,23 +273,45 @@ class PlaceController {
       const enrichedTA = await Promise.all(touristAttractions.map((ta) => enrichPlace(ta.place)));
 
       return res.status(200).json({
-        restaurantsBars: enrichedRB,
-        hotels: enrichedH,
-        touristAttractions: enrichedTA,
-        total: {
-          restaurantsBars: totalRB,
-          hotels: totalH,
-          touristAttractions: totalTA,
+        city: {
+          id: city.id,
+          slug: city.slug,
+          scrapio: city.scrapio,
+          timezone: city.timezone,
+          lat: city.lat,
+          lng: city.lng,
+          duration: city.duration,
+          country: {
+            id: city.country.id,
+            code: city.country.code,
+            slug: city.country.slug,
+            translation: {
+              slug: txCountry.slug,
+              name: txCountry.name,
+              description: txCountry.description,
+              meta_description: txCountry.meta_description,
+            },
+          },
+          translation: {
+            slug: txCity.slug,
+            name: txCity.name,
+            description: txCity.description,
+            meta_description: txCity.meta_description,
+          },
+        },
+        places: {
+          restaurantsBars: enrichedRB,
+          hotels: enrichedH,
+          touristAttractions: enrichedTA,
         },
       });
     } catch (error) {
       console.error('Error occurred:', error.message);
-      return res.status(400).json({
-        message: 'Error fetching all places by city',
-        error: error.message,
-      });
+      return res.status(400).json({ message: 'Error fetching all places by city', error: error.message });
     }
   }
+
+
 }
 
 export default PlaceController;

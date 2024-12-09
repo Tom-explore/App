@@ -3,7 +3,6 @@ import { MapContainer, TileLayer, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import './Map.css';
 import { useIonViewDidEnter } from '@ionic/react';
-import CityMarkers from './CityMarkers';
 import L from 'leaflet';
 import { CityMap } from '../types/CommonInterfaces';
 

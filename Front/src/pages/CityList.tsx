@@ -6,16 +6,20 @@ import SearchBar from '../components/SearchBar';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CityCardMobile from '../components/CityCardMobile';
+import { useLanguage } from '../context/languageContext';
 
 const CityList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  const router = useIonRouter(); // Utilise Ionic Router
+  const router = useIonRouter();
+  const { language } = useLanguage();
 
   const cities = citiesData.map((city: any) => {
-    const translation = city.translations.find((t: any) => t.language === 2);
+    const translation = city.translations.find(
+      (t: any) => t.language === language.id
+    );
     const countryTranslation = city.country.translations.find(
-      (t: any) => t.language === 2
+      (t: any) => t.language === language.id
     );
 
     return {
@@ -23,6 +27,7 @@ const CityList: React.FC = () => {
       name: translation?.name || 'Unknown',
       country: countryTranslation?.name || 'Unknown',
       slug: city.slug,
+      slugURL: translation?.slug || city.slug,
       img: `../assets/img/${city.country.code}/${city.slug}/main/${city.slug}-500.jpg`,
       description: translation?.description || 'No description available',
     };
@@ -44,10 +49,10 @@ const CityList: React.FC = () => {
     setSearchQuery(query.trim());
   };
 
-  const handleCityClick = (slug: string) => {
-    router.push(`/city/${slug}`, 'forward', 'replace'); // Navigation basée sur le slug
+  const handleCityClick = (slugURL: string) => {
+    console.log(slugURL);
+    router.push(`/${language.code}/city/${slugURL}`, 'forward', 'replace');
   };
-
 
   return (
     <IonPage>
@@ -71,7 +76,7 @@ const CityList: React.FC = () => {
                         duration: 0.1,
                         ease: 'easeInOut',
                       }}
-                      onClick={() => handleCityClick(city.slug)} // Navigue au clic
+                      onClick={() => handleCityClick(city.slugURL)}
                     >
                       <CityCardMobile
                         id={city.id}
@@ -92,7 +97,7 @@ const CityList: React.FC = () => {
                         ease: 'easeInOut',
                       }}
                       layout
-                      onClick={() => handleCityClick(city.slug)} // Navigue au clic
+                      onClick={() => handleCityClick(city.slugURL)}
                     >
                       <CityCard
                         id={city.id}

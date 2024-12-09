@@ -37,7 +37,7 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({ title, places, loading })
                 slidesPerView={6}
                 navigation
                 pagination={{ clickable: true, dynamicBullets: true }}
-                freeMode={true} // Active le mode libre
+                freeMode={false} // Active le mode libre
                 breakpoints={{
                     20: { slidesPerView: 1 },
                     320: { slidesPerView: 2 },
