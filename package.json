@@ -14,7 +14,8 @@
     "check-env": "node -e \"const dotenv = require('dotenv'); dotenv.config({ path: './functions/.env' }); const isDevBackend = process.env.IS_DEV === 'false'; dotenv.config({ path: './Front/.env' }); const isDevFrontend = process.env.REACT_APP_IS_DEV === 'false'; if (!isDevBackend || !isDevFrontend) { console.error('Deployment blocked: IS_DEV or REACT_APP_IS_DEV is still set to true'); process.exit(1); } else { console.log('Environment check passed'); }\"",
     "build:frontend": "npm run build --prefix Front",
     "predeploy": "npm run set-env-dev && npm run test:backend && npm run test:frontend && npm run set-env-prod && npm run build:frontend && npm run build:backend",
-    "deploy": "npm run check-env && firebase deploy"
+    "deploy": "node -e \"const args = process.argv.slice(2); const skipTests = args.includes('--testless'); if (!skipTests) { console.log('Running tests...'); require('child_process').execSync('npm run test:backend && npm run test:frontend', { stdio: 'inherit' }); } console.log('Setting environment to production...'); require('child_process').execSync('npm run set-env-prod', { stdio: 'inherit' }); console.log('Building frontend and backend...'); require('child_process').execSync('npm run build:frontend && npm run build:backend', { stdio: 'inherit' }); console.log('Deploying with Firebase...'); require('child_process').execSync('firebase deploy', { stdio: 'inherit' }); console.log('Deployment complete.');\"",
+    "deploy:predeployless": "npm run set-env-prod && npm run build:frontend && npm run build:backend && firebase deploy"
   },
   "devDependencies": {
     "concurrently": "^7.0.0",

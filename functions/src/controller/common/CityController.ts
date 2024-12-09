@@ -66,25 +66,26 @@ class CityController {
   static async getCitiesWithTranslations(req: Request, res: Response): Promise<Response> {
     try {
       console.log('Fetching cities with countries...');
-  
+
       // Récupérez les villes avec leurs relations (pays)
       const cities = await City.find({ relations: ['country'] });
-  
+
       console.log('Fetched cities:', cities);
-  
+
       const citiesWithTranslations = await Promise.all(
         cities.map(async (city) => {
-            const translations = await TxCity.findByCity(city.id);
-            const translationsForCountry = await TxCountry.findByCountry(city.country.id);
-  
+          const translations = await TxCity.findByCity(city.id);
+          const translationsForCountry = await TxCountry.findByCountry(city.country.id);
+
           return {
             id: city.id,
             lat: city.lat,
             lng: city.lng,
-            slug:city.slug,
+            slug: city.slug,
             translations: translations.map((translation) => ({
               language: translation.language_id,
               name: translation.name,
+              slug: translation.slug,
               description: translation.description,
               metaDescription: translation.meta_description,
             })),
@@ -100,14 +101,14 @@ class CityController {
             },
           };
         })
-      );  
+      );
       return res.status(200).json(citiesWithTranslations);
     } catch (error) {
       console.error('Error fetching cities with translations:', error);
       return res.status(400).json({ message: 'Error fetching cities with translations', error: error.message });
     }
   }
-  
+
 }
 
 export default CityController;

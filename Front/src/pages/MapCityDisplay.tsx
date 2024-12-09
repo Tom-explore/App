@@ -5,26 +5,29 @@ import SearchBar from '../components/SearchBar';
 import citiesData from '../data/cities.json';
 import { CityMap } from '../types/CommonInterfaces';
 import CityMarkers from '../components/CityMarkers';
+import { useLanguage } from '../context/languageContext';
 
 const MapCityDisplay: React.FC = () => {
   const [cities, setCities] = useState<CityMap[]>([]);
   const [filteredCities, setFilteredCities] = useState<CityMap[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>(''); // Recherche
-  const [center, setCenter] = useState<[number, number] | null>(null); // Centre de la carte
-  const [zoom, setZoom] = useState<number>(3.5); // Niveau de zoom
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [center, setCenter] = useState<[number, number] | null>(null);
+  const [zoom, setZoom] = useState<number>(3.5);
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   const initialZoom = isMobile ? 3.5 : 5;
   const position: [number, number] = isMobile ? [38.134, 11.5799] : [48.134, 11.5799];
 
-  const lastQueryRef = useRef<string>(''); // Dernière requête
+  const lastQueryRef = useRef<string>('');
+  const { language } = useLanguage();
 
   useEffect(() => {
-    // Charger les villes avec la langue appropriée
-    const citiesWithLanguage2 = citiesData.map((city: any) => {
-      const translation = city.translations.find((t: any) => t.language === 2);
+    const citiesWithLanguage = citiesData.map((city: any) => {
+      const translation = city.translations.find(
+        (t: any) => t.language === language.id
+      );
       return {
         id: city.id,
-        slug: city.slug,
+        slug: translation?.slug || city.slug,
         name: translation?.name || 'Unknown',
         description: translation?.description || 'No description available',
         markerIcon: `../assets/img/${city.country.code}/${city.slug}/marker/${city.slug}-marker.png`,
@@ -33,11 +36,11 @@ const MapCityDisplay: React.FC = () => {
         lng: city.lng,
       };
     });
-    setCities(citiesWithLanguage2);
-    setFilteredCities(citiesWithLanguage2);
-  }, []);
 
-  // Effet déclenché lorsque `searchQuery` change
+    setCities(citiesWithLanguage);
+    setFilteredCities(citiesWithLanguage);
+  }, [language]);
+
   useEffect(() => {
     if (searchQuery === '') {
       setFilteredCities(cities);
@@ -46,7 +49,6 @@ const MapCityDisplay: React.FC = () => {
       return;
     }
 
-    // Filtrer les villes correspondant à la recherche
     const matchedCities = cities.filter((city) =>
       city.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -76,11 +78,8 @@ const MapCityDisplay: React.FC = () => {
     }
   }, [searchQuery, cities, isMobile]);
 
-  // Gestion de la recherche
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-
-    // Réinitialiser la requête si elle change
     if (query !== lastQueryRef.current) {
       lastQueryRef.current = query;
     }
