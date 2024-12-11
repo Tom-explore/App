@@ -1,6 +1,5 @@
 import request from 'supertest';
 import { app } from '../../index';
-import { initializeDataSource } from '../../config/AppDataSource';
 import AppDataSource from '../../config/AppDataSource';
 
 let cityId: number;
@@ -9,11 +8,12 @@ let partnerId: number;
 let languageId: number;
 
 beforeAll(async () => {
-  await initializeDataSource();
-
+  if (!AppDataSource.isInitialized) {
+    await AppDataSource.initialize();
+  }
 
   // Créer un Language
-  const languageResponse = await request(app).post('/language').send({code : 'EN', name: 'English' });
+  const languageResponse = await request(app).post('/language').send({ code: 'EN', name: 'English' });
   expect(languageResponse.status).toBe(201);
   languageId = languageResponse.body.language.id;
 

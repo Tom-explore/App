@@ -1,17 +1,17 @@
 import request from 'supertest';
 import { app } from '../../index';
-import { initializeDataSource } from '../../config/AppDataSource';
 import AppDataSource from '../../config/AppDataSource';
 
 let userId: number;
 let countryId: number;
 let categoryId: number;
 let placeIds: number[] = [];
-let cityId : number;
+let cityId: number;
 
 beforeAll(async () => {
-  await initializeDataSource();
-
+  if (!AppDataSource.isInitialized) {
+    await AppDataSource.initialize();
+  }
   // Création d'un pays
   const countryResponse = await request(app).post('/country').send({ slug: 'test-country', code: 'TC' });
   expect(countryResponse.status).toBe(201);

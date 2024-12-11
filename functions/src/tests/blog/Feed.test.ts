@@ -1,6 +1,5 @@
 import { app } from '../../index';
 import request from 'supertest';
-import { initializeDataSource } from '../../config/AppDataSource';
 import AppDataSource from '../../config/AppDataSource';
 
 let userId: number;
@@ -11,8 +10,9 @@ const generateRandomEmail = (): string => {
   return `testuser_${randomString}@example.com`;
 };
 beforeAll(async () => {
-  await initializeDataSource();
-
+  if (!AppDataSource.isInitialized) {
+    await AppDataSource.initialize();
+  }
   // Créer un utilisateur
   const email = generateRandomEmail();
   const userResponse = await request(app).post('/user').send({
@@ -105,27 +105,27 @@ describe('Feed API - Tests d\'intégration', () => {
     let postBlocId: number;
 
     it('devrait créer un bloc de post', async () => {
-        const payload = {
-          post_id: postId, // clé envoyée
-          position: 1,
-          titleType: 'h1',
-          template: 't1',
-          visible: true,
-        };
-      
-
-      
-        const response = await request(app).post('/postbloc').send(payload);
-      
+      const payload = {
+        post_id: postId, // clé envoyée
+        position: 1,
+        titleType: 'h1',
+        template: 't1',
+        visible: true,
+      };
 
 
-      
-        expect(response.status).toBe(201);
-        postBlocId = response.body.postBloc?.id;
 
-        expect(postBlocId).toBeDefined();
-      });
-      
+      const response = await request(app).post('/postbloc').send(payload);
+
+
+
+
+      expect(response.status).toBe(201);
+      postBlocId = response.body.postBloc?.id;
+
+      expect(postBlocId).toBeDefined();
+    });
+
 
     it('devrait supprimer un bloc de post', async () => {
       const response = await request(app).delete(`/postbloc/${postBlocId}`);

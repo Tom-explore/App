@@ -1,20 +1,20 @@
-import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import { LanguageProvider } from './context/languageContext';
 import { IonReactRouter } from '@ionic/react-router';
+import { CityProvider } from './context/cityContext';
 
 const container = document.getElementById('root');
 const root = createRoot(container!);
 
 root.render(
-  <React.StrictMode>
-    <IonReactRouter>
+  <IonReactRouter>
 
-      <LanguageProvider>
+    <LanguageProvider>
+      <CityProvider>
         <App />
-      </LanguageProvider>
-    </IonReactRouter>,
+      </CityProvider>
+    </LanguageProvider>
 
-  </React.StrictMode>
+  </IonReactRouter>,
 );

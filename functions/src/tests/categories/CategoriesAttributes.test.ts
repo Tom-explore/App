@@ -1,6 +1,5 @@
 import request from 'supertest';
 import { app } from '../../index';
-import { initializeDataSource } from '../../config/AppDataSource';
 import AppDataSource from '../../config/AppDataSource';
 
 let countryId: number;
@@ -10,8 +9,9 @@ let categoryId: number;
 let attributeId: number;
 
 beforeAll(async () => {
-  await initializeDataSource();
-
+  if (!AppDataSource.isInitialized) {
+    await AppDataSource.initialize();
+  }
 
   // Créer un Country
   const countryResponse = await request(app).post('/country').send({ slug: 'test-country', code: 'TC' });
@@ -78,7 +78,7 @@ describe('Blog API - Tests d\'intégration', () => {
   describe('AttributeController', () => {
     it('devrait créer, récupérer, mettre à jour et supprimer un attribute', async () => {
 
-      
+
       // Get by ID
       const getResponse = await request(app).get(`/attribute/${attributeId}`);
 
@@ -95,7 +95,7 @@ describe('Blog API - Tests d\'intégration', () => {
   describe('CategoryController', () => {
     it('devrait créer, récupérer, mettre à jour et supprimer une category', async () => {
 
-      
+
       // Get by ID
       const getResponse = await request(app).get(`/category/${categoryId}`);
 
@@ -114,7 +114,7 @@ describe('Blog API - Tests d\'intégration', () => {
 
     it('devrait créer, récupérer et supprimer un place attribute', async () => {
 
-      
+
       // Create
       const createResponse = await request(app).post('/placeattribute').send({
         placeId,
@@ -142,7 +142,7 @@ describe('Blog API - Tests d\'intégration', () => {
 
     it('devrait créer, récupérer et supprimer un place category', async () => {
 
-      
+
       // Create
       const createResponse = await request(app).post('/placecategory').send({
         placeId,

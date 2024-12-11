@@ -1,6 +1,5 @@
 import request from 'supertest';
 import { app } from '../../index';
-import { initializeDataSource } from '../../config/AppDataSource';
 import AppDataSource from '../../config/AppDataSource';
 
 let countryId: number;
@@ -16,8 +15,9 @@ const generateRandomEmail = (): string => {
   return `testuser_${randomString}@example.com`;
 };
 beforeAll(async () => {
-  await initializeDataSource();
-
+  if (!AppDataSource.isInitialized) {
+    await AppDataSource.initialize();
+  }
   // Création d'un pays
   const countryResponse = await request(app).post('/country').send({ slug: 'test-country', code: 'TC' });
   expect(countryResponse.status).toBe(201);
@@ -255,7 +255,7 @@ describe('TripAttributeController Tests', () => {
     expect(Array.isArray(response.body)).toBe(true);
     expect(response.body.some((attr: any) => attr.attribute_id === attributeIds[0])).toBe(true);
   });
-  
+
 
   it('should update an attribute linked to a trip', async () => {
     const updateResponse = await request(app)
