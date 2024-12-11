@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import AppDataSource from '../../config/AppDataSource';
 import { Place } from '../../model/places/Place';
 import { Hotel } from '../../model/places/Hotel';
 import { RestaurantBar } from '../../model/places/RestaurantBar';
@@ -8,90 +9,189 @@ import { PlaceImg } from '../../model/places/PlaceImg';
 import { City } from '../../model/common/City';
 import { TxCity } from '../../model/translations/TxCity';
 import { TxCountry } from '../../model/translations/TxCountry';
+import { Repository } from 'typeorm';
 
 class PlaceController {
+  private placeRepository: Repository<Place>;
+  private hotelRepository: Repository<Hotel>;
+  private restaurantBarRepository: Repository<RestaurantBar>;
+  private touristAttractionRepository: Repository<TouristAttraction>;
+  private txPlaceRepository: Repository<TxPlace>;
+  private placeImgRepository: Repository<PlaceImg>;
+  private cityRepository: Repository<City>;
+  private txCityRepository: Repository<TxCity>;
+  private txCountryRepository: Repository<TxCountry>;
+
+  constructor() {
+    this.placeRepository = AppDataSource.getRepository(Place);
+    this.hotelRepository = AppDataSource.getRepository(Hotel);
+    this.restaurantBarRepository = AppDataSource.getRepository(RestaurantBar);
+    this.touristAttractionRepository = AppDataSource.getRepository(TouristAttraction);
+    this.txPlaceRepository = AppDataSource.getRepository(TxPlace);
+    this.placeImgRepository = AppDataSource.getRepository(PlaceImg);
+    this.cityRepository = AppDataSource.getRepository(City);
+    this.txCityRepository = AppDataSource.getRepository(TxCity);
+    this.txCountryRepository = AppDataSource.getRepository(TxCountry);
+  }
+
   static async createPlace(req: Request, res: Response): Promise<Response> {
+    const controller = new PlaceController();
+    const { placeRepository } = controller;
+
     try {
       const data = req.body;
-      const place = await Place.createPlace(data);
+
+      // Validation des données (à implémenter selon vos besoins)
+      if (!data.name || !data.cityId) {
+        return res.status(400).json({ message: 'Name and cityId are required' });
+      }
+
+      // Utilisation de la transaction pour garantir l'intégrité
+      const place = await AppDataSource.transaction(async (transactionalEntityManager) => {
+        const newPlace = transactionalEntityManager.create(Place, data);
+        return await transactionalEntityManager.save(newPlace);
+      });
+
       return res.status(201).json({ message: 'Place created successfully', place });
-    } catch (error) {
-      return res.status(400).json({ message: 'Error creating place', error: error.message });
+    } catch (error: any) {
+      console.error('Error creating place:', error);
+      return res.status(500).json({ message: 'Error creating place', error: error.message });
     }
   }
 
   static async getPlaceById(req: Request, res: Response): Promise<Response> {
+    const controller = new PlaceController();
+    const { placeRepository } = controller;
+
     try {
       const { id } = req.params;
-      const place = await Place.findById(Number(id));
-      if (!place) return res.status(404).json({ message: 'Place not found' });
+      const place = await placeRepository.findOne({
+        where: { id: Number(id) },
+        relations: ['city', 'translations', 'images'], // Ajouter les relations nécessaires
+      });
+
+      if (!place) {
+        return res.status(404).json({ message: 'Place not found' });
+      }
+
       return res.status(200).json(place);
-    } catch (error) {
-      return res.status(400).json({ message: 'Error fetching place', error: error.message });
+    } catch (error: any) {
+      console.error('Error fetching place:', error);
+      return res.status(500).json({ message: 'Error fetching place', error: error.message });
     }
   }
 
   static async getAllPlaces(req: Request, res: Response): Promise<Response> {
+    const controller = new PlaceController();
+    const { placeRepository } = controller;
+
     try {
-      const places = await Place.findAll();
+      const places = await placeRepository.find({
+        relations: ['city', 'translations', 'images'], // Ajouter les relations nécessaires
+      });
+
       return res.status(200).json(places);
-    } catch (error) {
-      return res.status(400).json({ message: 'Error fetching places', error: error.message });
+    } catch (error: any) {
+      console.error('Error fetching places:', error);
+      return res.status(500).json({ message: 'Error fetching places', error: error.message });
     }
   }
 
   static async updatePlace(req: Request, res: Response): Promise<Response> {
+    const controller = new PlaceController();
+    const { placeRepository } = controller;
+
     try {
       const { id } = req.params;
       const data = req.body;
-      const place = await Place.updatePlace(Number(id), data);
-      if (!place) return res.status(404).json({ message: 'Place not found' });
-      return res.status(200).json({ message: 'Place updated successfully', place });
-    } catch (error) {
-      return res.status(400).json({ message: 'Error updating place', error: error.message });
+
+      // Utilisation de la transaction pour garantir l'intégrité
+      const updatedPlace = await AppDataSource.transaction(async (transactionalEntityManager) => {
+        const place = await transactionalEntityManager.findOne(Place, { where: { id: Number(id) } });
+        if (!place) {
+          throw new Error('Place not found');
+        }
+        transactionalEntityManager.merge(Place, place, data);
+        return await transactionalEntityManager.save(place);
+      });
+
+      return res.status(200).json({ message: 'Place updated successfully', place: updatedPlace });
+    } catch (error: any) {
+      if (error.message === 'Place not found') {
+        return res.status(404).json({ message: 'Place not found' });
+      }
+      console.error('Error updating place:', error);
+      return res.status(500).json({ message: 'Error updating place', error: error.message });
     }
   }
 
   static async deletePlace(req: Request, res: Response): Promise<Response> {
+    const controller = new PlaceController();
+    const { placeRepository } = controller;
+
     try {
       const { id } = req.params;
-      const success = await Place.deletePlace(Number(id));
-      if (!success) return res.status(404).json({ message: 'Place not found' });
+
+      // Utilisation de la transaction pour garantir l'intégrité
+      const success = await AppDataSource.transaction(async (transactionalEntityManager) => {
+        const place = await transactionalEntityManager.findOne(Place, { where: { id: Number(id) } });
+        if (!place) {
+          throw new Error('Place not found');
+        }
+        await transactionalEntityManager.remove(place);
+        return true;
+      });
+
       return res.status(200).json({ message: 'Place deleted successfully' });
-    } catch (error) {
-      return res.status(400).json({ message: 'Error deleting place', error: error.message });
+    } catch (error: any) {
+      if (error.message === 'Place not found') {
+        return res.status(404).json({ message: 'Place not found' });
+      }
+      console.error('Error deleting place:', error);
+      return res.status(500).json({ message: 'Error deleting place', error: error.message });
     }
   }
+
   static async getPlacesByCity(req: Request, res: Response): Promise<Response> {
+    const controller = new PlaceController();
+    const {
+      restaurantBarRepository,
+      hotelRepository,
+      touristAttractionRepository,
+      txPlaceRepository,
+    } = controller;
+
     try {
       const { cityId } = req.params;
-      const { languageId } = req.query; // Récupère le languageId depuis les paramètres de requête
+      const languageId = req.query.languageId ? Number(req.query.languageId) : null;
 
       if (!languageId) {
         return res.status(400).json({ message: 'Language ID is required' });
       }
 
       // Récupérer les restaurants/bars associés à la ville
-      const restaurantsBars = await RestaurantBar.find({
+      const restaurantsBars = await restaurantBarRepository.find({
         relations: ['place'],
         where: { place: { city: { id: Number(cityId) } } },
       });
 
       // Récupérer les hôtels associés à la ville
-      const hotels = await Hotel.find({
+      const hotels = await hotelRepository.find({
         relations: ['place'],
         where: { place: { city: { id: Number(cityId) } } },
       });
 
       // Récupérer les attractions touristiques associées à la ville
-      const attractions = await TouristAttraction.find({
+      const attractions = await touristAttractionRepository.find({
         relations: ['place'],
         where: { place: { city: { id: Number(cityId) } } },
       });
 
       // Fonction pour récupérer la traduction d'une place
-      const getTranslation = async (placeId: number): Promise<any> => {
-        const translation = await TxPlace.findByPlaceAndLanguage(placeId, Number(languageId));
+      const getTranslation = async (placeId: number) => {
+        const translation = await txPlaceRepository.findOne({
+          where: { place: { id: placeId }, language_id: languageId },
+        });
         return translation
           ? {
             slug: translation.slug,
@@ -132,14 +232,25 @@ class PlaceController {
       };
 
       return res.status(200).json(result);
-    } catch (error) {
-      return res.status(400).json({
-        message: 'Error fetching places by city',
-        error: error.message,
-      });
+    } catch (error: any) {
+      console.error('Error fetching places by city:', error);
+      return res.status(500).json({ message: 'Error fetching places by city', error: error.message });
     }
   }
+
   static async getAllPlacesByCity(req: Request, res: Response): Promise<Response> {
+    const controller = new PlaceController();
+    const {
+      cityRepository,
+      txCityRepository,
+      txCountryRepository,
+      restaurantBarRepository,
+      hotelRepository,
+      touristAttractionRepository,
+      txPlaceRepository,
+      placeImgRepository,
+    } = controller;
+
     try {
       const { citySlug } = req.params;
 
@@ -171,7 +282,7 @@ class PlaceController {
         return res.status(400).json({ message: 'City slug and language ID are required' });
       }
 
-      const city = await City.findOne({
+      const city = await cityRepository.findOne({
         where: { slug: citySlug },
         relations: ['country'],
       });
@@ -182,14 +293,18 @@ class PlaceController {
       }
 
       // Fetch the city translation
-      const txCity = await TxCity.findByCityAndLanguage(city.id, Number(languageId));
+      const txCity = await txCityRepository.findOne({
+        where: { city: { id: city.id }, language_id: Number(languageId) },
+      });
       if (!txCity) {
         console.error('TxCity not found for language ID:', languageId);
         return res.status(404).json({ message: 'City translation not found' });
       }
 
       // Fetch the country translation
-      const txCountry = await TxCountry.findByCountryAndLanguage(city.country.id, Number(languageId));
+      const txCountry = await txCountryRepository.findOne({
+        where: { country: { id: city.country.id }, language_id: Number(languageId) },
+      });
       if (!txCountry) {
         console.error('TxCountry not found for language ID:', languageId);
         return res.status(404).json({ message: 'Country translation not found' });
@@ -211,30 +326,34 @@ class PlaceController {
         offsetTA,
       });
 
-      const [restaurantBars] = await RestaurantBar.findAndCount({
+      // Utilisation des repositories avec les méthodes appropriées
+      const [restaurantBars, rbCount] = await restaurantBarRepository.findAndCount({
         relations: ['place'],
         where: { place: { city: { id: city.id } } },
         skip: offsetRB,
         take: limitRB,
       });
 
-      const [hotels] = await Hotel.findAndCount({
+      const [hotels, hCount] = await hotelRepository.findAndCount({
         relations: ['place'],
         where: { place: { city: { id: city.id } } },
         skip: offsetH,
         take: limitH,
       });
 
-      const [touristAttractions] = await TouristAttraction.findAndCount({
+      const [touristAttractions, taCount] = await touristAttractionRepository.findAndCount({
         relations: ['place'],
         where: { place: { city: { id: city.id } } },
         skip: offsetTA,
         take: limitTA,
       });
 
+      // Fonction pour enrichir les places avec traductions et images
       const enrichPlace = async (place: Place) => {
-        const translation = await TxPlace.findByPlaceAndLanguage(place.id, Number(languageId));
-        const images = await PlaceImg.findByPlace(place.id);
+        const translation = await txPlaceRepository.findOne({
+          where: { place: { id: place.id }, language_id: Number(languageId) },
+        });
+        const images = await placeImgRepository.find({ where: { place: { id: place.id } } });
         return {
           id: place.id,
           slug: place.slug,
@@ -304,14 +423,17 @@ class PlaceController {
           hotels: enrichedH,
           touristAttractions: enrichedTA,
         },
+        counts: {
+          restaurantsBars: rbCount,
+          hotels: hCount,
+          touristAttractions: taCount,
+        },
       });
-    } catch (error) {
-      console.error('Error occurred:', error.message);
-      return res.status(400).json({ message: 'Error fetching all places by city', error: error.message });
+    } catch (error: any) {
+      console.error('Error fetching all places by city:', error);
+      return res.status(500).json({ message: 'Error fetching all places by city', error: error.message });
     }
   }
-
-
 }
 
 export default PlaceController;

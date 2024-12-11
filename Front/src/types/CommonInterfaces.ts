@@ -2,11 +2,19 @@
 
 import { Language } from "./TranslationsInterfaces";
 import { Place } from "./PlacesInterfaces";
+
 export interface Country {
   id: number;
   slug: string;
   code: string;
+  translation: {
+    slug: string;
+    name: string;
+    description: string;
+    meta_description: string;
+  };
 }
+
 
 export interface City {
   id: number;
@@ -26,30 +34,25 @@ export interface City {
   link_taxi?: string | null;
   link_car_rental?: string | null;
   link_bike_rental?: string | null;
-
-  country: {
-    id: number;
-    code: string;
-    slug: string;
-    translation: {
-      slug: string;
-      name: string;
-      description: string;
-      meta_description: string;
-    };
-  };
-
-  translation: {
-    slug: string;
-    name: string;
-    description: string;
-    meta_description: string;
-  };
-
+  country: Country;
+  translation: Country['translation'];
   places: {
     restaurantsBars: Place[];
     hotels: Place[];
     touristAttractions: Place[];
+  };
+}
+
+export interface CityPreview {
+  id: number;
+  lat: number;
+  lng: number;
+  slug: string;
+  name: string;
+  description: string;
+  country: {
+    code: string;
+    name: string;
   };
 }
 

@@ -13,7 +13,8 @@ interface CityHeaderProps {
     slug: string;
 }
 
-const CityHeader: React.FC<CityHeaderProps> = ({
+
+const CityHeader: React.FC<CityHeaderProps> = React.memo(({
     name,
     description,
     lat,
@@ -24,48 +25,45 @@ const CityHeader: React.FC<CityHeaderProps> = ({
 }) => {
     const placeholderUrl = `/assets/img/${countryCode}/${slug}/main/${slug}-1.jpg`;
     const videoUrl = `/assets/img/${countryCode}/${slug}/main/${slug}-video.mp4`;
-    console.log(videoUrl);
 
     return (
-        <IonContent scrollY>
-            <div className="city-header">
-                <div
-                    className="city-header-video-container"
-                    style={{
-                        backgroundImage: `url(${placeholderUrl})`,
-                    }}
+        <div className="city-header">
+            <div
+                className="city-header-video-container"
+                style={{
+                    backgroundImage: `url(${placeholderUrl})`,
+                }}
+            >
+                <video
+                    className="city-header-video"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    key={videoUrl}
                 >
-                    <video
-                        className="city-header-video"
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        key={videoUrl}
-                    >
-                        <source src={videoUrl} type="video/mp4" />
-                        Your browser does not support the video tag.
-                    </video>
-                </div>
-
-                <div className="city-header-box">
-                    <div className="city-info">
-                        <IonText className="city-name">
-                            {name}, {countryName}
-                        </IonText>
-                        <IonText className="city-description">
-                            {description}
-                        </IonText>
-                    </div>
-                    {lat && lng && (
-                        <div className="city-meteo">
-                            <Meteo lat={lat} lng={lng} />
-                        </div>
-                    )}
-                </div>
+                    <source src={videoUrl} type="video/mp4" />
+                    Your browser does not support the video tag.
+                </video>
             </div>
-        </IonContent>
+
+            <div className="city-header-box">
+                <div className="city-info">
+                    <IonText className="city-name">
+                        {name}, {countryName}
+                    </IonText>
+                    <IonText className="city-description">
+                        {description}
+                    </IonText>
+                </div>
+                {lat && lng && (
+                    <div className="city-meteo">
+                        <Meteo lat={lat} lng={lng} />
+                    </div>
+                )}
+            </div>
+        </div>
     );
-};
+});
 
 export default CityHeader;

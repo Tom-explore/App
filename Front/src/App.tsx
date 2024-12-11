@@ -20,15 +20,10 @@ import languages from './data/languages.json';
 import City from './pages/City';
 import Tab3 from './pages/Tab3';
 
-/* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
-
-/* Basic CSS for apps built with Ionic */
 import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
 import '@ionic/react/css/typography.css';
-
-/* Optional CSS utils that can be commented out */
 import '@ionic/react/css/padding.css';
 import '@ionic/react/css/float-elements.css';
 import '@ionic/react/css/text-alignment.css';
@@ -36,7 +31,6 @@ import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 
-/* Theme variables */
 import '@ionic/react/css/palettes/dark.system.css';
 
 setupIonicReact();
@@ -62,19 +56,22 @@ const App: React.FC = () => {
       console.log('No valid lang in URL. Redirecting to default.');
       history.replace(`/en/feed`);
     }
-  }, []);
-
+  }, [location, history, setLanguage]);
 
   return (
     <IonApp>
       <IonReactRouter>
+        {/* Route de Détails des Villes en Dehors des Onglets */}
+
+
         <IonTabs>
           <IonRouterOutlet>
+            <Route path="/:lang/city/:slug" component={City} exact />
             <Route path="/:lang/feed" component={Tab1} exact />
             <Route path="/:lang/destinations" component={MapDisplay} exact />
-            <Route path="/:lang/trips" component={CitiesDisplay} exact />
+            <Route path="/:lang/city" component={CitiesDisplay} exact />
             <Route path="/:lang/account" component={Tab3} exact />
-            <Route path="/:lang/city/:slug" component={City} exact />
+
             <Route exact path="/">
               <Redirect to="/en/feed" />
             </Route>
@@ -88,7 +85,7 @@ const App: React.FC = () => {
               <IonIcon aria-hidden="true" icon={locationSharp} />
               <IonLabel>Destinations</IonLabel>
             </IonTabButton>
-            <IonTabButton tab="trips" href={`/${language.code}/trips`}>
+            <IonTabButton tab="trips" href={`/${language.code}/city`}>
               <IonIcon aria-hidden="true" icon={airplaneSharp} />
               <IonLabel>Trips</IonLabel>
             </IonTabButton>

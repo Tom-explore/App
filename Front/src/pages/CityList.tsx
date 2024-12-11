@@ -1,4 +1,4 @@
-import { IonContent, IonPage, useIonRouter } from '@ionic/react';
+import { IonContent, IonPage, IonRouterLink } from '@ionic/react';
 import CityCard from '../components/CityCard';
 import './CityList.css';
 import citiesData from '../data/cities.json';
@@ -11,7 +11,6 @@ import { useLanguage } from '../context/languageContext';
 const CityList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  const router = useIonRouter();
   const { language } = useLanguage();
 
   const cities = citiesData.map((city: any) => {
@@ -49,11 +48,6 @@ const CityList: React.FC = () => {
     setSearchQuery(query.trim());
   };
 
-  const handleCityClick = (slugURL: string) => {
-    console.log(slugURL);
-    router.push(`/${language.code}/city/${slugURL}`, 'forward', 'replace');
-  };
-
   return (
     <IonPage>
       <div className="search-bar-container-cityList">
@@ -76,14 +70,18 @@ const CityList: React.FC = () => {
                         duration: 0.1,
                         ease: 'easeInOut',
                       }}
-                      onClick={() => handleCityClick(city.slugURL)}
                     >
-                      <CityCardMobile
-                        id={city.id}
-                        name={city.name}
-                        country={city.country}
-                        img={city.img}
-                      />
+                      <IonRouterLink
+                        href={`/${language.code}/city/${city.slugURL}`}
+                        className="city-link"
+                      >
+                        <CityCardMobile
+                          id={city.id}
+                          name={city.name}
+                          country={city.country}
+                          img={city.img}
+                        />
+                      </IonRouterLink>
                     </motion.div>
                   ) : (
                     <motion.div
@@ -97,16 +95,20 @@ const CityList: React.FC = () => {
                         ease: 'easeInOut',
                       }}
                       layout
-                      onClick={() => handleCityClick(city.slugURL)}
                     >
-                      <CityCard
-                        id={city.id}
-                        slug={city.slug}
-                        name={city.name}
-                        country={city.country}
-                        description={city.description}
-                        img={city.img}
-                      />
+                      <IonRouterLink
+                        href={`/${language.code}/city/${city.slugURL}`}
+                        className="city-link"
+                      >
+                        <CityCard
+                          id={city.id}
+                          slug={city.slug}
+                          name={city.name}
+                          country={city.country}
+                          description={city.description}
+                          img={city.img}
+                        />
+                      </IonRouterLink>
                     </motion.div>
                   )
                 )
