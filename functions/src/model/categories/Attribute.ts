@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany } from 'typeorm';
+import { TxAttribute } from '../translations/TxAttribute';
 
 @Entity('attributes')
 export class Attribute extends BaseEntity {
@@ -13,6 +14,8 @@ export class Attribute extends BaseEntity {
 
   @Column('boolean', { nullable: true })
   is_atmosphere!: boolean;
+  @OneToMany(() => TxAttribute, (txAttribute) => txAttribute.attribute, { cascade: true })
+  translations!: TxAttribute[];
 
   constructor() {
     super();

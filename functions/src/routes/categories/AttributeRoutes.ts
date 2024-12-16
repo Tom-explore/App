@@ -9,4 +9,5 @@ router.get('/', AttributeController.getAllAttributes.bind(AttributeController));
 router.put('/:id', AttributeController.updateAttribute.bind(AttributeController));
 router.delete('/:id', AttributeController.deleteAttribute.bind(AttributeController));
 
+
 export default router;

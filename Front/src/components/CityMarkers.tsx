@@ -2,7 +2,9 @@ import React from 'react';
 import { Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { useHistory } from 'react-router-dom';
+import { IonRouterLink } from '@ionic/react'; // Importation de IonRouterLink
 import { CityMap } from '../types/CommonInterfaces';
+import { useLanguage } from '../context/languageContext';
 
 interface CityMarkersProps {
     cities: CityMap[]; // Liste des villes
@@ -10,17 +12,12 @@ interface CityMarkersProps {
 }
 
 const CityMarkers: React.FC<CityMarkersProps> = ({ cities, zoomLevel }) => {
-    const history = useHistory(); // Utilisez useHistory pour react-router-dom v5
-
+    const { language } = useLanguage();
     const calculateMarkerSize = (zoom: number): [number, number] => {
         const baseSize = 50;
         const scaleFactor = 10;
         const size = baseSize + (zoom - 6) * scaleFactor;
         return [Math.max(size, 20), Math.max(size * 1.2, 24)];
-    };
-
-    const handleVisitCity = (slug: string, id: number) => {
-        history.push(`/city/${slug}?id=${id}`); // Navigation avec history.push
     };
 
     return (
@@ -43,12 +40,13 @@ const CityMarkers: React.FC<CityMarkersProps> = ({ cities, zoomLevel }) => {
                                 <img src={city.img} alt={city.name} className="popup-image" />
                                 <strong className="popup-title">{city.name}</strong>
                                 <p className="popup-description">{city.description}</p>
-                                <button
-                                    className="visit-button"
-                                    onClick={() => handleVisitCity(city.slug, city.id)}
+                                {/* Remplacement du bouton par IonRouterLink */}
+                                <IonRouterLink
+                                    href={`/${language.code}/city/${city.slug}`}
+                                    className="city-link"
                                 >
                                     Visiter !
-                                </button>
+                                </IonRouterLink>
                             </div>
                         </Popup>
                     </Marker>

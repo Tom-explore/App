@@ -17,7 +17,8 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   outline: none;
   transition: all 0.3s ease;
-  padding-right: 40px; /* Espace pour la croix */
+  padding-right: 40px;
+  /* Espace pour la croix */
 }
 
 .search-bar:focus {
@@ -27,7 +28,8 @@
 
 .clear-button {
   position: absolute;
-  right: 20px; /* Position par rapport au bord droit du champ */
+  right: 20px;
+  /* Position par rapport au bord droit du champ */
   top: 50%;
   transform: translateY(-50%);
   background: none;

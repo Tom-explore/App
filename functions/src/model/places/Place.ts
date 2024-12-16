@@ -7,8 +7,11 @@ import {
   BaseEntity,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { City } from '../common/City';
+import { PlaceAttribute } from '../categories/PlaceAttribute';
+import { PlaceCategory } from '../categories/PlaceCategory';
 
 @Entity('places')
 export class Place extends BaseEntity {
@@ -32,7 +35,7 @@ export class Place extends BaseEntity {
   meta_title_scrapio!: string;
 
   @Column('varchar', { nullable: true })
-  meta_description_scrapio!: string;  
+  meta_description_scrapio!: string;
 
   @Column('varchar', { nullable: true })
   link_insta!: string;
@@ -127,7 +130,12 @@ export class Place extends BaseEntity {
   @ManyToOne(() => City, { nullable: false })
   @JoinColumn({ name: 'city_id' })
   city!: City;
-  
+
+  @OneToMany(() => PlaceCategory, (placeCategory) => placeCategory.place)
+  categories!: PlaceCategory[];
+
+  @OneToMany(() => PlaceAttribute, (placeAttribute) => placeAttribute.place)
+  attributes!: PlaceAttribute[];
 
   constructor() {
     super();

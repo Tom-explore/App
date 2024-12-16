@@ -1,3 +1,4 @@
+// PlaceCarousel.tsx
 import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, FreeMode } from 'swiper/modules';
@@ -8,6 +9,7 @@ import 'swiper/css/free-mode';
 import './PlaceCarousel.css';
 import PlaceCard from './PlaceCard';
 import { Place } from '../types/PlacesInterfaces';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface PlaceCarouselProps {
     title: string;
@@ -28,6 +30,13 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({ title, places, loading })
             </div>
         ));
 
+    // Variants pour les animations des cartes de lieux
+    const cardVariants = {
+        hidden: { opacity: 0, scale: 0.9 },
+        visible: { opacity: 1, scale: 1 },
+        exit: { opacity: 0, scale: 0.9 }
+    };
+
     return (
         <div className="place-carousel">
             <h2>{title}</h2>
@@ -37,7 +46,7 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({ title, places, loading })
                 slidesPerView={6}
                 navigation
                 pagination={{ clickable: true, dynamicBullets: true }}
-                freeMode={false} // Active le mode libre
+                freeMode={false} // Désactive le mode libre
                 breakpoints={{
                     20: { slidesPerView: 1 },
                     320: { slidesPerView: 2 },
@@ -49,15 +58,28 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({ title, places, loading })
                 loop={false}
                 draggable={true}
             >
-                {loading && places.length === 0
-                    ? renderSkeletons(4).map((skeleton, index) => (
-                        <SwiperSlide key={`skeleton-${index}`}>{skeleton}</SwiperSlide>
-                    ))
-                    : places.map((place, index) => (
-                        <SwiperSlide key={`place-${place.id}-${index}`}>
-                            <PlaceCard place={place} />
-                        </SwiperSlide>
-                    ))}
+                <AnimatePresence>
+                    {loading && places.length === 0
+                        ? renderSkeletons(4).map((skeleton, index) => (
+                            <SwiperSlide key={`skeleton-${index}`}>
+                                {skeleton}
+                            </SwiperSlide>
+                        ))
+                        : places.map((place, index) => (
+                            <SwiperSlide key={`place-${place.id}-${index}`}>
+                                <motion.div
+                                    variants={cardVariants}
+                                    initial="hidden"
+                                    animate="visible"
+                                    exit="exit"
+                                    transition={{ duration: 0.3 }}
+                                    layout
+                                >
+                                    <PlaceCard place={place} />
+                                </motion.div>
+                            </SwiperSlide>
+                        ))}
+                </AnimatePresence>
             </Swiper>
         </div>
     );

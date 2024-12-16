@@ -46,7 +46,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
         >
-            <img
+            <img loading="lazy"
                 src={`https://lh3.googleusercontent.com/p/${place.images[0]?.slug}`}
                 alt={place.translation?.name || 'Image'}
                 className="place-image"
