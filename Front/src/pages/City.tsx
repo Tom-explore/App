@@ -1,5 +1,5 @@
 // City.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import {
     IonContent,
@@ -20,7 +20,6 @@ import TripForm from '../components/TripForm';
 import './City.css';
 import { Place } from '../types/PlacesInterfaces';
 import FilterPlaces from '../components/FilterPlaces';
-import { Category, Attribute } from '../types/CategoriesAttributesInterfaces';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const City: React.FC = () => {
@@ -39,30 +38,24 @@ const City: React.FC = () => {
     const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
 
     useEffect(() => {
-        console.log("City component rendu");
         if (slug && !didFetch && isLanguageLoaded) {
-            console.log(`[City Component] Fetching city data for slug: ${slug}`);
             setCityPreviewAndFetchData(slug);
             setDidFetch(true);
-        } else {
-            console.log('[City Component] Waiting for language to load before fetching city data');
         }
     }, [slug, language.id, didFetch, isLanguageLoaded, setCityPreviewAndFetchData]);
 
     useEffect(() => {
         return () => {
-            console.log('[City Component] Cleanup executed');
             resetCity();
         };
     }, [resetCity]);
 
     useIonViewWillLeave(() => {
-        console.log('[City Component] IonViewWillLeave triggered');
         resetCity();
     });
 
     useEffect(() => {
-        console.log(city)
+        console.log(city);
     }, [city]);
 
     // Initialiser les lieux filtrés avec toutes les places
@@ -74,8 +67,8 @@ const City: React.FC = () => {
         }
     }, [city, places]);
 
-    const handleFilterChange = (filteredPlaces: Place[]) => {
-        // Séparer les lieux filtrés par type
+    // Mémoriser handleFilterChange avec useCallback
+    const handleFilterChange = useCallback((filteredPlaces: Place[]) => {
         const filteredRB: Place[] = [];
         const filteredH: Place[] = [];
         const filteredTA: Place[] = [];
@@ -95,45 +88,43 @@ const City: React.FC = () => {
         setFilteredRestaurantsBars(filteredRB);
         setFilteredHotels(filteredH);
         setFilteredTouristAttractions(filteredTA);
-    };
+    }, [places]);
 
     const haveInitialPlaces =
         filteredRestaurantsBars.length > 0 ||
         filteredHotels.length > 0 ||
         filteredTouristAttractions.length > 0;
 
-    // Extraire toutes les catégories et attributs disponibles
-    const allCategories: Category[] = [
-        ...places.restaurantsBars.flatMap(place => place.categories),
-        ...places.hotels.flatMap(place => place.categories),
-        ...places.touristAttractions.flatMap(place => place.categories),
-    ];
+    // Mémoriser allPlaces avec useMemo
+    const allPlaces = useMemo(() => [
+        ...places.restaurantsBars,
+        ...places.hotels,
+        ...places.touristAttractions
+    ], [places.restaurantsBars, places.hotels, places.touristAttractions]);
 
-    const allAttributes: Attribute[] = [
-        ...places.restaurantsBars.flatMap(place => place.attributes),
-        ...places.hotels.flatMap(place => place.attributes),
-        ...places.touristAttractions.flatMap(place => place.attributes),
-    ];
+    // Mémoriser uniqueCategories avec useMemo
+    const uniqueCategories = useMemo(() => {
+        const allCategories = [
+            ...places.restaurantsBars.flatMap(place => place.categories),
+            ...places.hotels.flatMap(place => place.categories),
+            ...places.touristAttractions.flatMap(place => place.categories),
+        ];
+        return Array.from(new Map(allCategories.map(cat => [cat.id, cat])).values());
+    }, [places.restaurantsBars, places.hotels, places.touristAttractions]);
 
-    // Éliminer les doublons
-    const uniqueCategories = Array.from(new Map(allCategories.map(cat => [cat.id, cat])).values());
-    const uniqueAttributes = Array.from(new Map(allAttributes.map(attr => [attr.id, attr])).values());
+    // Mémoriser uniqueAttributes avec useMemo
+    const uniqueAttributes = useMemo(() => {
+        const allAttributes = [
+            ...places.restaurantsBars.flatMap(place => place.attributes),
+            ...places.hotels.flatMap(place => place.attributes),
+            ...places.touristAttractions.flatMap(place => place.attributes),
+        ];
+        return Array.from(new Map(allAttributes.map(attr => [attr.id, attr])).values());
+    }, [places.restaurantsBars, places.hotels, places.touristAttractions]);
 
     return (
         <IonPage className={`city-page ${isFilterPanelOpen ? 'content-shift' : ''}`}>
-            <IonHeader>
-                <IonToolbar>
-                    <IonButtons slot="start">
-                        <IonBackButton defaultHref="/" />
-                        <IonButton onClick={() => setIsFilterPanelOpen(true)}>
-                            🔍 Filtrer
-                        </IonButton>
-                        <IonButton onClick={() => setIsTripModalOpen(true)}>
-                            ✈️ Je crée mon voyage !
-                        </IonButton>
-                    </IonButtons>
-                </IonToolbar>
-            </IonHeader>
+
 
             <IonContent fullscreen>
                 {city ? (
@@ -148,47 +139,37 @@ const City: React.FC = () => {
                             slug={city.slug || ''}
                         />
 
+                        {/* Boutons sous le CityHeader */}
+                        <div className="city-buttons">
+                            <IonButton onClick={() => setIsFilterPanelOpen(true)}>
+                                🔍 Filtrer
+                            </IonButton>
+                            <IonButton onClick={() => setIsTripModalOpen(true)}>
+                                ✈️ Je crée mon voyage !
+                            </IonButton>
+                        </div>
+
                         {/* Panneau de Filtrage Coulissant */}
                         <AnimatePresence>
-                            {isFilterPanelOpen && (
-                                <motion.div
-                                    className={`filter-panel-container ${isFilterPanelOpen ? 'open' : ''}`}
-                                    initial={{ x: '-100%' }}
-                                    animate={{ x: 0 }}
-                                    exit={{ x: '-100%' }}
-                                    transition={{ type: 'tween', duration: 0.3 }}
-                                >
-                                    <FilterPlaces
-                                        categories={uniqueCategories}
-                                        attributes={uniqueAttributes}
-                                        allPlaces={[
-                                            ...places.restaurantsBars,
-                                            ...places.hotels,
-                                            ...places.touristAttractions
-                                        ]}
-                                        languageID={language.id}
-                                        onFilterChange={handleFilterChange}
-                                        onClose={() => setIsFilterPanelOpen(false)}
-                                    />
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-
-                        {/* Overlay pour fermer le panneau en cliquant en dehors */}
-                        <AnimatePresence>
-                            {isFilterPanelOpen && (
-                                <motion.div
-                                    className={`overlay ${isFilterPanelOpen ? 'visible' : ''}`}
-                                    onClick={() => setIsFilterPanelOpen(false)}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.3 }}
+                            <motion.div
+                                className={`filter-panel-container ${isFilterPanelOpen ? 'open' : 'hidden'}`}
+                                initial={false} // Évite l'animation initiale si inutile
+                                animate={isFilterPanelOpen ? { x: 0 } : { x: '-100%' }}
+                                transition={{ type: 'tween', duration: 0.3 }}
+                            >
+                                <FilterPlaces
+                                    categories={uniqueCategories}
+                                    attributes={uniqueAttributes}
+                                    allPlaces={allPlaces}
+                                    languageID={language.id}
+                                    onFilterChange={handleFilterChange}
+                                    onClose={() => setIsFilterPanelOpen(false)}
                                 />
-                            )}
+                            </motion.div>
                         </AnimatePresence>
 
-                        {/* Contenu Principal */}
+
+
                         <div className="city-content">
                             <PlaceCarousel
                                 title="Restaurants & Bars"
@@ -214,19 +195,18 @@ const City: React.FC = () => {
                 )}
 
                 {/* Modal pour le formulaire de voyage */}
-                <IonModal isOpen={isTripModalOpen} onDidDismiss={() => setIsTripModalOpen(false)}>
-                    {/* {isLanguageLoaded && city && 'lat' in city && (
+                {/* <IonModal isOpen={isTripModalOpen} onDidDismiss={() => setIsTripModalOpen(false)}>
+                    {isLanguageLoaded && city && 'lat' in city && (
                         <TripForm
                             languageCode={language.code}
                             city={city}
                             onClose={() => setIsTripModalOpen(false)}
                         />
-                    )} */}
-                </IonModal>
+                    )}
+                </IonModal> */}
             </IonContent>
         </IonPage>
     );
-
 };
 
 export default City;

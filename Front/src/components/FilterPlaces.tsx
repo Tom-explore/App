@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Attribute, Category } from '../types/CategoriesAttributesInterfaces';
 import { Place } from '../types/PlacesInterfaces';
+import { useHistory, useLocation } from 'react-router-dom';
+
 import {
     IonIcon,
     IonList,
     IonItem,
     IonLabel,
-    IonCheckbox,
     IonButton,
     IonGrid,
     IonRow,
-    IonCol
+    IonCol,
+    IonToggle,
 } from '@ionic/react';
 import { close as closeIcon } from 'ionicons/icons';
 import { motion } from 'framer-motion';
@@ -23,52 +25,117 @@ interface FilterPlacesProps {
     categories: Category[];
     attributes: Attribute[];
     onFilterChange: (filteredPlaces: Place[]) => void;
-    languageID: number; // Langue sélectionnée
+    languageID: number;
     allPlaces: Place[];
-    onClose: () => void; // Fonction pour fermer le panneau
+    onClose: () => void;
 }
 
 const panelVariants = {
     hidden: { x: '-100%' },
     visible: { x: '0%' },
-    exit: { x: '-100%' }
+    exit: { x: '-100%' },
 };
 
-// Fonction utilitaire pour trouver une traduction
-const getTranslation = (slug: string, languageID: number, type: 'attributes' | 'categories'): string => {
-    const items = data[type]; // Récupère soit "attributes" soit "categories" depuis le JSON
-    const item = items.find((el: any) => el.slug === slug); // Recherche par slug
+const useGetTranslation = (languageID: number) => {
+    return useCallback((slug: string, type: 'attributes' | 'categories'): string => {
+        const items = data[type];
+        const item = items.find((el: any) => el.slug === slug);
 
-    if (!item || !item.translations) return `No ${type.slice(0, -1)} found for slug "${slug}"`;
+        if (!item || !item.translations) {
+            console.warn(`No ${type.slice(0, -1)} found for slug "${slug}"`);
+            return `No ${type.slice(0, -1)} found for slug "${slug}"`;
+        }
 
-    // Recherche par languageID
-    const translation = item.translations.find((t: any) => t.language_id === languageID);
-    return translation ? translation.name : `No translation for "${slug}" in language ${languageID}`;
+        const translation = item.translations.find((t: any) => t.language_id === languageID);
+        if (!translation) {
+            console.warn(`No translation for "${slug}" in language ${languageID}`);
+            return `No translation for "${slug}" in language ${languageID}`;
+        }
+
+        return translation.name;
+    }, [languageID]);
 };
 
-const FilterPlaces: React.FC<FilterPlacesProps> = ({ categories, attributes, onFilterChange, allPlaces, languageID, onClose }) => {
+const FilterPlaces: React.FC<FilterPlacesProps> = ({
+    categories,
+    attributes,
+    onFilterChange,
+    allPlaces,
+    languageID,
+    onClose,
+}) => {
     const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
     const [selectedAttributes, setSelectedAttributes] = useState<number[]>([]);
+    const history = useHistory();
+    const location = useLocation();
+    const [isInitialized, setIsInitialized] = useState(false);
+    const getTranslation = useGetTranslation(languageID);
+    const [isUserInteraction, setIsUserInteraction] = useState(false);
 
-    const handleCategoryChange = (categoryId: number) => {
-        setSelectedCategories(prev =>
-            prev.includes(categoryId) ? prev.filter(id => id !== categoryId) : [...prev, categoryId]
-        );
-    };
+    // Charger les filtres depuis l'URL
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
 
-    const handleAttributeChange = (attributeId: number) => {
-        setSelectedAttributes(prev =>
-            prev.includes(attributeId) ? prev.filter(id => id !== attributeId) : [...prev, attributeId]
-        );
-    };
+        const categorySlugs = params.get('categories');
+        const attributeSlugs = params.get('attributes');
+
+        if (categorySlugs) {
+            setSelectedCategories(
+                categorySlugs
+                    .split(',')
+                    .map(slug => categories.find(cat => cat.slug === slug)?.id)
+                    .filter((id): id is number => id !== null)
+            );
+        }
+
+        if (attributeSlugs) {
+            setSelectedAttributes(
+                attributeSlugs
+                    .split(',')
+                    .map(slug => attributes.find(attr => attr.slug === slug)?.id)
+                    .filter((id): id is number => id !== null)
+            );
+        }
+
+        setIsInitialized(true);
+    }, [location.search, categories, attributes]);
+
+    const updateURL = useCallback(() => {
+        if (!isInitialized || !isUserInteraction) return;
+
+        const params = new URLSearchParams(location.search);
+
+        const categorySlugs = selectedCategories
+            .map(categoryId => categories.find(category => category.id === categoryId)?.slug)
+            .filter(Boolean);
+
+        if (categorySlugs.length > 0) {
+            params.set('categories', categorySlugs.join(','));
+        } else {
+            params.delete('categories');
+        }
+
+        const attributeSlugs = selectedAttributes
+            .map(attributeId => attributes.find(attribute => attribute.id === attributeId)?.slug)
+            .filter(Boolean);
+
+        if (attributeSlugs.length > 0) {
+            params.set('attributes', attributeSlugs.join(','));
+        } else {
+            params.delete('attributes');
+        }
+
+        const newSearch = params.toString();
+        if (location.search !== `?${newSearch}`) {
+            history.replace({ pathname: location.pathname, search: newSearch });
+        }
+    }, [isInitialized, isUserInteraction, selectedCategories, selectedAttributes, categories, attributes, location.pathname, location.search]);
 
     useEffect(() => {
-        console.log('Filtering places with:', {
-            selectedCategories,
-            selectedAttributes,
-            allPlaces,
-        });
+        updateURL();
+    }, [selectedCategories, selectedAttributes, updateURL]);
 
+    useEffect(() => {
         let filtered = allPlaces;
 
         if (selectedCategories.length > 0) {
@@ -83,9 +150,25 @@ const FilterPlaces: React.FC<FilterPlacesProps> = ({ categories, attributes, onF
             );
         }
 
-        console.log('Filtered places:', filtered);
         onFilterChange(filtered);
     }, [selectedCategories, selectedAttributes, allPlaces, onFilterChange]);
+
+    const handleCategoryChange = useCallback((categoryId: number) => {
+        setIsUserInteraction(true);
+        setSelectedCategories(prev => {
+            const isSelected = prev.includes(categoryId);
+            return isSelected ? prev.filter(id => id !== categoryId) : [...prev, categoryId];
+        });
+    }, []);
+
+    const handleAttributeChange = useCallback((attributeId: number) => {
+        setIsUserInteraction(true);
+        setSelectedAttributes(prev => {
+            const isSelected = prev.includes(attributeId);
+            return isSelected ? prev.filter(id => id !== attributeId) : [...prev, attributeId];
+        });
+    }, []);
+
 
     return (
         <motion.div
@@ -99,54 +182,56 @@ const FilterPlaces: React.FC<FilterPlacesProps> = ({ categories, attributes, onF
             <IonGrid>
                 <IonRow>
                     <IonCol size="12" className="filter-header">
-                        <IonLabel><strong>Filtrer les Lieux</strong></IonLabel>
+                        <IonLabel>
+                            <strong>Filtrer les Lieux</strong>
+                        </IonLabel>
                         <IonButton fill="clear" onClick={onClose}>
                             <IonIcon icon={closeIcon} />
                         </IonButton>
                     </IonCol>
                 </IonRow>
-
-                {/* Filtrage des Catégories */}
                 <IonRow>
                     <IonCol>
                         <IonList>
-                            {categories.map(category => (
-                                <IonItem key={category.id}>
-                                    <IonCheckbox
-                                        slot="start"
-                                        checked={selectedCategories.includes(category.id)}
-                                        onIonChange={() => handleCategoryChange(category.id)}
-                                    />
-                                    <IonLabel>
-                                        {getTranslation(category.slug, languageID, 'categories')}
-                                    </IonLabel>
-                                </IonItem>
-                            ))}
-                        </IonList>
-                    </IonCol>
-                </IonRow>
-
-                {/* Filtrage des Attributs */}
-                <IonRow>
-                    <IonCol>
-                        <IonList>
+                            <IonLabel>
+                                <strong>Attributs</strong>
+                            </IonLabel>
                             {attributes.map(attribute => (
                                 <IonItem key={attribute.id}>
-                                    <IonCheckbox
-                                        slot="start"
+                                    <IonLabel>
+                                        {getTranslation(attribute.slug, 'attributes')}
+                                    </IonLabel>
+                                    <IonToggle
+                                        slot="end"
                                         checked={selectedAttributes.includes(attribute.id)}
                                         onIonChange={() => handleAttributeChange(attribute.id)}
                                     />
-                                    <IonLabel>
-                                        {getTranslation(attribute.slug, languageID, 'attributes')}
-                                    </IonLabel>
                                 </IonItem>
                             ))}
                         </IonList>
                     </IonCol>
                 </IonRow>
-
-                {/* Bouton pour Appliquer les Filtres */}
+                <IonRow>
+                    <IonCol>
+                        <IonList>
+                            <IonLabel>
+                                <strong>Catégories</strong>
+                            </IonLabel>
+                            {categories.map(category => (
+                                <IonItem key={category.id}>
+                                    <IonLabel>
+                                        {getTranslation(category.slug, 'categories')}
+                                    </IonLabel>
+                                    <IonToggle
+                                        slot="end"
+                                        checked={selectedCategories.includes(category.id)}
+                                        onIonChange={() => handleCategoryChange(category.id)}
+                                    />
+                                </IonItem>
+                            ))}
+                        </IonList>
+                    </IonCol>
+                </IonRow>
                 <IonRow>
                     <IonCol className="ion-text-center ion-margin-top">
                         <IonButton expand="block" onClick={onClose}>

@@ -10,7 +10,7 @@
                     "attribute_id": 15,
                     "language_id": 1,
                     "slug": "casual",
-                    "name": "Casual",
+                    "name": "Casual 👕",
                     "title": "Casual",
                     "description": null,
                     "meta_description": null,
@@ -24,7 +24,7 @@
                     "attribute_id": 15,
                     "language_id": 2,
                     "slug": "casual",
-                    "name": "Casual (fr)",
+                    "name": "Casual (fr) 👕",
                     "title": "Casual (fr)",
                     "description": null,
                     "meta_description": null,
@@ -46,7 +46,7 @@
                     "attribute_id": 3,
                     "language_id": 1,
                     "slug": "cocktails",
-                    "name": "Cocktails",
+                    "name": "Cocktails 🍸",
                     "title": "Cocktails",
                     "description": null,
                     "meta_description": null,
@@ -60,7 +60,7 @@
                     "attribute_id": 3,
                     "language_id": 2,
                     "slug": "cocktails",
-                    "name": "Cocktails (fr)",
+                    "name": "Cocktails (fr) 🍸",
                     "title": "Cocktails (fr)",
                     "description": null,
                     "meta_description": null,
@@ -82,7 +82,7 @@
                     "attribute_id": 20,
                     "language_id": 1,
                     "slug": "cosy",
-                    "name": "Cosy",
+                    "name": "Cosy 🕯️",
                     "title": "Cosy",
                     "description": null,
                     "meta_description": null,
@@ -96,7 +96,7 @@
                     "attribute_id": 20,
                     "language_id": 2,
                     "slug": "cosy",
-                    "name": "Cosy (fr)",
+                    "name": "Cosy (fr) 🕯️",
                     "title": "Cosy (fr)",
                     "description": null,
                     "meta_description": null,
@@ -118,7 +118,7 @@
                     "attribute_id": 6,
                     "language_id": 1,
                     "slug": "couple-friendly",
-                    "name": "Couple Friendly",
+                    "name": "Couple Friendly 💑",
                     "title": "Couple Friendly",
                     "description": null,
                     "meta_description": null,
@@ -132,8 +132,296 @@
                     "attribute_id": 6,
                     "language_id": 2,
                     "slug": "couple-friendly",
-                    "name": "Couple Friendly (fr)",
+                    "name": "Couple Friendly (fr) 💑",
                     "title": "Couple Friendly (fr)",
+                    "description": null,
+                    "meta_description": null,
+                    "language": {
+                        "id": 2,
+                        "code": "fr",
+                        "name": "Français"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 11,
+            "slug": "dogs-allowed",
+            "is_food_restriction": false,
+            "is_atmosphere": false,
+            "translations": [
+                {
+                    "attribute_id": 11,
+                    "language_id": 1,
+                    "slug": "dogs-allowed",
+                    "name": "Dogs Allowed 🐕",
+                    "title": "Dogs Allowed",
+                    "description": null,
+                    "meta_description": null,
+                    "language": {
+                        "id": 1,
+                        "code": "en",
+                        "name": "Anglais"
+                    }
+                },
+                {
+                    "attribute_id": 11,
+                    "language_id": 2,
+                    "slug": "dogs-allowed",
+                    "name": "Dogs Allowed (fr) 🐕",
+                    "title": "Dogs Allowed (fr)",
+                    "description": null,
+                    "meta_description": null,
+                    "language": {
+                        "id": 2,
+                        "code": "fr",
+                        "name": "Français"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "slug": "fireplace",
+            "is_food_restriction": false,
+            "is_atmosphere": false,
+            "translations": [
+                {
+                    "attribute_id": 5,
+                    "language_id": 1,
+                    "slug": "fireplace",
+                    "name": "Fireplace 🔥",
+                    "title": "Fireplace",
+                    "description": null,
+                    "meta_description": null,
+                    "language": {
+                        "id": 1,
+                        "code": "en",
+                        "name": "Anglais"
+                    }
+                },
+                {
+                    "attribute_id": 5,
+                    "language_id": 2,
+                    "slug": "fireplace",
+                    "name": "Fireplace (fr) 🔥",
+                    "title": "Fireplace (fr)",
+                    "description": null,
+                    "meta_description": null,
+                    "language": {
+                        "id": 2,
+                        "code": "fr",
+                        "name": "Français"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 18,
+            "slug": "gluten-free",
+            "is_food_restriction": true,
+            "is_atmosphere": false,
+            "translations": [
+                {
+                    "attribute_id": 18,
+                    "language_id": 1,
+                    "slug": "gluten-free",
+                    "name": "Gluten Free 🚫🌾",
+                    "title": "Gluten Free",
+                    "description": null,
+                    "meta_description": null,
+                    "language": {
+                        "id": 1,
+                        "code": "en",
+                        "name": "Anglais"
+                    }
+                },
+                {
+                    "attribute_id": 18,
+                    "language_id": 2,
+                    "slug": "gluten-free",
+                    "name": "Gluten Free (fr) 🚫🌾",
+                    "title": "Gluten Free (fr)",
+                    "description": null,
+                    "meta_description": null,
+                    "language": {
+                        "id": 2,
+                        "code": "fr",
+                        "name": "Français"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 9,
+            "slug": "good-for-groups",
+            "is_food_restriction": false,
+            "is_atmosphere": false,
+            "translations": [
+                {
+                    "attribute_id": 9,
+                    "language_id": 1,
+                    "slug": "good-for-groups",
+                    "name": "Good For Groups 👥",
+                    "title": "Good For Groups",
+                    "description": null,
+                    "meta_description": null,
+                    "language": {
+                        "id": 1,
+                        "code": "en",
+                        "name": "Anglais"
+                    }
+                },
+                {
+                    "attribute_id": 9,
+                    "language_id": 2,
+                    "slug": "good-for-groups",
+                    "name": "Good For Groups (fr) 👥",
+                    "title": "Good For Groups (fr)",
+                    "description": null,
+                    "meta_description": null,
+                    "language": {
+                        "id": 2,
+                        "code": "fr",
+                        "name": "Français"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 19,
+            "slug": "halal",
+            "is_food_restriction": true,
+            "is_atmosphere": false,
+            "translations": [
+                {
+                    "attribute_id": 19,
+                    "language_id": 1,
+                    "slug": "halal",
+                    "name": "Halal 🕌",
+                    "title": "Halal",
+                    "description": null,
+                    "meta_description": null,
+                    "language": {
+                        "id": 1,
+                        "code": "en",
+                        "name": "Anglais"
+                    }
+                },
+                {
+                    "attribute_id": 19,
+                    "language_id": 2,
+                    "slug": "halal",
+                    "name": "Halal (fr) 🕌",
+                    "title": "Halal (fr)",
+                    "description": null,
+                    "meta_description": null,
+                    "language": {
+                        "id": 2,
+                        "code": "fr",
+                        "name": "Français"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "slug": "kids-friendly",
+            "is_food_restriction": false,
+            "is_atmosphere": false,
+            "translations": [
+                {
+                    "attribute_id": 7,
+                    "language_id": 1,
+                    "slug": "kids-friendly",
+                    "name": "Kids Friendly 👶",
+                    "title": "Kids Friendly",
+                    "description": null,
+                    "meta_description": null,
+                    "language": {
+                        "id": 1,
+                        "code": "en",
+                        "name": "Anglais"
+                    }
+                },
+                {
+                    "attribute_id": 7,
+                    "language_id": 2,
+                    "slug": "kids-friendly",
+                    "name": "Kids Friendly (fr) 👶",
+                    "title": "Kids Friendly (fr)",
+                    "description": null,
+                    "meta_description": null,
+                    "language": {
+                        "id": 2,
+                        "code": "fr",
+                        "name": "Français"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 14,
+            "slug": "organic",
+            "is_food_restriction": true,
+            "is_atmosphere": false,
+            "translations": [
+                {
+                    "attribute_id": 14,
+                    "language_id": 1,
+                    "slug": "organic",
+                    "name": "Organic 🌱",
+                    "title": "Organic",
+                    "description": null,
+                    "meta_description": null,
+                    "language": {
+                        "id": 1,
+                        "code": "en",
+                        "name": "Anglais"
+                    }
+                },
+                {
+                    "attribute_id": 14,
+                    "language_id": 2,
+                    "slug": "organic",
+                    "name": "Organic (fr) 🌱",
+                    "title": "Organic (fr)",
+                    "description": null,
+                    "meta_description": null,
+                    "language": {
+                        "id": 2,
+                        "code": "fr",
+                        "name": "Français"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "slug": "outdoor-seating",
+            "is_food_restriction": false,
+            "is_atmosphere": false,
+            "translations": [
+                {
+                    "attribute_id": 2,
+                    "language_id": 1,
+                    "slug": "outdoor-seating",
+                    "name": "Outdoor Seating 🌤️",
+                    "title": "Outdoor Seating",
+                    "description": null,
+                    "meta_description": null,
+                    "language": {
+                        "id": 1,
+                        "code": "en",
+                        "name": "Anglais"
+                    }
+                },
+                {
+                    "attribute_id": 2,
+                    "language_id": 2,
+                    "slug": "outdoor-seating",
+                    "name": "Outdoor Seating (fr) 🌤️",
+                    "title": "Outdoor Seating (fr)",
                     "description": null,
                     "meta_description": null,
                     "language": {
@@ -181,294 +469,6 @@
             ]
         },
         {
-            "id": 11,
-            "slug": "dogs-allowed",
-            "is_food_restriction": false,
-            "is_atmosphere": false,
-            "translations": [
-                {
-                    "attribute_id": 11,
-                    "language_id": 1,
-                    "slug": "dogs-allowed",
-                    "name": "Dogs Allowed",
-                    "title": "Dogs Allowed",
-                    "description": null,
-                    "meta_description": null,
-                    "language": {
-                        "id": 1,
-                        "code": "en",
-                        "name": "Anglais"
-                    }
-                },
-                {
-                    "attribute_id": 11,
-                    "language_id": 2,
-                    "slug": "dogs-allowed",
-                    "name": "Dogs Allowed (fr)",
-                    "title": "Dogs Allowed (fr)",
-                    "description": null,
-                    "meta_description": null,
-                    "language": {
-                        "id": 2,
-                        "code": "fr",
-                        "name": "Français"
-                    }
-                }
-            ]
-        },
-        {
-            "id": 5,
-            "slug": "fireplace",
-            "is_food_restriction": false,
-            "is_atmosphere": false,
-            "translations": [
-                {
-                    "attribute_id": 5,
-                    "language_id": 1,
-                    "slug": "fireplace",
-                    "name": "Fireplace",
-                    "title": "Fireplace",
-                    "description": null,
-                    "meta_description": null,
-                    "language": {
-                        "id": 1,
-                        "code": "en",
-                        "name": "Anglais"
-                    }
-                },
-                {
-                    "attribute_id": 5,
-                    "language_id": 2,
-                    "slug": "fireplace",
-                    "name": "Fireplace (fr)",
-                    "title": "Fireplace (fr)",
-                    "description": null,
-                    "meta_description": null,
-                    "language": {
-                        "id": 2,
-                        "code": "fr",
-                        "name": "Français"
-                    }
-                }
-            ]
-        },
-        {
-            "id": 18,
-            "slug": "gluten-free",
-            "is_food_restriction": true,
-            "is_atmosphere": false,
-            "translations": [
-                {
-                    "attribute_id": 18,
-                    "language_id": 1,
-                    "slug": "gluten-free",
-                    "name": "Gluten Free",
-                    "title": "Gluten Free",
-                    "description": null,
-                    "meta_description": null,
-                    "language": {
-                        "id": 1,
-                        "code": "en",
-                        "name": "Anglais"
-                    }
-                },
-                {
-                    "attribute_id": 18,
-                    "language_id": 2,
-                    "slug": "gluten-free",
-                    "name": "Gluten Free (fr)",
-                    "title": "Gluten Free (fr)",
-                    "description": null,
-                    "meta_description": null,
-                    "language": {
-                        "id": 2,
-                        "code": "fr",
-                        "name": "Français"
-                    }
-                }
-            ]
-        },
-        {
-            "id": 9,
-            "slug": "good-for-groups",
-            "is_food_restriction": false,
-            "is_atmosphere": false,
-            "translations": [
-                {
-                    "attribute_id": 9,
-                    "language_id": 1,
-                    "slug": "good-for-groups",
-                    "name": "Good For Groups",
-                    "title": "Good For Groups",
-                    "description": null,
-                    "meta_description": null,
-                    "language": {
-                        "id": 1,
-                        "code": "en",
-                        "name": "Anglais"
-                    }
-                },
-                {
-                    "attribute_id": 9,
-                    "language_id": 2,
-                    "slug": "good-for-groups",
-                    "name": "Good For Groups (fr)",
-                    "title": "Good For Groups (fr)",
-                    "description": null,
-                    "meta_description": null,
-                    "language": {
-                        "id": 2,
-                        "code": "fr",
-                        "name": "Français"
-                    }
-                }
-            ]
-        },
-        {
-            "id": 19,
-            "slug": "halal",
-            "is_food_restriction": true,
-            "is_atmosphere": false,
-            "translations": [
-                {
-                    "attribute_id": 19,
-                    "language_id": 1,
-                    "slug": "halal",
-                    "name": "Halal",
-                    "title": "Halal",
-                    "description": null,
-                    "meta_description": null,
-                    "language": {
-                        "id": 1,
-                        "code": "en",
-                        "name": "Anglais"
-                    }
-                },
-                {
-                    "attribute_id": 19,
-                    "language_id": 2,
-                    "slug": "halal",
-                    "name": "Halal (fr)",
-                    "title": "Halal (fr)",
-                    "description": null,
-                    "meta_description": null,
-                    "language": {
-                        "id": 2,
-                        "code": "fr",
-                        "name": "Français"
-                    }
-                }
-            ]
-        },
-        {
-            "id": 7,
-            "slug": "kids-friendly",
-            "is_food_restriction": false,
-            "is_atmosphere": false,
-            "translations": [
-                {
-                    "attribute_id": 7,
-                    "language_id": 1,
-                    "slug": "kids-friendly",
-                    "name": "Kids Friendly",
-                    "title": "Kids Friendly",
-                    "description": null,
-                    "meta_description": null,
-                    "language": {
-                        "id": 1,
-                        "code": "en",
-                        "name": "Anglais"
-                    }
-                },
-                {
-                    "attribute_id": 7,
-                    "language_id": 2,
-                    "slug": "kids-friendly",
-                    "name": "Kids Friendly (fr)",
-                    "title": "Kids Friendly (fr)",
-                    "description": null,
-                    "meta_description": null,
-                    "language": {
-                        "id": 2,
-                        "code": "fr",
-                        "name": "Français"
-                    }
-                }
-            ]
-        },
-        {
-            "id": 14,
-            "slug": "organic",
-            "is_food_restriction": true,
-            "is_atmosphere": false,
-            "translations": [
-                {
-                    "attribute_id": 14,
-                    "language_id": 1,
-                    "slug": "organic",
-                    "name": "Organic",
-                    "title": "Organic",
-                    "description": null,
-                    "meta_description": null,
-                    "language": {
-                        "id": 1,
-                        "code": "en",
-                        "name": "Anglais"
-                    }
-                },
-                {
-                    "attribute_id": 14,
-                    "language_id": 2,
-                    "slug": "organic",
-                    "name": "Organic (fr)",
-                    "title": "Organic (fr)",
-                    "description": null,
-                    "meta_description": null,
-                    "language": {
-                        "id": 2,
-                        "code": "fr",
-                        "name": "Français"
-                    }
-                }
-            ]
-        },
-        {
-            "id": 2,
-            "slug": "outdoor-seating",
-            "is_food_restriction": false,
-            "is_atmosphere": false,
-            "translations": [
-                {
-                    "attribute_id": 2,
-                    "language_id": 1,
-                    "slug": "outdoor-seating",
-                    "name": "Outdoor Seating",
-                    "title": "Outdoor Seating",
-                    "description": null,
-                    "meta_description": null,
-                    "language": {
-                        "id": 1,
-                        "code": "en",
-                        "name": "Anglais"
-                    }
-                },
-                {
-                    "attribute_id": 2,
-                    "language_id": 2,
-                    "slug": "outdoor-seating",
-                    "name": "Outdoor Seating (fr)",
-                    "title": "Outdoor Seating (fr)",
-                    "description": null,
-                    "meta_description": null,
-                    "language": {
-                        "id": 2,
-                        "code": "fr",
-                        "name": "Français"
-                    }
-                }
-            ]
-        },
-        {
             "id": 1,
             "slug": "outside-activity",
             "is_food_restriction": false,
@@ -478,7 +478,7 @@
                     "attribute_id": 1,
                     "language_id": 1,
                     "slug": "outside-activity",
-                    "name": "Outside Activity",
+                    "name": "Outside Activity 🏞️",
                     "title": "Outside Activity",
                     "description": null,
                     "meta_description": null,
@@ -492,7 +492,7 @@
                     "attribute_id": 1,
                     "language_id": 2,
                     "slug": "outside-activity",
-                    "name": "Outside Activity (fr)",
+                    "name": "Outside Activity (fr) 🏞️",
                     "title": "Outside Activity (fr)",
                     "description": null,
                     "meta_description": null,
@@ -514,7 +514,7 @@
                     "attribute_id": 10,
                     "language_id": 1,
                     "slug": "reservation-required",
-                    "name": "Reservation Required",
+                    "name": "Reservation Required 📅",
                     "title": "Reservation Required",
                     "description": null,
                     "meta_description": null,
@@ -528,7 +528,7 @@
                     "attribute_id": 10,
                     "language_id": 2,
                     "slug": "reservation-required",
-                    "name": "Reservation Required (fr)",
+                    "name": "Reservation Required (fr) 📅",
                     "title": "Reservation Required (fr)",
                     "description": null,
                     "meta_description": null,
@@ -550,7 +550,7 @@
                     "attribute_id": 17,
                     "language_id": 1,
                     "slug": "romantic",
-                    "name": "Romantic",
+                    "name": "Romantic ❤️",
                     "title": "Romantic",
                     "description": null,
                     "meta_description": null,
@@ -564,7 +564,7 @@
                     "attribute_id": 17,
                     "language_id": 2,
                     "slug": "romantic",
-                    "name": "Romantic (fr)",
+                    "name": "Romantic (fr) ❤️",
                     "title": "Romantic (fr)",
                     "description": null,
                     "meta_description": null,
@@ -586,7 +586,7 @@
                     "attribute_id": 4,
                     "language_id": 1,
                     "slug": "tapas",
-                    "name": "Tapas",
+                    "name": "Tapas 🍢",
                     "title": "Tapas",
                     "description": null,
                     "meta_description": null,
@@ -600,7 +600,7 @@
                     "attribute_id": 4,
                     "language_id": 2,
                     "slug": "tapas",
-                    "name": "Tapas (fr)",
+                    "name": "Tapas (fr) 🍢",
                     "title": "Tapas (fr)",
                     "description": null,
                     "meta_description": null,
@@ -622,7 +622,7 @@
                     "attribute_id": 21,
                     "language_id": 1,
                     "slug": "trending",
-                    "name": "Trending",
+                    "name": "Trending 🔥",
                     "title": "Trending",
                     "description": null,
                     "meta_description": null,
@@ -636,7 +636,7 @@
                     "attribute_id": 21,
                     "language_id": 2,
                     "slug": "trending",
-                    "name": "Trending (fr)",
+                    "name": "Trending (fr) 🔥",
                     "title": "Trending (fr)",
                     "description": null,
                     "meta_description": null,
@@ -658,7 +658,7 @@
                     "attribute_id": 22,
                     "language_id": 1,
                     "slug": "upscale",
-                    "name": "Upscale",
+                    "name": "Upscale 🏰",
                     "title": "Upscale",
                     "description": null,
                     "meta_description": null,
@@ -672,7 +672,7 @@
                     "attribute_id": 22,
                     "language_id": 2,
                     "slug": "upscale",
-                    "name": "Upscale (fr)",
+                    "name": "Upscale (fr) 🏰",
                     "title": "Upscale (fr)",
                     "description": null,
                     "meta_description": null,
@@ -694,7 +694,7 @@
                     "attribute_id": 12,
                     "language_id": 1,
                     "slug": "vegan",
-                    "name": "Vegan",
+                    "name": "Vegan 🥬",
                     "title": "Vegan",
                     "description": null,
                     "meta_description": null,
@@ -708,7 +708,7 @@
                     "attribute_id": 12,
                     "language_id": 2,
                     "slug": "vegan",
-                    "name": "Vegan (fr)",
+                    "name": "Vegan (fr) 🥬",
                     "title": "Vegan (fr)",
                     "description": null,
                     "meta_description": null,
@@ -730,7 +730,7 @@
                     "attribute_id": 13,
                     "language_id": 1,
                     "slug": "vegetarian",
-                    "name": "Vegetarian",
+                    "name": "Vegetarian 🥬",
                     "title": "Vegetarian",
                     "description": null,
                     "meta_description": null,
@@ -744,7 +744,7 @@
                     "attribute_id": 13,
                     "language_id": 2,
                     "slug": "vegetarian",
-                    "name": "Vegetarian (fr)",
+                    "name": "Vegetarian (fr) 🥬",
                     "title": "Vegetarian (fr)",
                     "description": null,
                     "meta_description": null,
@@ -766,7 +766,7 @@
                     "attribute_id": 8,
                     "language_id": 1,
                     "slug": "wheelchair",
-                    "name": "Wheelchair",
+                    "name": "Wheelchair ♿",
                     "title": "Wheelchair",
                     "description": null,
                     "meta_description": null,
@@ -780,7 +780,7 @@
                     "attribute_id": 8,
                     "language_id": 2,
                     "slug": "wheelchair",
-                    "name": "Wheelchair (fr)",
+                    "name": "Wheelchair (fr) ♿",
                     "title": "Wheelchair (fr)",
                     "description": null,
                     "meta_description": null,
