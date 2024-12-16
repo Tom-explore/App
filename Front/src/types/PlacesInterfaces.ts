@@ -1,3 +1,4 @@
+import { Attribute, Category } from "./CategoriesAttributesInterfaces";
 import { City } from "./CommonInterfaces";
 import { PlaceType, CrowdStatus } from "./EnumsInterfaces";
 
@@ -29,6 +30,9 @@ export interface Place {
     top: number;
     source?: string;
   }[];
+  attributes: Attribute[];
+  categories: Category[];
+
 }
 
 

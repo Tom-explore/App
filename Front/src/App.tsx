@@ -32,6 +32,7 @@ import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 
 import '@ionic/react/css/palettes/dark.system.css';
+import Trip from './pages/Trip';
 
 setupIonicReact();
 
@@ -66,6 +67,7 @@ const App: React.FC = () => {
 
         <IonTabs>
           <IonRouterOutlet>
+            <Route path="/trip" component={Trip} exact />
             <Route path="/:lang/city/:slug" component={City} exact />
             <Route path="/:lang/feed" component={Tab1} exact />
             <Route path="/:lang/destinations" component={MapDisplay} exact />

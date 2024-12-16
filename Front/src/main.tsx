@@ -3,6 +3,7 @@ import App from './App';
 import { LanguageProvider } from './context/languageContext';
 import { IonReactRouter } from '@ionic/react-router';
 import { CityProvider } from './context/cityContext';
+import { TripProvider } from './context/tripContext';
 
 const container = document.getElementById('root');
 const root = createRoot(container!);
@@ -12,7 +13,11 @@ root.render(
 
     <LanguageProvider>
       <CityProvider>
-        <App />
+        <TripProvider>
+
+          <App />
+        </TripProvider>
+
       </CityProvider>
     </LanguageProvider>
 

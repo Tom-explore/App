@@ -1,5 +1,5 @@
 import React from 'react';
-import { IonIcon } from '@ionic/react';
+import { IonButton, IonIcon } from '@ionic/react';
 import { listOutline, mapOutline } from 'ionicons/icons';
 import './SwitchCityMapList.css';
 
@@ -9,20 +9,21 @@ interface SwitchMapListCityProps {
 }
 
 const SwitchMapListCity: React.FC<SwitchMapListCityProps> = ({ currentMode, onSwitch }) => {
+    const isMapMode = currentMode === 'map';
+
+    const handleClick = () => {
+        onSwitch(isMapMode ? 'list' : 'map'); // Alterne entre 'list' et 'map'
+    };
+
     return (
         <div className="switch-map-list-city">
-            <button
-                className={`switch-button ${currentMode === 'list' ? 'active' : ''}`}
-                onClick={() => onSwitch('list')}
+            <IonButton
+                onClick={handleClick}
+                className={`switch-button ${isMapMode ? 'map-mode' : 'list-mode'}`}
+                fill="clear"
             >
-                <IonIcon icon={listOutline} className="switch-icon" />
-            </button>
-            <button
-                className={`switch-button ${currentMode === 'map' ? 'active' : ''}`}
-                onClick={() => onSwitch('map')}
-            >
-                <IonIcon icon={mapOutline} className="switch-icon" />
-            </button>
+                <IonIcon icon={isMapMode ? listOutline : mapOutline} className="switch-icon" />
+            </IonButton>
         </div>
     );
 };

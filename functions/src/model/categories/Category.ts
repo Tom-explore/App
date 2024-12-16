@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany } from 'typeorm';
+import { TxCategory } from '../translations/TxCategory';
 
 @Entity('categories')
 export class Category extends BaseEntity {
@@ -19,7 +20,8 @@ export class Category extends BaseEntity {
 
   @Column('boolean', { default: false })
   for_posts!: boolean;
-
+  @OneToMany(() => TxCategory, (txCategory) => txCategory.category, { cascade: true })
+  translations!: TxCategory[];
   constructor() {
     super();
   }

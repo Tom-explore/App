@@ -1,3 +1,5 @@
+// src/context/CityContext.tsx
+
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import citiesData from '../data/cities.json';
 import { useLanguage } from '../context/languageContext';
@@ -5,6 +7,7 @@ import { City, CityPreview } from '../types/CommonInterfaces';
 import { Place } from '../types/PlacesInterfaces';
 import apiClient from '../config/apiClient';
 
+// Updated Places type remains the same since Place now includes attributes and categories
 type Places = {
     restaurantsBars: Place[];
     hotels: Place[];
@@ -21,8 +24,11 @@ type CityState = {
 
 const CityContext = createContext<CityState | undefined>(undefined);
 
+/**
+ * Fetch the city preview based on language and slug.
+ */
 function getPreview(languageId: number, slug: string) {
-    console.log('languageid : ', languageId)
+    console.log('languageId:', languageId);
     const cityData = (citiesData as any[]).find(
         (c) =>
             c.slug === slug ||
@@ -35,6 +41,7 @@ function getPreview(languageId: number, slug: string) {
     let translation = cityData.translations.find((t: any) => t.language === languageId);
 
     if (!translation && languageId === 1) {
+        // Fallback to default language if translation not found
         translation = { slug: cityData.slug, name: cityData.name, description: cityData.description };
     }
 
@@ -56,26 +63,46 @@ function getPreview(languageId: number, slug: string) {
     return { preview, originalSlug };
 }
 
+/**
+ * Fetch initial set of places with pagination.
+ */
 async function fetchInitialPlaces(languageId: number, slug: string): Promise<Places> {
-    const { data } = await apiClient.get(`/place/cities/${slug}/all-places`, {
-        params: { languageId, limit: 8, offset: 0 },
-    });
-    return {
-        restaurantsBars: data.places?.restaurantsBars || [],
-        hotels: data.places?.hotels || [],
-        touristAttractions: data.places?.touristAttractions || [],
-    };
+    try {
+        const { data } = await apiClient.get(`/place/cities/${slug}/all-places`, {
+            params: { languageId, limit: 8, offset: 0 },
+        });
+        return {
+            restaurantsBars: data.places?.restaurantsBars || [],
+            hotels: data.places?.hotels || [],
+            touristAttractions: data.places?.touristAttractions || [],
+        };
+    } catch (error) {
+        console.error('Error fetching initial places:', error);
+        return {
+            restaurantsBars: [],
+            hotels: [],
+            touristAttractions: [],
+        };
+    }
 }
 
+/**
+ * Fetch remaining places after the initial set.
+ */
 async function fetchRemainingPlaces(languageId: number, slug: string, currentPlaces: Places): Promise<Places> {
-    const { data } = await apiClient.get(`/place/cities/${slug}/all-places`, {
-        params: { languageId, limit: 999, offset: 8 },
-    });
-    return {
-        restaurantsBars: [...currentPlaces.restaurantsBars, ...(data.places?.restaurantsBars || [])],
-        hotels: [...currentPlaces.hotels, ...(data.places?.hotels || [])],
-        touristAttractions: [...currentPlaces.touristAttractions, ...(data.places?.touristAttractions || [])],
-    };
+    try {
+        const { data } = await apiClient.get(`/place/cities/${slug}/all-places`, {
+            params: { languageId, limit: 999, offset: 8 },
+        });
+        return {
+            restaurantsBars: [...currentPlaces.restaurantsBars, ...(data.places?.restaurantsBars || [])],
+            hotels: [...currentPlaces.hotels, ...(data.places?.hotels || [])],
+            touristAttractions: [...currentPlaces.touristAttractions, ...(data.places?.touristAttractions || [])],
+        };
+    } catch (error) {
+        console.error('Error fetching remaining places:', error);
+        return currentPlaces;
+    }
 }
 
 export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -106,7 +133,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const setCityPreviewAndFetchData = useCallback(
         (slug: string) => {
-            // On ne lance rien si la langue n'est pas encore chargée
+            // Do not proceed if the language is not loaded yet
             if (!isLanguageLoaded) {
                 console.warn("Language not loaded yet, cannot fetch city preview.");
                 return;
@@ -122,7 +149,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 return;
             }
 
-            // On peut mettre un petit délai si besoin (ex: 50ms)
+            // Optional small delay if needed (e.g., 50ms)
             setTimeout(() => {
                 setCity(result.preview);
                 setIsPreview(true);
@@ -132,7 +159,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
         [isFetching, language.id, isLanguageLoaded, resetCity]
     );
 
-    // Effet séparé pour charger les données après la preview
+    // Separate effect to load data after setting the preview
     useEffect(() => {
         if (!pendingLoad || !isLanguageLoaded) return;
 
@@ -148,27 +175,31 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (canceled) return;
             setPlaces(finalPlaces);
 
+            // Construct the full City object with translations and country data
             const fullCity: City = {
                 id: preview.id || 0,
                 lat: preview.lat || 0,
                 lng: preview.lng || 0,
                 slug: preview.slug || '',
+                scrapio: '', // Update if available
+                timezone: '', // Update if available
+                duration: 0, // Update if available
                 country: {
-                    id: 0,
+                    id: 0, // Update if available
                     slug: originalSlug,
                     code: preview.country.code || '',
                     translation: {
                         slug: originalSlug,
                         name: preview.country.name || '',
-                        description: '',
-                        meta_description: '',
+                        description: '', // Update if available
+                        meta_description: '', // Update if available
                     },
                 },
                 translation: {
                     slug: preview.slug || '',
                     name: preview.name || '',
                     description: preview.description || '',
-                    meta_description: '',
+                    meta_description: '', // Update if available
                 },
                 places: finalPlaces,
             };

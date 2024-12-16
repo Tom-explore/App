@@ -10,6 +10,8 @@ import { City } from '../../model/common/City';
 import { TxCity } from '../../model/translations/TxCity';
 import { TxCountry } from '../../model/translations/TxCountry';
 import { Repository } from 'typeorm';
+import { PlaceAttribute } from '../../model/categories/PlaceAttribute';
+import { PlaceCategory } from '../../model/categories/PlaceCategory';
 
 class PlaceController {
   private placeRepository: Repository<Place>;
@@ -230,6 +232,7 @@ class PlaceController {
           }))
         ),
       };
+      console.log('Final Response:', JSON.stringify(result, null, 2));
 
       return res.status(200).json(result);
     } catch (error: any) {
@@ -326,7 +329,7 @@ class PlaceController {
         offsetTA,
       });
 
-      // Utilisation des repositories avec les méthodes appropriées
+      // Utilize repositories with appropriate methods
       const [restaurantBars, rbCount] = await restaurantBarRepository.findAndCount({
         relations: ['place'],
         where: { place: { city: { id: city.id } } },
@@ -348,12 +351,40 @@ class PlaceController {
         take: limitTA,
       });
 
-      // Fonction pour enrichir les places avec traductions et images
+      // Function to enrich places with translations, images, attributes, and categories
       const enrichPlace = async (place: Place) => {
+        // Fetch translation
         const translation = await txPlaceRepository.findOne({
           where: { place: { id: place.id }, language_id: Number(languageId) },
         });
+
+        // Fetch images
         const images = await placeImgRepository.find({ where: { place: { id: place.id } } });
+
+        // Fetch attributes with full Attribute objects
+        const placeAttributes = await PlaceAttribute.find({
+          where: { place: { id: place.id } },
+          relations: ['attribute'],
+        });
+        console.log(`Attributes for Place ID ${place.id}:`, placeAttributes);
+
+        const attributes: any[] = placeAttributes.map((pa) => ({
+          ...pa.attribute,
+          value: pa.value,
+        }));
+
+        // Fetch categories with full Category objects
+        const placeCategories = await PlaceCategory.find({
+          where: { place: { id: place.id } },
+          relations: ['category'],
+        });
+        const categories: any[] = placeCategories.map((pc) => ({
+          ...pc.category,
+          main: pc.main,
+        }));
+        console.log(`Categories for Place ID ${place.id}:`, placeCategories);
+
+
         return {
           id: place.id,
           slug: place.slug,
@@ -384,10 +415,14 @@ class PlaceController {
             top: img.top,
             source: img.source,
           })),
+          attributes, // Included full Attribute objects with 'value'
+          categories, // Included full Category objects with 'main'
         };
+
       };
 
       const enrichedRB = await Promise.all(restaurantBars.map((rb) => enrichPlace(rb.place)));
+      console.log(enrichedRB)
       const enrichedH = await Promise.all(hotels.map((hotel) => enrichPlace(hotel.place)));
       const enrichedTA = await Promise.all(touristAttractions.map((ta) => enrichPlace(ta.place)));
 
@@ -435,5 +470,5 @@ class PlaceController {
     }
   }
 }
-
 export default PlaceController;
+

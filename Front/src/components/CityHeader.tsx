@@ -1,7 +1,8 @@
 import React from 'react';
-import { IonContent, IonText, IonSkeletonText } from '@ionic/react';
+import { IonText, IonButtons, IonBackButton } from '@ionic/react';
 import './CityHeader.css';
 import Meteo from './Meteo';
+import { useLanguage } from '../context/languageContext';
 
 interface CityHeaderProps {
     name: string;
@@ -12,7 +13,6 @@ interface CityHeaderProps {
     countryCode: string;
     slug: string;
 }
-
 
 const CityHeader: React.FC<CityHeaderProps> = React.memo(({
     name,
@@ -25,7 +25,7 @@ const CityHeader: React.FC<CityHeaderProps> = React.memo(({
 }) => {
     const placeholderUrl = `/assets/img/${countryCode}/${slug}/main/${slug}-1.jpg`;
     const videoUrl = `/assets/img/${countryCode}/${slug}/main/${slug}-video.mp4`;
-
+    const { language } = useLanguage();
     return (
         <div className="city-header">
             <div
@@ -45,6 +45,9 @@ const CityHeader: React.FC<CityHeaderProps> = React.memo(({
                     <source src={videoUrl} type="video/mp4" />
                     Your browser does not support the video tag.
                 </video>
+                <div className="city-header-back-button">
+                    <IonBackButton defaultHref={`/${language.code}/city`} />
+                </div>
             </div>
 
             <div className="city-header-box">
@@ -63,6 +66,7 @@ const CityHeader: React.FC<CityHeaderProps> = React.memo(({
                 )}
             </div>
         </div>
+
     );
 });
 

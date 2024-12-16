@@ -1,3 +1,7 @@
+/* City.css */
+
+/* --- Styles Existants pour les Sections des Lieux --- */
+
 /* Section des lieux */
 .places-section {
   margin: 20px;
@@ -23,6 +27,14 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Styles des boutons */
+ion-button {
+  --background: #3880ff;
+  --color: white;
+  margin-left: 10px;
+}
+
+/* Image et informations des lieux */
 .place-image {
   width: 100%;
   height: 120px;
@@ -44,6 +56,7 @@
   margin: 5px 0 0;
 }
 
+/* Bannière et titre de la ville */
 .city-banner {
   height: 200px;
   display: flex;
@@ -60,6 +73,116 @@
   font-weight: bold;
 }
 
+/* Contenu principal de la ville */
 .city-content {
   padding: 16px;
+}
+
+/* --- Styles pour le Panneau de Filtrage Coulissant --- */
+
+/* Container pour la page entière */
+.city-page {
+  position: relative;
+  overflow-x: hidden;
+  /* Empêche le défilement horizontal lors du décalage du contenu */
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Décaler le contenu vers la droite lorsque le panneau de filtrage est ouvert */
+.city-page.content-shift .city-content {
+  transform: translateX(300px);
+  /* Même que la largeur du panneau */
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Overlay semi-transparent lorsqu'un panneau est ouvert */
+.overlay {
+  position: fixed;
+  top: 56px;
+  /* Hauteur de l'en-tête */
+  left: 0;
+  width: 100%;
+  height: calc(100% - 56px);
+  /* Hauteur totale moins l'en-tête */
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+  z-index: 999;
+  /* Juste en dessous du panneau */
+}
+
+.overlay.visible {
+  opacity: 1;
+  visibility: visible;
+  cursor: pointer;
+}
+
+/* Empêche les interactions avec le contenu principal lorsque le panneau est ouvert */
+.city-page.content-shift .city-content {
+  pointer-events: none;
+}
+
+/* Assure que le contenu principal a une position relative et un z-index élevé */
+.city-content {
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Container pour le panneau de filtrage */
+.filter-panel-container {
+  position: fixed;
+  top: 56px;
+  /* Hauteur de l'en-tête */
+  left: -300px;
+  /* Caché par défaut */
+  width: 300px;
+  height: calc(100% - 56px);
+  /* Hauteur totale moins l'en-tête */
+  background-color: #fff;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+  overflow-y: auto;
+  transition: left 0.3s ease-in-out;
+  z-index: 1000;
+  /* Au-dessus des autres éléments */
+}
+
+/* Lorsque le panneau est ouvert */
+.filter-panel-container.open {
+  left: 0;
+}
+
+/* En-tête du panneau de filtrage */
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Bouton de fermeture dans l'en-tête du panneau */
+.filter-header ion-button {
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+/* Contenu du panneau de filtrage */
+.filter-panel {
+  padding: 16px;
+}
+
+/* Bouton pour appliquer les filtres */
+.filter-panel ion-button {
+  --background: var(--ion-color-primary);
+  --color: white;
+}
+
+/* Styles pour l'indicateur de chargement */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 }
