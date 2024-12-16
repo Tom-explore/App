@@ -31,12 +31,6 @@
     border-bottom: 1px solid #ddd;
 }
 
-/* Optional: Style the filter button */
-.filter-header ion-button {
-    --padding-start: 0;
-    --padding-end: 0;
-}
-
 /* Ensure the filter panel covers the full height minus the header */
 .filter-panel {
     height: calc(100% - 56px);
@@ -44,8 +38,56 @@
     padding: 16px;
 }
 
-/* Optional: Customize the Apply Filters button */
-.filter-panel ion-button {
-    --background: var(--ion-color-primary);
-    --color: white;
+/* Style the toggle switches */
+.filter-panel ion-toggle {
+    --handle-background: var(--ion-color-primary);
+    /* Switch handle color */
+    --background-checked: var(--ion-color-primary-tint);
+    /* Background when checked */
+    --background: #ccc;
+    /* Default background */
+    margin-left: auto;
+    /* Align the switch to the right */
+}
+
+/* Responsive styles */
+@media screen and (max-width: 768px) {
+    .filter-panel-container {
+        width: 250px;
+        /* Adjust width for smaller screens */
+    }
+
+    .filter-panel {
+        padding: 12px;
+        /* Reduce padding for smaller screens */
+    }
+
+    .filter-header {
+        padding: 12px;
+        /* Reduce padding for the header */
+    }
+
+    .filter-panel ion-toggle {
+        --handle-background: var(--ion-color-primary-shade);
+        --background-checked: var(--ion-color-primary-tint);
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .filter-panel-container {
+        width: 200px;
+        /* Narrower panel for very small screens */
+    }
+
+    .filter-header {
+        font-size: 14px;
+        /* Smaller text in the header */
+        padding: 10px;
+        /* Less padding for header */
+    }
+
+    .filter-panel ion-toggle {
+        --background-checked: var(--ion-color-primary);
+        --handle-background: var(--ion-color-primary);
+    }
 }
