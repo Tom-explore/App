@@ -1,4 +1,5 @@
-// PlaceCarousel.tsx
+// src/components/PlaceCarousel.tsx
+
 import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, FreeMode } from 'swiper/modules';
@@ -15,9 +16,13 @@ interface PlaceCarouselProps {
     title: string;
     places: Place[];
     isPreview: boolean; // Utilisé pour savoir si on est encore dans la phase de chargement
+    onLoadMore: () => void; // Ajouté
+    hasMore: boolean; // Ajouté
+    isLoading: boolean; // Ajouté
 }
 
-const PlaceCarousel: React.FC<PlaceCarouselProps> = ({ title, places, isPreview }) => {
+
+const PlaceCarousel: React.FC<PlaceCarouselProps> = ({ title, places, isPreview, onLoadMore, hasMore, isLoading }) => {
     const renderSkeletons = (count: number) =>
         Array.from({ length: count }).map((_, index) => (
             <div key={`skeleton-${index}`} className="place-card skeleton">
@@ -60,6 +65,11 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({ title, places, isPreview 
                 }}
                 loop={false}
                 draggable={true}
+                onReachEnd={() => {
+                    if (hasMore) {
+                        onLoadMore();
+                    }
+                }}
             >
                 <AnimatePresence>
                     {/* Affiche les lieux existants */}
@@ -100,10 +110,32 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({ title, places, isPreview 
                             </div>
                         </SwiperSlide>
                     )}
+
+                    {/* Loader Slide */}
+                    {isLoading && hasMore && (
+                        <SwiperSlide key="loader">
+                            <div className="loader-container">
+                                <div className="spinner"></div>
+                            </div>
+                        </SwiperSlide>
+                    )}
                 </AnimatePresence>
             </Swiper>
+            {/* Indicateur de Chargement */}
+            {!isPreview && hasMore && (
+                <div className="loading-indicator">
+                    <p>Chargement de plus de {title}...</p>
+                </div>
+            )}
+            {/* Message si aucun lieu restant */}
+            {!isPreview && !hasMore && (
+                <div className="no-more-results">
+                    <p>Vous avez vu tous les {title.toLowerCase()} disponibles.</p>
+                </div>
+            )}
         </div>
     );
+
 };
 
 export default PlaceCarousel;
