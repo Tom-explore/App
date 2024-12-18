@@ -1,15 +1,118 @@
 /* City.css */
 
-/* --- Styles Existants pour les Sections des Lieux --- */
+/* Variables CSS */
+:root {
+  --primary-color: #3880ff;
+  --secondary-color: #fff;
+  --text-color: #555;
+  --background-color: #f9f9f9;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --border-color: #ddd;
+  --toggle-checked-bg: #3880ff;
+  --toggle-bg: #ccc;
+}
 
-/* Section des lieux */
+/* Container principal */
+.city-page {
+  position: relative;
+  overflow-x: hidden;
+  transition: transform 0.3s ease-in-out;
+}
+
+.city-page.content-shift .city-content {
+  transform: translateX(300px);
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+  z-index: 999;
+}
+
+.overlay.visible {
+  opacity: 1;
+  visibility: visible;
+  cursor: pointer;
+}
+
+/* Désactive les interactions avec le contenu quand le panneau est ouvert */
+.city-page.content-shift .city-content {
+  pointer-events: none;
+}
+
+/* Boutons en en-tête */
+.city-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+/* Bouton Filtrer : on retire le style minimaliste et on revient à quelque chose de standard */
+.filter-button {
+  /* Utilise la couleur primaire et le style IonButton par défaut */
+  --background: var(--primary-color);
+  --color: var(--secondary-color);
+  border-radius: 4px;
+  font-size: 1rem;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Agrandir un peu l'icône si souhaité */
+.filter-button ion-icon {
+  font-size: 20px;
+}
+
+/* Autres boutons dans l'en-tête (ex: "Je crée mon voyage!") */
+.city-buttons ion-button:not(.filter-button) {
+  --background: var(--primary-color);
+  --color: var(--secondary-color);
+  border-radius: 20px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+}
+
+/* Contenu principal */
+.city-content {
+  padding: 16px;
+  background-color: var(--background-color);
+  min-height: 80vh;
+}
+
+/* Message de non-résultats */
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  text-align: center;
+  color: var(--text-color);
+  font-size: 1.2em;
+}
+
+/* Carrousels de lieux */
 .places-section {
-  margin: 20px;
+  margin: 20px 0;
 }
 
 .places-section h2 {
-  font-size: 22px;
+  font-size: 1.5rem;
   margin-bottom: 10px;
+  color: var(--text-color);
 }
 
 .places-grid {
@@ -21,20 +124,17 @@
 .place-card {
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: var(--secondary-color);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px var(--shadow-color);
+  transition: transform 0.2s ease-in-out;
 }
 
-/* Styles des boutons */
-ion-button {
-  --background: #3880ff;
-  --color: white;
-  margin-left: 10px;
+.place-card:hover {
+  transform: translateY(-5px);
 }
 
-/* Image et informations des lieux */
 .place-image {
   width: 100%;
   height: 120px;
@@ -46,143 +146,122 @@ ion-button {
 }
 
 .place-info h3 {
-  font-size: 16px;
-  margin: 0;
+  font-size: 1rem;
+  margin: 0 0 5px 0;
+  color: var(--text-color);
 }
 
 .place-info p {
-  font-size: 14px;
-  color: #555;
-  margin: 5px 0 0;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  margin: 0;
 }
 
-/* Bannière et titre de la ville */
-.city-banner {
-  height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-size: cover;
-  background-position: center;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-}
-
-.city-title {
-  font-size: 2rem;
-  font-weight: bold;
-}
-
-/* Contenu principal de la ville */
-.city-content {
-  padding: 16px;
-}
-
-/* --- Styles pour le Panneau de Filtrage Coulissant --- */
-
-/* Container pour la page entière */
-.city-page {
-  position: relative;
-  overflow-x: hidden;
-  /* Empêche le défilement horizontal lors du décalage du contenu */
-  transition: transform 0.3s ease-in-out;
-}
-
-/* Décaler le contenu vers la droite lorsque le panneau de filtrage est ouvert */
-.city-page.content-shift .city-content {
-  transform: translateX(300px);
-  /* Même que la largeur du panneau */
-  transition: transform 0.3s ease-in-out;
-}
-
-/* Overlay semi-transparent lorsqu'un panneau est ouvert */
-.overlay {
-  position: fixed;
-  top: 56px;
-  /* Hauteur de l'en-tête */
-  left: 0;
-  width: 100%;
-  height: calc(100% - 56px);
-  /* Hauteur totale moins l'en-tête */
-  background: rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-  z-index: 999;
-  /* Juste en dessous du panneau */
-}
-
-.overlay.visible {
-  opacity: 1;
-  visibility: visible;
-  cursor: pointer;
-}
-
-/* Empêche les interactions avec le contenu principal lorsque le panneau est ouvert */
-.city-page.content-shift .city-content {
-  pointer-events: none;
-}
-
-/* Assure que le contenu principal a une position relative et un z-index élevé */
-.city-content {
-  position: relative;
-  z-index: 1;
-  transition: transform 0.3s ease-in-out;
-}
-
-/* Container pour le panneau de filtrage */
-.filter-panel-container {
-  position: fixed;
-  top: 56px;
-  /* Hauteur de l'en-tête */
-  left: -300px;
-  /* Caché par défaut */
-  width: 300px;
-  height: calc(100% - 56px);
-  /* Hauteur totale moins l'en-tête */
-  background-color: #fff;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
-  overflow-y: auto;
-  transition: left 0.3s ease-in-out;
-  z-index: 1000;
-  /* Au-dessus des autres éléments */
-}
-
-/* Lorsque le panneau est ouvert */
-.filter-panel-container.open {
-  left: 0;
-}
-
-/* En-tête du panneau de filtrage */
-.filter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid #ddd;
-}
-
-/* Bouton de fermeture dans l'en-tête du panneau */
-.filter-header ion-button {
-  --padding-start: 0;
-  --padding-end: 0;
-}
-
-/* Contenu du panneau de filtrage */
-.filter-panel {
-  padding: 16px;
-}
-
-/* Bouton pour appliquer les filtres */
-.filter-panel ion-button {
-  --background: var(--ion-color-primary);
-  --color: white;
-}
-
-/* Styles pour l'indicateur de chargement */
+/* Loading */
 .loading {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100%;
+}
+
+/* Panneau de filtrage mobile */
+.filter-panel-mobile-container.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-10%);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.filter-panel-mobile-container.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Header du panneau de filtrage */
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--secondary-color);
+}
+
+.filter-header ion-label {
+  font-size: 1.1rem;
+  color: var(--text-color);
+}
+
+.filter-header ion-button {
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+/* Titres de sections dans le panneau de filtrage */
+.filter-section-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: var(--text-color);
+}
+
+/* Toggle filtrage */
+.filter-panel ion-toggle {
+  --handle-background: var(--toggle-checked-bg);
+  --background-checked: var(--toggle-checked-bg);
+  --background: var(--toggle-bg);
+  margin-left: auto;
+}
+
+/* Bouton appliquer les filtres */
+.filter-panel ion-button {
+  --background: var(--primary-color);
+  --color: var(--secondary-color);
+  border-radius: 20px;
+  padding: 10px;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .city-buttons {
+    flex-direction: column;
+  }
+
+  .city-buttons ion-button {
+    width: 100%;
+  }
+
+  .places-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+  }
+
+  .place-image {
+    height: 100px;
+  }
+
+  .place-info h3 {
+    font-size: 0.9rem;
+  }
+
+  .place-info p {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-header ion-label {
+    font-size: 1rem;
+  }
+
+  .filter-section-title {
+    font-size: 1rem;
+  }
+
+  .city-content {
+    padding: 10px;
+  }
 }

@@ -4,6 +4,10 @@
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   overflow: hidden;
   background-color: var(--ion-card-background, #fff);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  /* Ensure the card takes full height of its container */
 }
 
 .city-card:hover {
@@ -30,6 +34,8 @@
 .city-card-header {
   text-align: center;
   padding: 10px 15px;
+  flex-shrink: 0;
+  /* Prevent shrinking */
 }
 
 .city-card-title {
@@ -37,11 +43,17 @@
   font-weight: bold;
   color: var(--ion-text-color, #333);
   margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .city-card-subtitle {
   font-size: 1rem;
   color: var(--ion-color-medium, #666);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Contenu de la carte */
@@ -50,4 +62,16 @@
   font-size: 0.9rem;
   color: var(--ion-color-dark, #444);
   line-height: 1.5;
+  flex-shrink: 0;
+  /* Prevent shrinking */
+  height: 180px;
+  /* Fixed height for description */
+  overflow: hidden;
+  display: -webkit-box;
+  /* Limit to 5 lines */
+  -webkit-box-orient: vertical;
+}
+
+.city-card-content p {
+  margin: 0;
 }
