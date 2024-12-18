@@ -1,4 +1,4 @@
-// FilterPlaces.tsx
+// FilterPlacesMobile.tsx
 import React from 'react';
 import { Attribute, Category } from '../types/CategoriesAttributesInterfaces';
 import { Place } from '../types/PlacesInterfaces';
@@ -15,10 +15,10 @@ import {
 } from '@ionic/react';
 import { close as closeIcon } from 'ionicons/icons';
 import { motion } from 'framer-motion';
-import './FilterPlaces.css';
+import './FilterPlacesMobile.css';
 import useFilterPlaces from '../util/useFilterPlaces';
 
-interface FilterPlacesProps {
+interface FilterPlacesMobileProps {
     categories: Category[];
     attributes: Attribute[];
     onFilterChange: (filteredPlaces: Place[]) => void;
@@ -29,12 +29,12 @@ interface FilterPlacesProps {
 }
 
 const panelVariants = {
-    hidden: { x: '-100%' },
-    visible: { x: '0%' },
-    exit: { x: '-100%' },
+    hidden: { y: '-100%' },
+    visible: { y: '0%' },
+    exit: { y: '-100%' },
 };
 
-const FilterPlaces: React.FC<FilterPlacesProps> = ({
+const FilterPlacesMobile: React.FC<FilterPlacesMobileProps> = ({
     categories,
     attributes,
     onFilterChange,
@@ -49,7 +49,7 @@ const FilterPlaces: React.FC<FilterPlacesProps> = ({
         handleCategoryChange,
         handleAttributeChange,
         getTranslation,
-        isUserInteraction, // Utiliser l'état exposé
+        isUserInteraction,
     } = useFilterPlaces({
         categories,
         attributes,
@@ -58,14 +58,14 @@ const FilterPlaces: React.FC<FilterPlacesProps> = ({
         allPlaces,
     });
 
-    // Informer le parent uniquement lorsque l'utilisateur interagit
+    // Informer le parent des interactions de l'utilisateur
     React.useEffect(() => {
         onUserInteractionChange(isUserInteraction);
     }, [isUserInteraction, onUserInteractionChange]);
 
     return (
         <motion.div
-            className="filter-panel"
+            className="filter-panel-mobile"
             initial="hidden"
             animate="visible"
             exit="exit"
@@ -73,16 +73,11 @@ const FilterPlaces: React.FC<FilterPlacesProps> = ({
             transition={{ type: 'tween', duration: 0.3 }}
         >
             <IonGrid>
-                <IonRow>
-                    <IonCol size="12" className="filter-header">
-                        <IonLabel>
-                            <strong>Filtrer les Lieux</strong>
-                        </IonLabel>
-                        <IonButton fill="clear" onClick={onClose}>
-                            <IonIcon icon={closeIcon} />
-                        </IonButton>
-                    </IonCol>
-                </IonRow>
+
+                <IonButton fill="clear" onClick={onClose}>
+                    <IonIcon icon={closeIcon} />
+                </IonButton>
+
                 <IonRow>
                     <IonCol>
                         <IonList>
@@ -133,4 +128,4 @@ const FilterPlaces: React.FC<FilterPlacesProps> = ({
     );
 };
 
-export default FilterPlaces;
+export default FilterPlacesMobile;
