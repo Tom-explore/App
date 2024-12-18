@@ -330,18 +330,21 @@ class PlaceController {
 
       if (categories) {
         if (Array.isArray(categories)) {
-          requestedCategories = categories
-            .filter((cat): cat is string => typeof cat === 'string') // Filter to ensure each element is a string
+          // Force TypeScript à considérer cet array comme un tableau de strings
+          const catArray = categories as string[];
+          requestedCategories = catArray
+            .filter((cat): cat is string => typeof cat === 'string')
             .map(cat => cat.toLowerCase());
         } else if (typeof categories === 'string') {
           requestedCategories = [categories.toLowerCase()];
         } else {
-          throw new Error('Invalid categories format'); // Optional: handle unexpected types
+          throw new Error('Invalid categories format');
         }
       } else {
-        // Si aucune catégorie spécifiée, récupérer toutes les catégories
+        // Si aucune catégorie n'est spécifiée, on récupère toutes les catégories par défaut
         requestedCategories = ['restaurant_bar', 'hotel', 'tourist_attraction'];
       }
+
 
       // Valider les catégories
       const validCategories = ['restaurant_bar', 'hotel', 'tourist_attraction'];

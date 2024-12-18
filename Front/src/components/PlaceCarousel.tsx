@@ -10,17 +10,15 @@ import 'swiper/css/free-mode';
 import './PlaceCarousel.css';
 import PlaceCard from './PlaceCard';
 import { Place } from '../types/PlacesInterfaces';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface PlaceCarouselProps {
     title: string;
     places: Place[];
-    isPreview: boolean; // Utilisé pour savoir si on est encore dans la phase de chargement
-    onLoadMore: () => void; // Ajouté
-    hasMore: boolean; // Ajouté
-    isLoading: boolean; // Ajouté
+    isPreview: boolean;
+    onLoadMore: () => void;
+    hasMore: boolean;
+    isLoading: boolean;
 }
-
 
 const PlaceCarousel: React.FC<PlaceCarouselProps> = ({ title, places, isPreview, onLoadMore, hasMore, isLoading }) => {
     const renderSkeletons = (count: number) =>
@@ -35,13 +33,6 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({ title, places, isPreview,
             </div>
         ));
 
-    const cardVariants = {
-        hidden: { opacity: 0, scale: 0.9 },
-        visible: { opacity: 1, scale: 1 },
-        exit: { opacity: 0, scale: 0.9 }
-    };
-
-    // Les 3 états basés sur isPreview et le nombre de places
     const showOnlySkeletons = isPreview && places.length === 0;
     const showPartialSkeletons = isPreview && places.length > 0 && places.length < 8;
     const showNoSkeleton = !isPreview; // Chargement complet
@@ -71,55 +62,44 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({ title, places, isPreview,
                     }
                 }}
             >
-                <AnimatePresence>
-                    {/* Affiche les lieux existants */}
-                    {places.map((place, index) => (
-                        <SwiperSlide key={`place-${place.id}-${index}`}>
-                            <motion.div
-                                variants={cardVariants}
-                                initial="hidden"
-                                animate="visible"
-                                exit="exit"
-                                transition={{ duration: 0.3 }}
-                                layout
-                            >
-                                <PlaceCard place={place} />
-                            </motion.div>
-                        </SwiperSlide>
-                    ))}
+                {/* Affiche les lieux existants */}
+                {places.map((place, index) => (
+                    <SwiperSlide key={`place-${place.id}-${index}`}>
+                        <PlaceCard place={place} />
+                    </SwiperSlide>
+                ))}
 
-                    {/* State 1 : Aucune data -> uniquement skeletons */}
-                    {showOnlySkeletons && renderSkeletons(6).map((skeleton, index) => (
-                        <SwiperSlide key={`skeleton-init-${index}`}>
-                            {skeleton}
-                        </SwiperSlide>
-                    ))}
+                {/* State 1 : Aucune data -> uniquement skeletons */}
+                {showOnlySkeletons && renderSkeletons(6).map((skeleton, index) => (
+                    <SwiperSlide key={`skeleton-init-${index}`}>
+                        {skeleton}
+                    </SwiperSlide>
+                ))}
 
-                    {/* State 2 : Partiel -> lieux + skeletons supplémentaires */}
-                    {showPartialSkeletons && renderSkeletons(10).map((skeleton, index) => (
-                        <SwiperSlide key={`skeleton-partial-${index}`}>
-                            {skeleton}
-                        </SwiperSlide>
-                    ))}
+                {/* State 2 : Partiel -> lieux + skeletons supplémentaires */}
+                {showPartialSkeletons && renderSkeletons(10).map((skeleton, index) => (
+                    <SwiperSlide key={`skeleton-partial-${index}`}>
+                        {skeleton}
+                    </SwiperSlide>
+                ))}
 
-                    {/* State 3 : Chargement complet -> aucun skeleton supplémentaire */}
-                    {showNoSkeleton && places.length === 0 && (
-                        <SwiperSlide>
-                            <div className="no-results">
-                                <p>Aucun lieu trouvé.</p>
-                            </div>
-                        </SwiperSlide>
-                    )}
+                {/* State 3 : Chargement complet -> aucun skeleton supplémentaire */}
+                {showNoSkeleton && places.length === 0 && (
+                    <SwiperSlide>
+                        <div className="no-results">
+                            <p>Aucun lieu trouvé.</p>
+                        </div>
+                    </SwiperSlide>
+                )}
 
-                    {/* Loader Slide */}
-                    {isLoading && hasMore && (
-                        <SwiperSlide key="loader">
-                            <div className="loader-container">
-                                <div className="spinner"></div>
-                            </div>
-                        </SwiperSlide>
-                    )}
-                </AnimatePresence>
+                {/* Loader Slide */}
+                {isLoading && hasMore && (
+                    <SwiperSlide key="loader">
+                        <div className="loader-container">
+                            <div className="spinner"></div>
+                        </div>
+                    </SwiperSlide>
+                )}
             </Swiper>
             {/* Indicateur de Chargement */}
             {!isPreview && hasMore && (
@@ -135,7 +115,6 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({ title, places, isPreview,
             )}
         </div>
     );
-
 };
 
 export default PlaceCarousel;
