@@ -31,7 +31,7 @@ type CityState = {
     resetCity: () => void;
     fetchMorePlaces: (category: Category) => void;
     fetchInitialPlacesByCategory: (category: Category) => void;
-    fetchAllPlaces: () => void; // Nouvelle fonction
+    fetchAllPlaces: () => void;
 };
 
 const CityContext = createContext<CityState | undefined>(undefined);
@@ -83,7 +83,7 @@ const fetchAllPlacesAPI = async (languageId: number, slug: string): Promise<Plac
         const { data } = await apiClient.get(`/place/cities/${slug}/all-places`, {
             params: {
                 languageId,
-                limit: 1000, // Supposons que 1000 est suffisant pour toutes les places
+                limit: 1000, // On suppose que 1000 est suffisant pour toutes les places
                 offset: 0,
             },
         });
@@ -163,7 +163,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 console.warn("Language not loaded yet, cannot fetch city preview.");
                 return;
             }
-            if (isFetchingRef.current) return; // Utiliser la référence
+            if (isFetchingRef.current) return;
             resetCity();
             setIsFetching(true);
 
@@ -185,7 +185,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     /**
-     * Effet pour gérer `pendingLoad` et récupérer toutes les places.
+     * Effet pour gérer `pendingLoad` et récupérer les places initiales.
      */
     useEffect(() => {
         if (!pendingLoad || !isLanguageLoaded) return;
@@ -194,15 +194,11 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
         let canceled = false;
 
         const initializePlaces = async () => {
-            const fetchedPlaces = await fetchAllPlacesAPI(language.id, originalSlug);
             if (canceled) return;
+            await fetchInitialPlacesByCategoryCallback('restaurant_bar');
+            await fetchInitialPlacesByCategoryCallback('hotel');
+            await fetchInitialPlacesByCategoryCallback('tourist_attraction');
 
-            setPlaces(fetchedPlaces);
-            setHasMorePlaces({
-                restaurant_bar: false,
-                hotel: false,
-                tourist_attraction: false,
-            });
             setIsFetching(false);
             setIsPreview(false);
             setPendingLoad(null);
@@ -225,13 +221,11 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
      * Récupère plus de places pour une catégorie spécifique
      */
     const fetchMorePlaces = useCallback(async (category: Category) => {
-        if (!originalSlug || !language.id) return; // Utiliser originalSlug
-        if (!hasMorePlaces[category]) return; // Ne pas charger si aucun lieu restant
+        if (!originalSlug || !language.id) return;
+        if (!hasMorePlaces[category]) return;
 
-        // Définir l'état de chargement à true pour la catégorie
         setIsLoadingPlaces(prev => ({ ...prev, [category]: true }));
 
-        // Déterminer le nombre actuel de places dans la catégorie
         let currentPlaces: Place[] = [];
         let newOffset = 0;
 
@@ -275,7 +269,8 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             ...newPlaces.filter(newPlace => !prev.restaurantsBars.some(existingPlace => existingPlace.id === newPlace.id)),
                         ],
                     }));
-                    if (newPlaces.length < 8) {
+                    // On ne met plus hasMorePlaces à false si moins de 8, seulement si 0.
+                    if (newPlaces.length === 0) {
                         setHasMorePlaces(prev => ({ ...prev, restaurant_bar: false }));
                     }
                     break;
@@ -288,7 +283,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             ...newPlaces.filter(newPlace => !prev.hotels.some(existingPlace => existingPlace.id === newPlace.id)),
                         ],
                     }));
-                    if (newPlaces.length < 8) {
+                    if (newPlaces.length === 0) {
                         setHasMorePlaces(prev => ({ ...prev, hotel: false }));
                     }
                     break;
@@ -301,7 +296,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             ...newPlaces.filter(newPlace => !prev.touristAttractions.some(existingPlace => existingPlace.id === newPlace.id)),
                         ],
                     }));
-                    if (newPlaces.length < 8) {
+                    if (newPlaces.length === 0) {
                         setHasMorePlaces(prev => ({ ...prev, tourist_attraction: false }));
                     }
                     break;
@@ -319,7 +314,6 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const fetchInitialPlacesByCategoryCallback = useCallback(async (category: Category) => {
         if (!city || !language.id) return;
 
-        // Définir l'état de chargement à true pour la catégorie
         setIsLoadingPlaces(prev => ({ ...prev, [category]: true }));
 
         try {
@@ -341,7 +335,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         ...prev,
                         restaurantsBars: initialPlaces,
                     }));
-                    if (initialPlaces.length < 8) {
+                    if (initialPlaces.length < 8 && initialPlaces.length === 0) {
                         setHasMorePlaces(prev => ({ ...prev, restaurant_bar: false }));
                     }
                     break;
@@ -351,7 +345,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         ...prev,
                         hotels: initialPlaces,
                     }));
-                    if (initialPlaces.length < 8) {
+                    if (initialPlaces.length < 8 && initialPlaces.length === 0) {
                         setHasMorePlaces(prev => ({ ...prev, hotel: false }));
                     }
                     break;
@@ -361,7 +355,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         ...prev,
                         touristAttractions: initialPlaces,
                     }));
-                    if (initialPlaces.length < 8) {
+                    if (initialPlaces.length < 8 && initialPlaces.length === 0) {
                         setHasMorePlaces(prev => ({ ...prev, tourist_attraction: false }));
                     }
                     break;
@@ -412,7 +406,6 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }, [originalSlug, language.id, isLanguageLoaded]);
 
-    // Mémoïsation de la valeur du contexte pour éviter les re-renders inutiles
     const contextValue = useMemo(() => ({
         city,
         originalSlug,
@@ -424,7 +417,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
         fetchMorePlaces,
         fetchInitialPlacesByCategory: fetchInitialPlacesByCategoryCallback,
         isLoadingPlaces,
-        fetchAllPlaces, // Ajout de fetchAllPlaces
+        fetchAllPlaces,
     }), [
         city,
         originalSlug,
@@ -459,7 +452,6 @@ export const useCity = () => {
 
 /**
  * Hook pour récupérer les 8 premiers lieux de chaque catégorie.
- * Utilisez ce hook pour initialiser les données de la ville.
  * @param slug Le slug de la ville à charger.
  */
 export const useFetchInitialPlaces = () => {
@@ -467,7 +459,6 @@ export const useFetchInitialPlaces = () => {
 
     const fetch = useCallback(async (slug: string) => {
         setCityPreviewAndFetchData(slug);
-        // Les places sont chargées via l'effet `useEffect` dans le provider
     }, [setCityPreviewAndFetchData]);
 
     return fetch;
@@ -475,7 +466,6 @@ export const useFetchInitialPlaces = () => {
 
 /**
  * Hook pour récupérer 8 lieux supplémentaires pour une catégorie spécifique.
- * Utilisez ce hook lorsque l'utilisateur demande de charger plus de lieux.
  */
 export const useFetchMorePlaces = () => {
     const { fetchMorePlaces } = useCity();

@@ -1,7 +1,5 @@
-// src/pages/City.tsx
-
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import {
     IonContent,
     IonPage,
@@ -24,25 +22,25 @@ import { filterOutline } from 'ionicons/icons';
 
 const City: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
-    const { city, places, resetCity, isPreview, hasMorePlaces, isLoadingPlaces } = useCity();
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const hasCategoriesParam = queryParams.has('categories');
+    const hasAttributesParam = queryParams.has('attributes');
+
+    const { city, places, resetCity, isPreview, hasMorePlaces, isLoadingPlaces, fetchAllPlaces } = useCity();
     const fetchInitialPlaces = useFetchInitialPlaces();
     const fetchMorePlaces = useFetchMorePlaces();
     const { isLanguageLoaded, language } = useLanguage();
     const [isTripModalOpen, setIsTripModalOpen] = useState(false);
 
-    // State pour stocker les lieux filtrés sous forme d'IDs
     const [filteredPlacesIDs, setFilteredPlacesIDs] = useState<Set<number> | null>(null);
-
-    // State for filter panel
     const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
-
-    // New state to track user interaction
     const [isUserInteracting, setIsUserInteracting] = useState(false);
-
-    // State to detect if the device is mobile
     const [isMobile, setIsMobile] = useState<boolean>(false);
 
-    // Detect if the device is mobile on component mount
+    // Counter for tracking fetch more places calls
+    const [fetchCounter, setFetchCounter] = useState(0);
+
     useEffect(() => {
         const checkIsMobile = () => {
             const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
@@ -52,14 +50,12 @@ const City: React.FC = () => {
         checkIsMobile();
     }, []);
 
-    // Fetch initial places when slug or language changes
     useEffect(() => {
         if (slug && isLanguageLoaded) {
             fetchInitialPlaces(slug);
         }
     }, [slug, isLanguageLoaded, fetchInitialPlaces]);
 
-    // Reset city on component unmount
     useEffect(() => {
         return () => {
             resetCity();
@@ -74,14 +70,21 @@ const City: React.FC = () => {
         console.log(city);
     }, [city]);
 
-    // Memoize allPlaces
+    // Une fois les places initiales chargées (isPreview = false) et la ville disponible,
+    // si on a des paramètres 'categories' ou 'attributes', on charge tout le reste en un seul appel.
+    useEffect(() => {
+        if (city && !isPreview && (hasCategoriesParam || hasAttributesParam)) {
+            // On charge toutes les places d'un coup
+            fetchAllPlaces();
+        }
+    }, [city, isPreview, hasCategoriesParam, hasAttributesParam, fetchAllPlaces]);
+
     const allPlaces = useMemo(() => [
         ...places.restaurantsBars,
         ...places.hotels,
         ...places.touristAttractions
     ], [places.restaurantsBars, places.hotels, places.touristAttractions]);
 
-    // Memoize uniqueCategories
     const uniqueCategories = useMemo(() => {
         const allCategories = [
             ...places.restaurantsBars.flatMap(place => place.categories),
@@ -91,7 +94,6 @@ const City: React.FC = () => {
         return Array.from(new Map(allCategories.map(cat => [cat.id, cat])).values());
     }, [places.restaurantsBars, places.hotels, places.touristAttractions]);
 
-    // Memoize uniqueAttributes
     const uniqueAttributes = useMemo(() => {
         const allAttributes = [
             ...places.restaurantsBars.flatMap(place => place.attributes),
@@ -101,14 +103,11 @@ const City: React.FC = () => {
         return Array.from(new Map(allAttributes.map(attr => [attr.id, attr])).values());
     }, [places.restaurantsBars, places.hotels, places.touristAttractions]);
 
-    // handleFilterChange met à jour filteredPlacesIDs
     const handleFilterChange = useCallback((filteredPlaces: Place[]) => {
         const ids = new Set(filteredPlaces.map(p => p.id));
         setFilteredPlacesIDs(ids);
     }, []);
 
-    // Si aucun filtre n'est appliqué (filteredPlacesIDs = null), on montre tout
-    // Sinon, on filtre en fonction de filteredPlacesIDs
     const filteredRestaurantsBars = useMemo(() => {
         if (!city) return [];
         if (!filteredPlacesIDs) return places.restaurantsBars;
@@ -132,18 +131,30 @@ const City: React.FC = () => {
         filteredHotels.length > 0 ||
         filteredTouristAttractions.length > 0;
 
-    // Définir les fonctions onLoadMore via useCallback
     const handleLoadMoreRestaurantsBars = useCallback(() => {
-        fetchMorePlaces('restaurant_bar');
-    }, [fetchMorePlaces]);
+        setFetchCounter(prev => prev + 1);
+        console.log(`Fetching more restaurants/bars... Call #${fetchCounter + 1}`);
+        // Si on a pas de params categories/attributes, on continue le load par 8
+        if (!hasCategoriesParam && !hasAttributesParam) {
+            fetchMorePlaces('restaurant_bar');
+        }
+    }, [fetchMorePlaces, fetchCounter, hasCategoriesParam, hasAttributesParam]);
 
     const handleLoadMoreHotels = useCallback(() => {
-        fetchMorePlaces('hotel');
-    }, [fetchMorePlaces]);
+        setFetchCounter(prev => prev + 1);
+        console.log(`Fetching more hotels... Call #${fetchCounter + 1}`);
+        if (!hasCategoriesParam && !hasAttributesParam) {
+            fetchMorePlaces('hotel');
+        }
+    }, [fetchMorePlaces, fetchCounter, hasCategoriesParam, hasAttributesParam]);
 
     const handleLoadMoreTouristAttractions = useCallback(() => {
-        fetchMorePlaces('tourist_attraction');
-    }, [fetchMorePlaces]);
+        setFetchCounter(prev => prev + 1);
+        console.log(`Fetching more tourist attractions... Call #${fetchCounter + 1}`);
+        if (!hasCategoriesParam && !hasAttributesParam) {
+            fetchMorePlaces('tourist_attraction');
+        }
+    }, [fetchMorePlaces, fetchCounter, hasCategoriesParam, hasAttributesParam]);
 
     return (
         <IonPage className={`city-page ${isFilterPanelOpen ? 'content-shift' : ''}`}>
@@ -160,7 +171,6 @@ const City: React.FC = () => {
                             slug={city.slug || ''}
                         />
 
-                        {/* Buttons below CityHeader */}
                         <div className="city-buttons">
                             <IonButton className="filter-button" onClick={() => setIsFilterPanelOpen(true)} fill="clear">
                                 <IonIcon icon={filterOutline} />
@@ -170,7 +180,6 @@ const City: React.FC = () => {
                             </IonButton>
                         </div>
 
-                        {/* Sliding Filter Panel */}
                         <AnimatePresence>
                             {isMobile ? (
                                 <motion.div
@@ -265,17 +274,8 @@ const City: React.FC = () => {
                     </div>
                 )}
 
-                {/* Modal for trip form */}
                 <IonModal isOpen={isTripModalOpen} onDidDismiss={() => setIsTripModalOpen(false)}>
-                    {/* 
-                    {isLanguageLoaded && city && 'lat' in city && (
-                        <TripForm
-                            languageCode={language.code}
-                            city={city}
-                            onClose={() => setIsTripModalOpen(false)}
-                        />
-                    )} 
-                    */}
+                    {/* ... */}
                 </IonModal>
             </IonContent>
         </IonPage>
