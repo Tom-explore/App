@@ -12,6 +12,7 @@ import { TxCountry } from '../../model/translations/TxCountry';
 import { Repository } from 'typeorm';
 import { PlaceAttribute } from '../../model/categories/PlaceAttribute';
 import { PlaceCategory } from '../../model/categories/PlaceCategory';
+type PlaceEntity = RestaurantBar | Hotel | TouristAttraction;
 
 class PlaceController {
   private placeRepository: Repository<Place>;
@@ -241,7 +242,7 @@ class PlaceController {
     }
   }
 
-  static async getAllPlacesByCity(req: Request, res: Response): Promise<Response> {
+  static async getAllPlacesByCity(req: Request, res: Response): Promise<void> {
     const controller = new PlaceController();
     const {
       cityRepository,
@@ -250,17 +251,15 @@ class PlaceController {
       restaurantBarRepository,
       hotelRepository,
       touristAttractionRepository,
-      txPlaceRepository,
-      placeImgRepository,
     } = controller;
 
     try {
       const { citySlug } = req.params;
 
       const {
-        languageId,
-        limit: genericLimit = 8,
-        offset: genericOffset = 0,
+        categories,
+        limit: genericLimit = '8',
+        offset: genericOffset = '0',
         limitRestaurantsBars = genericLimit,
         offsetRestaurantsBars = genericOffset,
         limitHotels = genericLimit,
@@ -268,10 +267,12 @@ class PlaceController {
         limitTouristAttractions = genericLimit,
         offsetTouristAttractions = genericOffset,
       } = req.query;
+      const languageId = Number(req.query.languageId);
 
       console.log('Received query params:', {
         citySlug,
         languageId,
+        categories,
         limitRestaurantsBars,
         offsetRestaurantsBars,
         limitHotels,
@@ -282,9 +283,11 @@ class PlaceController {
 
       if (!citySlug || !languageId) {
         console.error('Missing required parameters');
-        return res.status(400).json({ message: 'City slug and language ID are required' });
+        res.status(400).json({ message: 'City slug and language ID are required' });
+        return;
       }
 
+      // Fetch city and its country
       const city = await cityRepository.findOne({
         where: { slug: citySlug },
         relations: ['country'],
@@ -292,141 +295,117 @@ class PlaceController {
 
       if (!city) {
         console.error('City not found:', citySlug);
-        return res.status(404).json({ message: 'City not found' });
+        res.status(404).json({ message: 'City not found' });
+        return;
       }
 
-      // Fetch the city translation
-      const txCity = await txCityRepository.findOne({
-        where: { city: { id: city.id }, language_id: Number(languageId) },
-      });
+      // Fetch city and country translations in parallel
+      const [txCity, txCountry] = await Promise.all([
+        txCityRepository.findOne({
+          where: { city: { id: city.id }, language_id: Number(languageId) },
+        }),
+        txCountryRepository.findOne({
+          where: { country: { id: city.country.id }, language_id: Number(languageId) },
+        }),
+      ]);
+
       if (!txCity) {
         console.error('TxCity not found for language ID:', languageId);
-        return res.status(404).json({ message: 'City translation not found' });
+        res.status(404).json({ message: 'City translation not found' });
+        return;
       }
 
-      // Fetch the country translation
-      const txCountry = await txCountryRepository.findOne({
-        where: { country: { id: city.country.id }, language_id: Number(languageId) },
-      });
       if (!txCountry) {
         console.error('TxCountry not found for language ID:', languageId);
-        return res.status(404).json({ message: 'Country translation not found' });
+        res.status(404).json({ message: 'Country translation not found' });
+        return;
       }
 
-      const limitRB = parseInt(limitRestaurantsBars as string, 10);
-      const offsetRB = parseInt(offsetRestaurantsBars as string, 10);
-      const limitH = parseInt(limitHotels as string, 10);
-      const offsetH = parseInt(offsetHotels as string, 10);
-      const limitTA = parseInt(limitTouristAttractions as string, 10);
-      const offsetTA = parseInt(offsetTouristAttractions as string, 10);
+      // Parse pagination parameters
+      const parseNumber = (value: string | undefined, defaultValue: number) =>
+        value ? parseInt(value, 10) : defaultValue;
 
-      console.log('Parsed pagination params:', {
-        limitRB,
-        offsetRB,
-        limitH,
-        offsetH,
-        limitTA,
-        offsetTA,
-      });
+      // Déterminer les catégories à récupérer
+      let requestedCategories: string[] = [];
 
-      // Utilize repositories with appropriate methods
-      const [restaurantBars, rbCount] = await restaurantBarRepository.findAndCount({
-        relations: ['place'],
-        where: { place: { city: { id: city.id } } },
-        skip: offsetRB,
-        take: limitRB,
-      });
+      if (categories) {
+        if (Array.isArray(categories)) {
+          requestedCategories = categories
+            .filter((cat): cat is string => typeof cat === 'string') // Filter to ensure each element is a string
+            .map(cat => cat.toLowerCase());
+        } else if (typeof categories === 'string') {
+          requestedCategories = [categories.toLowerCase()];
+        } else {
+          throw new Error('Invalid categories format'); // Optional: handle unexpected types
+        }
+      } else {
+        // Si aucune catégorie spécifiée, récupérer toutes les catégories
+        requestedCategories = ['restaurant_bar', 'hotel', 'tourist_attraction'];
+      }
 
-      const [hotels, hCount] = await hotelRepository.findAndCount({
-        relations: ['place'],
-        where: { place: { city: { id: city.id } } },
-        skip: offsetH,
-        take: limitH,
-      });
+      // Valider les catégories
+      const validCategories = ['restaurant_bar', 'hotel', 'tourist_attraction'];
+      requestedCategories = requestedCategories.filter(cat => validCategories.includes(cat));
 
-      const [touristAttractions, taCount] = await touristAttractionRepository.findAndCount({
-        relations: ['place'],
-        where: { place: { city: { id: city.id } } },
-        skip: offsetTA,
-        take: limitTA,
-      });
+      if (requestedCategories.length === 0) {
+        console.error('No valid categories provided');
+        res.status(400).json({ message: 'No valid categories provided' });
+        return;
+      }
 
-      // Function to enrich places with translations, images, attributes, and categories
-      const enrichPlace = async (place: Place) => {
-        // Fetch translation
-        const translation = await txPlaceRepository.findOne({
-          where: { place: { id: place.id }, language_id: Number(languageId) },
-        });
-
-        // Fetch images
-        const images = await placeImgRepository.find({ where: { place: { id: place.id } } });
-
-        // Fetch attributes with full Attribute objects
-        const placeAttributes = await PlaceAttribute.find({
-          where: { place: { id: place.id } },
-          relations: ['attribute'],
-        });
-        console.log(`Attributes for Place ID ${place.id}:`, placeAttributes);
-
-        const attributes: any[] = placeAttributes.map((pa) => ({
-          ...pa.attribute,
-          value: pa.value,
-        }));
-
-        // Fetch categories with full Category objects
-        const placeCategories = await PlaceCategory.find({
-          where: { place: { id: place.id } },
-          relations: ['category'],
-        });
-        const categories: any[] = placeCategories.map((pc) => ({
-          ...pc.category,
-          main: pc.main,
-        }));
-        console.log(`Categories for Place ID ${place.id}:`, placeCategories);
-
-
-        return {
-          id: place.id,
-          slug: place.slug,
-          description_scrapio: place.description_scrapio,
-          lat: place.lat,
-          lng: place.lng,
-          address: place.address,
-          link_insta: place.link_insta,
-          link_fb: place.link_fb,
-          link_maps: place.link_maps,
-          link_website: place.link_website,
-          reviews_google_rating: place.reviews_google_rating,
-          reviews_google_count: place.reviews_google_count,
-          translation: translation
-            ? {
-              slug: translation.slug,
-              name: translation.name,
-              title: translation.title,
-              description: translation.description,
-              meta_description: translation.meta_description,
-            }
-            : null,
-          images: images.map((img) => ({
-            id: img.id,
-            slug: img.slug,
-            author: img.author,
-            license: img.license,
-            top: img.top,
-            source: img.source,
-          })),
-          attributes, // Included full Attribute objects with 'value'
-          categories, // Included full Category objects with 'main'
-        };
-
+      // Mapping des catégories aux repositories et labels
+      const categoryMapping: { [key: string]: { repository: Repository<any>; label: string } } = {
+        'restaurant_bar': { repository: restaurantBarRepository, label: 'restaurantsBars' },
+        'hotel': { repository: hotelRepository, label: 'hotels' },
+        'tourist_attraction': { repository: touristAttractionRepository, label: 'touristAttractions' },
       };
 
-      const enrichedRB = await Promise.all(restaurantBars.map((rb) => enrichPlace(rb.place)));
-      console.log(enrichedRB)
-      const enrichedH = await Promise.all(hotels.map((hotel) => enrichPlace(hotel.place)));
-      const enrichedTA = await Promise.all(touristAttractions.map((ta) => enrichPlace(ta.place)));
+      // Préparer les promesses pour chaque catégorie demandée
+      const placePromises = requestedCategories.map(async (category) => {
+        const { repository, label } = categoryMapping[category];
+        let limit = 8;
+        let offset = 0;
 
-      return res.status(200).json({
+        // Déterminer limit et offset spécifiques à la catégorie
+        switch (category) {
+          case 'restaurant_bar':
+            limit = parseNumber(limitRestaurantsBars as string, 8);
+            offset = parseNumber(offsetRestaurantsBars as string, 0);
+            break;
+          case 'hotel':
+            limit = parseNumber(limitHotels as string, 8);
+            offset = parseNumber(offsetHotels as string, 0);
+            break;
+          case 'tourist_attraction':
+            limit = parseNumber(limitTouristAttractions as string, 8);
+            offset = parseNumber(offsetTouristAttractions as string, 0);
+            break;
+          default:
+            limit = 8;
+            offset = 0;
+        }
+
+        // Fetch places avec pagination et ordre déterministe
+        const [entities, count] = await repository.findAndCount({
+          relations: ['place'],
+          where: { place: { city: { id: city.id } } },
+          skip: offset,
+          take: limit,
+          order: { id: 'ASC' }, // Ajout de l'ordre
+        });
+
+        // Enrichir les places
+        const enrichedPlaces = await Promise.all(entities.map((entity: any) => controller.enrichPlace(entity.place, languageId)));
+
+        return { label, places: enrichedPlaces, count };
+      });
+
+      // Exécuter toutes les promesses
+      const results = await Promise.all(placePromises);
+      const validResults = results.filter(result => result !== null);
+
+      // Construire la réponse
+      const response: any = {
         city: {
           id: city.id,
           slug: city.slug,
@@ -453,22 +432,98 @@ class PlaceController {
             meta_description: txCity.meta_description,
           },
         },
-        places: {
-          restaurantsBars: enrichedRB,
-          hotels: enrichedH,
-          touristAttractions: enrichedTA,
-        },
-        counts: {
-          restaurantsBars: rbCount,
-          hotels: hCount,
-          touristAttractions: taCount,
-        },
+        places: {},
+        counts: {},
+      };
+
+      // Remplir les places et les counts par catégorie
+      validResults.forEach((result) => {
+        response.places[result.label] = result.places;
+        response.counts[result.label] = result.count;
       });
+
+      res.status(200).json(response);
     } catch (error: any) {
       console.error('Error fetching all places by city:', error);
-      return res.status(500).json({ message: 'Error fetching all places by city', error: error.message });
+      if (!res.headersSent) {
+        res.status(500).json({ message: 'Error fetching all places by city', error: error.message });
+      } else {
+        res.end();
+      }
     }
   }
+
+
+  /**
+   * Fonction pour enrichir les données d'une place.
+   * @param place La place à enrichir
+   * @param languageId L'ID de la langue pour les traductions
+   * @returns Un objet enrichi représentant la place
+   */
+  private async enrichPlace(place: Place, languageId: number): Promise<any> {
+    const [translation, images, placeAttributes, placeCategories] = await Promise.all([
+      this.txPlaceRepository.findOne({
+        where: { place: { id: place.id }, language_id: languageId },
+      }),
+      this.placeImgRepository.find({ where: { place: { id: place.id } } }),
+      PlaceAttribute.find({
+        where: { place: { id: place.id } },
+        relations: ['attribute'],
+      }),
+      PlaceCategory.find({
+        where: { place: { id: place.id } },
+        relations: ['category'],
+      }),
+    ]);
+
+    console.log(`Attributes for Place ID ${place.id}:`, placeAttributes);
+    console.log(`Categories for Place ID ${place.id}:`, placeCategories);
+
+    const attributes = placeAttributes.map((pa) => ({
+      ...pa.attribute,
+      value: pa.value,
+    }));
+
+    const categories = placeCategories.map((pc) => ({
+      ...pc.category,
+      main: pc.main,
+    }));
+
+    return {
+      id: place.id,
+      slug: place.slug,
+      description_scrapio: place.description_scrapio,
+      lat: place.lat,
+      lng: place.lng,
+      address: place.address,
+      link_insta: place.link_insta,
+      link_fb: place.link_fb,
+      link_maps: place.link_maps,
+      link_website: place.link_website,
+      reviews_google_rating: place.reviews_google_rating,
+      reviews_google_count: place.reviews_google_count,
+      translation: translation
+        ? {
+          slug: translation.slug,
+          name: translation.name,
+          title: translation.title,
+          description: translation.description,
+          meta_description: translation.meta_description,
+        }
+        : null,
+      images: images.map((img) => ({
+        id: img.id,
+        slug: img.slug,
+        author: img.author,
+        license: img.license,
+        top: img.top,
+        source: img.source,
+      })),
+      attributes,
+      categories,
+    };
+  }
+
 }
 export default PlaceController;
 
