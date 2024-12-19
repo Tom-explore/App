@@ -1,23 +1,45 @@
-/* PlaceCarousel.css */
+/* src/components/PlaceCarousel.css */
 
+/* Container for the carousel */
 .place-carousel {
     margin-bottom: 2rem;
     position: relative;
-    padding: 0 1rem;
-    z-index: 9999;
+    padding: 0;
+    /* Supprimer le padding latéral pour aligner à gauche */
+    overflow: visible;
+    /* Permet aux cartes agrandies d'être visibles au-delà des limites du carousel */
 }
 
+/* Title of the carousel */
 .place-carousel h2 {
     margin-bottom: 1rem;
     font-size: 1.5rem;
     color: #333;
+    text-align: left;
+    padding-left: 1rem;
+    /* Ajouter un padding interne si nécessaire pour le titre */
 }
 
+/* Swiper Wrapper */
 .swiper-wrapper {
     display: flex;
-    align-items: stretch;
+    align-items: center;
+    position: relative;
+    overflow: visible;
+    /* Permet aux slides de dépasser les limites */
 }
 
+/* Swiper Slide */
+.swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: visible;
+    /* Permet à PlaceCard de s'agrandir au-delà du slide */
+}
+
+/* Swiper Pagination */
 .swiper-pagination {
     position: relative;
     bottom: 10px;
@@ -40,43 +62,19 @@
     background: #007bff;
 }
 
-.place-card {
-    display: flex;
-    flex-direction: column;
-    background: #ffffff;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.place-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.place-image {
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
-}
-
-.place-info {
-    padding: 10px;
-}
-
-.place-info h3 {
-    font-size: 16px;
-    margin: 0;
+/* Swiper Navigation Buttons */
+.swiper-button-prev,
+.swiper-button-next {
     color: #007bff;
+    transition: color 0.3s ease;
 }
 
-.place-info p {
-    font-size: 14px;
-    color: #555;
-    margin: 5px 0 0;
+.swiper-button-prev:hover,
+.swiper-button-next:hover {
+    color: #0056b3;
 }
 
+/* Skeleton styles */
 .skeleton {
     background: #f0f0f0;
     border-radius: 10px;
@@ -106,41 +104,38 @@
     justify-content: space-between;
 }
 
-.skeleton .skeleton-text {
-    background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-    height: 20px;
-    margin-bottom: 0.5rem;
-    border-radius: 4px;
-}
-
-.skeleton-title {
+.skeleton .skeleton-title {
     width: 70%;
+    height: 20px;
+    background: #bbb;
+    margin-bottom: 0.5rem;
 }
 
-.skeleton-description {
-    width: 90%;
+.skeleton .skeleton-text {
+    width: 60%;
+    height: 15px;
+    background: #bbb;
 }
 
-.skeleton-address {
-    width: 50%;
+@keyframes shimmer {
+    0% {
+        background-position: -200px 0;
+    }
+
+    100% {
+        background-position: 200px 0;
+    }
 }
 
-/* src/components/PlaceCarousel.css */
-
+/* Loader spinner */
 .loader-container {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100%;
-    /* Remplit toute la hauteur du slide */
     width: 100%;
-    /* Remplit toute la largeur du slide */
     box-sizing: border-box;
-    /* Assure que le padding et la bordure sont inclus dans la taille */
 }
-
 
 .spinner {
     border: 4px solid rgba(0, 0, 0, 0.1);
@@ -157,13 +152,102 @@
     }
 }
 
+/* Loading indicator below carousel */
+.loading-indicator,
+.no-more-results {
+    text-align: center;
+    margin-top: 1rem;
+    color: #666;
+    font-size: 1rem;
+}
 
-@keyframes shimmer {
-    0% {
-        background-position: -200px 0;
+/* Messages for no results */
+.no-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    text-align: center;
+    color: #555;
+    font-size: 1.2em;
+}
+
+/* Backdrop styling */
+.backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    /* Utiliser une couleur opaque ou semi-opaque */
+    z-index: 999;
+    /* Juste en dessous de la carte active */
+    opacity: 0;
+    animation: fadeInBackdrop 0.3s forwards;
+}
+
+/* Animation pour le backdrop */
+@keyframes fadeInBackdrop {
+    from {
+        opacity: 0;
     }
 
-    100% {
-        background-position: 200px 0;
+    to {
+        opacity: 1;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .place-carousel {
+        padding: 0;
+        /* Assurer aucun padding latéral */
+    }
+
+    .place-carousel h2 {
+        font-size: 1.3rem;
+        padding-left: 0.5rem;
+        /* Ajuster si nécessaire */
+    }
+}
+
+@media (max-width: 768px) {
+    .place-carousel {
+        padding: 0;
+    }
+
+    .place-carousel h2 {
+        font-size: 1.1rem;
+        padding-left: 0.25rem;
+        /* Ajuster si nécessaire */
+    }
+
+    .swiper-pagination {
+        bottom: 5px;
+    }
+
+    .swiper-pagination-bullet {
+        width: 6px;
+        height: 6px;
+        margin: 0 3px;
+    }
+}
+
+@media (max-width: 480px) {
+    .place-carousel {
+        padding: 0;
+    }
+
+    .place-carousel h2 {
+        font-size: 1rem;
+        padding-left: 0.1rem;
+        /* Ajuster si nécessaire */
+    }
+
+    .swiper-pagination-bullet {
+        width: 5px;
+        height: 5px;
     }
 }

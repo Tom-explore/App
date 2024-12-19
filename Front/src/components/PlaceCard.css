@@ -1,233 +1,422 @@
+/* src/components/PlaceCard.css */
+
+:root {
+    --card-width: 240px;
+    --card-height: 300px;
+    --card-active-width: 400px;
+    /* Augmenté de 80px */
+    --card-active-height: 600px;
+    /* Augmenté de 120px */
+    --image-height: 150px;
+    --image-active-height: 200px;
+    --transition-duration: 0.3s;
+    --transition-ease: ease-in-out;
+    --backdrop-bg: rgba(0, 0, 0, 0.5);
+}
+
+
+/* Base styles for PlaceCard */
 .place-card {
     background: #fff;
     border: 1px solid #ddd;
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    text-align: left;
-    width: 100%;
-    max-width: 240px;
-    height: 320px;
+    cursor: pointer;
+    transition: all var(--transition-duration) var(--transition-ease);
+    position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    transition: all 0.3s ease;
-    cursor: pointer;
+    width: var(--card-width);
+    height: var(--card-height);
+    z-index: 1;
 }
 
-.place-card.expanded {
-    height: auto;
-    max-width: 100%;
-    background-color: #f9f9f9;
+.place-card:hover {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-    padding: 1rem;
 }
 
-.place-card img {
+/* Active state: fixed size without scaling */
+.place-card.active {
+    position: fixed;
+    /* Fixe la carte par rapport à la fenêtre */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: var(--card-active-width);
+    height: var(--card-active-height);
+    z-index: 1000;
+    /* Assure que la carte active est au-dessus */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    background: #fff;
+    /* Ajouter une légère animation pour l'agrandissement */
+    animation: expandCard var(--transition-duration) var(--transition-ease);
+    max-width: 90vw;
+    /* Assure que la carte ne dépasse pas la largeur de la fenêtre */
+    max-height: 90vh;
+    /* Assure que la carte ne dépasse pas la hauteur de la fenêtre */
+    overflow: hidden;
+    /* Empêche le débordement du contenu */
+}
+
+/* Ajout d'une classe pour le rendu modal via Portal */
+.place-card.modal.modal-card {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: calc(var(--card-active-width) * 1.1) !important;
+    /* Agrandir de 10% */
+    height: calc(var(--card-active-height) * 1.1) !important;
+    /* Agrandir de 10% */
+    max-width: 95vw !important;
+    /* Ajuster pour permettre plus de place */
+    max-height: 95vh !important;
+    /* Ajuster pour permettre plus de place */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3) !important;
+    overflow-y: auto !important;
+    z-index: 1000 !important;
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    /* Augmenter légèrement le rayon des coins */
+    background: #fff;
+}
+
+
+/* Animation pour l'agrandissement */
+@keyframes expandCard {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -60%) scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* Image styling */
+.place-image {
     width: 100%;
-    height: 150px;
+    height: var(--image-height);
     object-fit: cover;
     border-bottom: 1px solid #ddd;
-    transition: height 0.3s ease;
+    transition: height var(--transition-duration) var(--transition-ease);
 }
 
-.place-card.expanded img {
-    height: 200px;
+.place-card.active .place-image,
+.place-card.modal.modal-card .place-image {
+    height: var(--image-active-height);
 }
 
+/* Slider de Photos dans le Mode Modal */
+.modal-photo-slider {
+    width: 100%;
+    height: 250px;
+    /* Ajustez selon vos besoins */
+}
+
+.modal-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Info section */
 .place-info {
     padding: 1rem;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     flex-grow: 1;
+    overflow: hidden;
+    /* Empêche le débordement du contenu */
 }
 
 .place-info h3 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 1.2rem;
     color: #222;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+    transition: font-size var(--transition-duration) var(--transition-ease);
 }
 
-.place-info.expanded h3 {
+.place-card.active .place-info h3,
+.place-card.modal.modal-card .place-info h3 {
     white-space: normal;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
 }
 
 .place-info p {
     margin: 0.5rem 0;
     color: #555;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     line-height: 1.4;
+    transition: font-size var(--transition-duration) var(--transition-ease);
 }
 
-.place-info.expanded p {
+.place-card.active .place-info p,
+.place-card.modal.modal-card .place-info p {
     font-size: 1rem;
 }
 
-.place-info .rating {
-    font-size: 0.85rem;
-    color: #777;
-    margin-top: auto;
-}
-
-.place-links {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.insta-link,
-.maps-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    text-decoration: none;
-    border-radius: 20px;
-    padding: 0.4rem 0.6rem;
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.insta-link {
-    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-    color: #fff;
-}
-
-.insta-link:hover {
-    background: linear-gradient(45deg, #f7b067, #f08d6c, #e57384, #d4649b, #c34aad);
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-}
-
-.maps-link {
-    background: #fff;
-    color: #34a853;
-    border: 2px solid #34a853;
-}
-
-.maps-link:hover {
-    background: #f5f5f5;
-    color: #2c8c42;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-}
-
-.maps-link .fa-google {
-    color: #34a853;
-}
-
-.insta-link .fa-instagram {
-    color: #fff;
-}
-
-.place-card .expanded-info {
-    margin-top: 1rem;
+/* Rating */
+.rating {
+    margin-top: 0.5rem;
     font-size: 0.9rem;
-    color: #333;
+    color: #777;
 }
 
-.place-card .extra-images {
+/* Links section */
+.place-links {
+    margin-top: 0.5rem;
     display: flex;
-    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.place-links a {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #007bff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color var(--transition-duration) var(--transition-ease);
+}
+
+.place-links a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* Expanded content when active or on mobile */
+.expanded-content {
+    margin-top: 1rem;
+    padding: 0 1rem;
+    font-size: 0.95rem;
+    color: #333;
+    overflow-y: auto;
+    /* Permet le défilement si le contenu est trop long */
+}
+
+.type-specific {
+    margin-top: 1rem;
+    border-top: 1px solid #eee;
+    padding-top: 1rem;
+}
+
+.extra-images {
+    display: flex;
     gap: 0.5rem;
     margin-top: 1rem;
+    flex-wrap: wrap;
 }
 
-.place-card .extra-image {
+.extra-image {
     width: calc(33.333% - 0.5rem);
-    height: auto;
-    border-radius: 5px;
+    height: 100px;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    border-radius: 5px;
+    transition: transform var(--transition-duration) var(--transition-ease);
 }
 
-.place-card .extra-image:hover {
+.extra-image:hover {
     transform: scale(1.05);
 }
 
-/* Gestion swipe et état */
-
-.place-card.swipe-up {
-    transform: translateY(-10%);
-    transition: transform 0.3s ease, background-color 0.3s ease;
+/* Close button for active state */
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background var(--transition-duration) var(--transition-ease);
 }
 
-.place-card.swipe-up.expanded {
-    transform: translateY(0);
+.close-button:hover {
+    background: rgba(255, 255, 255, 1);
 }
 
-/* RESPONSIVE DESIGN */
+.close-button svg {
+    color: #333;
+    width: 16px;
+    height: 16px;
+}
 
+/* Responsive adjustments */
 @media (max-width: 1024px) {
-    .place-card {
-        height: 300px;
+    :root {
+        --card-active-width: 350px;
+        --card-active-height: 700px;
+        /* Augmenté pour plus de verticalité */
+        --image-active-height: 220px;
     }
 
-    .place-card.expanded img {
-        height: 180px;
+    .place-card.active {
+        width: var(--card-active-width);
+        height: var(--card-active-height);
+    }
+
+    .place-card.modal.modal-card {
+        width: 95% !important;
+        height: 85% !important;
+    }
+
+    .place-card.active .place-image,
+    .place-card.modal.modal-card .place-image {
+        height: var(--image-active-height);
     }
 
     .place-info h3 {
+        font-size: 1.1rem;
+    }
+
+    .place-card.active .place-info h3,
+    .place-card.modal.modal-card .place-info h3 {
+        font-size: 1.3rem;
+    }
+
+    .place-info p {
+        font-size: 0.85rem;
+    }
+
+    .place-card.active .place-info p,
+    .place-card.modal.modal-card .place-info p {
         font-size: 0.95rem;
+    }
+
+    /* Slider de Photos en Mode Modal */
+    .modal-photo-slider {
+        height: 250px;
+        /* Ajustez selon vos besoins */
+    }
+
+    .modal-photo {
+        height: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+
+    /* On mobile, active state est géré via le Portal */
+    .place-card.modal.modal-card {
+        width: 90% !important;
+        height: 80% !important;
+        max-width: none !important;
+        max-height: 90vh !important;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3) !important;
+        overflow-y: auto !important;
+    }
+
+    .place-card.modal.modal-card .place-image {
+        height: 180px;
+    }
+
+    .close-button {
+        top: 5px;
+        right: 5px;
+        width: 25px;
+        height: 25px;
+    }
+
+    .close-button svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    /* Slider de Photos en Mode Modal */
+    .modal-photo-slider {
+        height: 180px;
+        /* Ajustez selon vos besoins */
+    }
+
+    .modal-photo {
+        height: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --card-width: 200px;
+        --card-height: 250px;
+        --card-active-width: 300px;
+        --card-active-height: 500px;
+        /* Ajusté pour la taille mobile */
+        --image-height: 120px;
+        --image-active-height: 200px;
+    }
+
+    .place-card {
+        width: var(--card-width);
+        height: var(--card-height);
+    }
+
+    .place-card.active {
+        width: var(--card-active-width);
+        height: var(--card-active-height);
+    }
+
+    .place-card.modal.modal-card {
+        width: 95% !important;
+        height: 80% !important;
+    }
+
+    .place-image {
+        height: var(--image-height);
+    }
+
+    .place-card.active .place-image,
+    .place-card.modal.modal-card .place-image {
+        height: var(--image-active-height);
+    }
+
+    .place-info h3 {
+        font-size: 1rem;
+    }
+
+    .place-card.active .place-info h3,
+    .place-card.modal.modal-card .place-info h3 {
+        font-size: 1.2rem;
     }
 
     .place-info p {
         font-size: 0.8rem;
     }
-}
 
-@media (max-width: 768px) {
-    .place-card {
-        height: 280px;
-    }
-
-    .place-card.expanded img {
-        height: 160px;
-    }
-
-    .place-info h3 {
+    .place-card.active .place-info p,
+    .place-card.modal.modal-card .place-info p {
         font-size: 0.9rem;
     }
 
-    .place-info p {
-        font-size: 0.75rem;
+    .close-button {
+        width: 25px;
+        height: 25px;
     }
 
-    .place-links {
-        gap: 8px;
-        flex-wrap: wrap;
+    .close-button svg {
+        width: 14px;
+        height: 14px;
     }
 
-    .insta-link,
-    .maps-link {
-        font-size: 0.75rem;
-        padding: 0.3rem 0.5rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .place-card {
-        max-width: 100%;
-        height: auto;
+    /* Slider de Photos en Mode Modal */
+    .modal-photo-slider {
+        height: 200px;
+        /* Ajustez selon vos besoins */
     }
 
-    .place-info {
-        padding: 0.75rem;
-    }
-
-    .place-info h3 {
-        font-size: 0.85rem;
-    }
-
-    .place-info p {
-        font-size: 0.7rem;
+    .modal-photo {
+        height: 100%;
     }
 }
