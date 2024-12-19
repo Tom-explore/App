@@ -1,3 +1,5 @@
+// src/pages/City.tsx
+
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import {
@@ -19,6 +21,7 @@ import FilterPlacesMobile from '../components/FilterPlacesMobile';
 import { AnimatePresence, motion } from 'framer-motion';
 import { IonIcon } from '@ionic/react';
 import { filterOutline } from 'ionicons/icons';
+import { PlaceType } from '../types/EnumsInterfaces';
 
 const City: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -70,11 +73,11 @@ const City: React.FC = () => {
         console.log(city);
     }, [city]);
 
-    // Une fois les places initiales chargées (isPreview = false) et la ville disponible,
-    // si on a des paramètres 'categories' ou 'attributes', on charge tout le reste en un seul appel.
+    // Once initial places are loaded (isPreview = false) and city is available,
+    // if there are 'categories' or 'attributes' parameters, load all remaining in one call.
     useEffect(() => {
         if (city && !isPreview && (hasCategoriesParam || hasAttributesParam)) {
-            // On charge toutes les places d'un coup
+            // Load all places at once
             fetchAllPlaces();
         }
     }, [city, isPreview, hasCategoriesParam, hasAttributesParam, fetchAllPlaces]);
@@ -134,7 +137,7 @@ const City: React.FC = () => {
     const handleLoadMoreRestaurantsBars = useCallback(() => {
         setFetchCounter(prev => prev + 1);
         console.log(`Fetching more restaurants/bars... Call #${fetchCounter + 1}`);
-        // Si on a pas de params categories/attributes, on continue le load par 8
+        // If no categories/attributes params, continue loading by 8
         if (!hasCategoriesParam && !hasAttributesParam) {
             fetchMorePlaces('restaurant_bar');
         }
@@ -231,6 +234,8 @@ const City: React.FC = () => {
                                             onLoadMore={handleLoadMoreRestaurantsBars}
                                             hasMore={hasMorePlaces.restaurant_bar}
                                             isLoading={isLoadingPlaces.restaurant_bar}
+                                            isMobile={isMobile}
+                                            placeType={PlaceType.RESTAURANT_BAR}
                                         />
                                     )}
                                     {(filteredHotels.length > 0 || isPreview) && (
@@ -241,6 +246,8 @@ const City: React.FC = () => {
                                             onLoadMore={handleLoadMoreHotels}
                                             hasMore={hasMorePlaces.hotel}
                                             isLoading={isLoadingPlaces.hotel}
+                                            isMobile={isMobile}
+                                            placeType={PlaceType.HOTEL}
                                         />
                                     )}
                                     {(filteredTouristAttractions.length > 0 || isPreview) && (
@@ -251,6 +258,8 @@ const City: React.FC = () => {
                                             onLoadMore={handleLoadMoreTouristAttractions}
                                             hasMore={hasMorePlaces.tourist_attraction}
                                             isLoading={isLoadingPlaces.tourist_attraction}
+                                            isMobile={isMobile}
+                                            placeType={PlaceType.TOURIST_ATTRACTION}
                                         />
                                     )}
                                 </>
@@ -270,16 +279,17 @@ const City: React.FC = () => {
                             onLoadMore={() => { }}
                             hasMore={false}
                             isLoading={false}
+                            isMobile={isMobile}
+                            placeType={PlaceType.RESTAURANT_BAR}
                         />
                     </div>
                 )}
-
+                {/* 
                 <IonModal isOpen={isTripModalOpen} onDidDismiss={() => setIsTripModalOpen(false)}>
-                    {/* ... */}
-                </IonModal>
+                    <TripForm onClose={() => setIsTripModalOpen(false)} />
+                </IonModal> */}
             </IonContent>
         </IonPage>
-    );
+    )
 }
-
 export default City;

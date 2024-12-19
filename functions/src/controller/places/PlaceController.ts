@@ -12,6 +12,9 @@ import { TxCountry } from '../../model/translations/TxCountry';
 import { Repository } from 'typeorm';
 import { PlaceAttribute } from '../../model/categories/PlaceAttribute';
 import { PlaceCategory } from '../../model/categories/PlaceCategory';
+import { PlaceType } from '../../model/enums/PlaceType';
+import { CrowdLevels } from '../../model/places/CrowdLevel';
+import { OpeningHours } from '../../model/places/OpeningHours';
 type PlaceEntity = RestaurantBar | Hotel | TouristAttraction;
 
 class PlaceController {
@@ -345,7 +348,6 @@ class PlaceController {
         requestedCategories = ['restaurant_bar', 'hotel', 'tourist_attraction'];
       }
 
-
       // Valider les catégories
       const validCategories = ['restaurant_bar', 'hotel', 'tourist_attraction'];
       requestedCategories = requestedCategories.filter(cat => validCategories.includes(cat));
@@ -398,7 +400,9 @@ class PlaceController {
         });
 
         // Enrichir les places
-        const enrichedPlaces = await Promise.all(entities.map((entity: any) => controller.enrichPlace(entity.place, languageId)));
+        const enrichedPlaces = await Promise.all(
+          entities.map((entity: any) => controller.enrichPlace(entity.place, languageId))
+        );
 
         return { label, places: enrichedPlaces, count };
       });
@@ -457,6 +461,7 @@ class PlaceController {
   }
 
 
+
   /**
    * Fonction pour enrichir les données d'une place.
    * @param place La place à enrichir
@@ -464,6 +469,7 @@ class PlaceController {
    * @returns Un objet enrichi représentant la place
    */
   private async enrichPlace(place: Place, languageId: number): Promise<any> {
+    // Récupérer les traductions, images, attributs et catégories
     const [translation, images, placeAttributes, placeCategories] = await Promise.all([
       this.txPlaceRepository.findOne({
         where: { place: { id: place.id }, language_id: languageId },
@@ -479,8 +485,18 @@ class PlaceController {
       }),
     ]);
 
-    console.log(`Attributes for Place ID ${place.id}:`, placeAttributes);
-    console.log(`Categories for Place ID ${place.id}:`, placeCategories);
+    // Récupérer les heures d'ouverture et les niveaux de fréquentation
+    const [openingHours, crowdLevels] = await Promise.all([
+      OpeningHours.find({ where: { place: { id: place.id } } }),
+      CrowdLevels.find({ where: { place: { id: place.id } } }),
+    ]);
+
+    // Récupérer les données spécifiques au type de lieu
+    const [restaurantBar, hotel, touristAttraction] = await Promise.all([
+      RestaurantBar.findOne({ where: { place: { id: place.id } } }),
+      Hotel.findOne({ where: { place: { id: place.id } } }),
+      TouristAttraction.findOne({ where: { place: { id: place.id } } }),
+    ]);
 
     const attributes = placeAttributes.map((pa) => ({
       ...pa.attribute,
@@ -491,6 +507,36 @@ class PlaceController {
       ...pc.category,
       main: pc.main,
     }));
+
+    // Déterminer le type de lieu et inclure les données spécifiques
+    let specificData = {};
+    let placeType: PlaceType | null = null;
+
+    if (restaurantBar) {
+      placeType = PlaceType.RESTAURANT_BAR; // Assurez-vous que PlaceType contient ces valeurs
+      specificData = {
+        menu: restaurantBar.menu,
+        price_min: restaurantBar.price_min,
+        price_max: restaurantBar.price_max,
+      };
+    } else if (hotel) {
+      placeType = PlaceType.HOTEL;
+      specificData = {
+        booking_link: hotel.booking_link,
+        avg_price_per_night: hotel.avg_price_per_night,
+      };
+    } else if (touristAttraction) {
+      placeType = PlaceType.TOURIST_ATTRACTION;
+      specificData = {
+        name_original: touristAttraction.name_original,
+        wiki_link: touristAttraction.wiki_link,
+        price_regular: touristAttraction.price_regular,
+        price_children: touristAttraction.price_children,
+        tickets_gyg: touristAttraction.tickets_gyg,
+        tickets_civitatis: touristAttraction.tickets_civitatis,
+        tickets_direct_site: touristAttraction.tickets_direct_site,
+      };
+    }
 
     return {
       id: place.id,
@@ -524,6 +570,20 @@ class PlaceController {
       })),
       attributes,
       categories,
+      ...specificData, // Inclure les données spécifiques au type de lieu
+      placeType, // Inclure le type de lieu
+      openingHours: openingHours.map((oh) => ({
+        day_of_week: oh.day_of_week,
+        start_time_1: oh.start_time_1,
+        stop_time_1: oh.stop_time_1,
+        start_time_2: oh.start_time_2,
+        stop_time_2: oh.stop_time_2,
+      })),
+      crowdLevels: crowdLevels.map((cl) => ({
+        day_of_week: cl.day_of_week,
+        hour: cl.hour,
+        status: cl.status,
+      })),
     };
   }
 

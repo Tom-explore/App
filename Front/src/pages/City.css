@@ -1,4 +1,4 @@
-/* City.css */
+/* src/pages/City.css */
 
 /* Variables CSS */
 :root {
@@ -19,12 +19,13 @@
   transition: transform 0.3s ease-in-out;
 }
 
+/* Shift content when filter panel is open */
 .city-page.content-shift .city-content {
   transform: translateX(300px);
   transition: transform 0.3s ease-in-out;
 }
 
-/* Overlay */
+/* Overlay (if used) */
 .overlay {
   position: fixed;
   top: 0;
@@ -44,7 +45,7 @@
   cursor: pointer;
 }
 
-/* Désactive les interactions avec le contenu quand le panneau est ouvert */
+/* Disable interactions with content when filter panel is open */
 .city-page.content-shift .city-content {
   pointer-events: none;
 }
@@ -58,9 +59,9 @@
   margin: 20px 0;
 }
 
-/* Bouton Filtrer : on retire le style minimaliste et on revient à quelque chose de standard */
+/* Bouton Filtrer */
 .filter-button {
-  /* Utilise la couleur primaire et le style IonButton par défaut */
+  /* Use primary color and default IonButton style */
   --background: var(--primary-color);
   --color: var(--secondary-color);
   border-radius: 4px;
@@ -71,12 +72,11 @@
   justify-content: center;
 }
 
-/* Agrandir un peu l'icône si souhaité */
 .filter-button ion-icon {
   font-size: 20px;
 }
 
-/* Autres boutons dans l'en-tête (ex: "Je crée mon voyage!") */
+/* Other buttons in header (e.g., "Je crée mon voyage!") */
 .city-buttons ion-button:not(.filter-button) {
   --background: var(--primary-color);
   --color: var(--secondary-color);
@@ -87,82 +87,46 @@
 
 /* Contenu principal */
 .city-content {
-  padding: 16px;
+  padding: 1rem;
   background-color: var(--background-color);
   min-height: 80vh;
+  position: relative;
+  /* To allow absolutely positioned PlaceCards if needed */
+  overflow: visible;
+  /* Ensure content can overflow for active cards */
 }
 
 /* Message de non-résultats */
-.no-results {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 200px;
+.no-results,
+.loading,
+.no-more-results {
   text-align: center;
+  padding: 2rem;
   color: var(--text-color);
   font-size: 1.2em;
 }
 
-/* Carrousels de lieux */
-.places-section {
-  margin: 20px 0;
-}
-
-.places-section h2 {
-  font-size: 1.5rem;
-  margin-bottom: 10px;
-  color: var(--text-color);
-}
-
-.places-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 15px;
-}
-
-.place-card {
-  display: flex;
-  flex-direction: column;
-  background: var(--secondary-color);
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px var(--shadow-color);
-  transition: transform 0.2s ease-in-out;
-}
-
-.place-card:hover {
-  transform: translateY(-5px);
-}
-
-.place-image {
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-}
-
-.place-info {
-  padding: 10px;
-}
-
-.place-info h3 {
-  font-size: 1rem;
-  margin: 0 0 5px 0;
-  color: var(--text-color);
-}
-
-.place-info p {
-  font-size: 0.9rem;
-  color: var(--text-color);
-  margin: 0;
-}
-
-/* Loading */
-.loading {
+/* Loader spinner */
+.loader-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100%;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border-left-color: #09f;
+  animation: spin 1s ease infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Panneau de filtrage mobile */
@@ -224,7 +188,7 @@
   font-size: 0.9rem;
 }
 
-/* Responsive */
+/* Responsive Design */
 @media (max-width: 768px) {
   .city-buttons {
     flex-direction: column;
@@ -244,11 +208,22 @@
   }
 
   .place-info h3 {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
   }
 
   .place-info p {
     font-size: 0.8rem;
+  }
+
+  .place-links {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .insta-link,
+  .maps-link {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.5rem;
   }
 }
 
