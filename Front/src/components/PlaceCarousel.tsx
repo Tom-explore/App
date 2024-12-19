@@ -1,6 +1,6 @@
 // src/components/PlaceCarousel.tsx
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, FreeMode } from 'swiper/modules';
 import 'swiper/css';
@@ -9,8 +9,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/free-mode';
 import './PlaceCarousel.css';
 import PlaceCard from './PlaceCard';
-import { Place } from '../types/PlacesInterfaces';
-import { PlaceType } from '../types/EnumsInterfaces';
+import { Place, PlaceType } from '../types/PlacesInterfaces';
 import ModalPortal from './ModalPortal';
 
 interface PlaceCarouselProps {
@@ -38,9 +37,46 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
     const swiperRef = useRef<any>(null);
     const [currentSlidesPerView, setCurrentSlidesPerView] = useState<number>(isMobile ? 1 : 6);
 
+    // Fonctions de navigation
+    const goToPrevious = useCallback(() => {
+        if (!activePlace) return;
+        const currentIndex = places.findIndex(place => place.id === activePlace.id);
+        if (currentIndex > 0) {
+            const newPlace = places[currentIndex - 1];
+            setActivePlace(newPlace);
+            swiperRef.current?.swiper.slideTo(currentIndex - 1 - Math.floor(currentSlidesPerView / 2));
+        }
+    }, [activePlace, places, currentSlidesPerView]);
+
+    const goToNext = useCallback(() => {
+        if (!activePlace) return;
+        const currentIndex = places.findIndex(place => place.id === activePlace.id);
+        if (currentIndex < places.length - 1) {
+            const newPlace = places[currentIndex + 1];
+            setActivePlace(newPlace);
+            swiperRef.current?.swiper.slideTo(currentIndex + 1 - Math.floor(currentSlidesPerView / 2));
+        }
+    }, [activePlace, places, currentSlidesPerView]);
+
+    // Gestion des événements clavier
     useEffect(() => {
-        // La logique de centrage est gérée manuellement dans handleCardClick
-    }, [activePlace, places]);
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (!activePlace) return;
+            if (e.key === 'ArrowLeft') {
+                goToPrevious();
+            } else if (e.key === 'ArrowRight') {
+                goToNext();
+            }
+        };
+
+        if (activePlace) {
+            window.addEventListener('keydown', handleKeyDown);
+        }
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [activePlace, goToPrevious, goToNext]);
 
     const handleCardClick = (place: Place) => {
         if (isMobile) return; // Gérer l'agrandissement différemment sur mobile
@@ -89,6 +125,11 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
         ? places.filter(place => place.id !== activePlace.id)
         : places;
 
+    // Détermination si la place active est la première ou la dernière
+    const currentIndex = activePlace ? places.findIndex(p => p.id === activePlace.id) : -1;
+    const isFirst = currentIndex === 0;
+    const isLast = currentIndex === places.length - 1;
+
     return (
         <div className="place-carousel">
             <h2>{title}</h2>
@@ -125,15 +166,12 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
                             isMobile={isMobile}
                             onDesktopClick={() => handleCardClick(place)}
                             isActive={activePlace?.id === place.id}
-                            placeType={placeType}
                         />
                     </SwiperSlide>
                 ))}
 
                 {showOnlySkeletons && renderSkeletons(6)}
-
                 {showPartialSkeletons && renderSkeletons(10)}
-
                 {showNoSkeleton && places.length === 0 && (
                     <SwiperSlide>
                         <div className="no-results">
@@ -162,12 +200,15 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
                         isModalView={true}
                         onDesktopClick={() => setActivePlace(null)}
                         isActive={true}
-                        placeType={placeType}
+                        onPrevious={goToPrevious}
+                        onNext={goToNext}
+                        isFirst={isFirst}
+                        isLast={isLast}
                     />
                 </ModalPortal>
             )}
         </div>
     );
-};
+}
 
 export default PlaceCarousel;
