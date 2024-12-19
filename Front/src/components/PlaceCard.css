@@ -2,7 +2,7 @@
 
 :root {
     --card-width: 240px;
-    --card-height: 300px;
+    --card-height: 340px;
     --card-active-width: 400px;
     /* Augmenté de 80px */
     --card-active-height: 600px;
@@ -13,7 +13,6 @@
     --transition-ease: ease-in-out;
     --backdrop-bg: rgba(0, 0, 0, 0.5);
 }
-
 
 /* Base styles for PlaceCard */
 .place-card {
@@ -82,7 +81,6 @@
     /* Augmenter légèrement le rayon des coins */
     background: #fff;
 }
-
 
 /* Animation pour l'agrandissement */
 @keyframes expandCard {
@@ -255,6 +253,125 @@
     height: 16px;
 }
 
+/* ================== Styles pour les Flèches de Navigation ================== */
+
+.nav-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(255, 255, 255, 0.8);
+    border: none;
+    padding: 10px;
+    /* Taille ajustée */
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 1001;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    opacity: 0.9;
+    transition: background-color var(--transition-duration) var(--transition-ease), transform var(--transition-duration) var(--transition-ease);
+}
+
+/* Positionnement collé ou légèrement espacé */
+.left-arrow {
+    left: -20px;
+    /* Ajustez pour être collée ou légèrement espacée */
+}
+
+.right-arrow {
+    right: -20px;
+    /* Ajustez pour être collée ou légèrement espacée */
+}
+
+.nav-arrow:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 1);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.nav-arrow:active:not(:disabled) {
+    transform: translateY(-50%) scale(0.95);
+}
+
+/* Positionnement spécifique des flèches gauche et droite */
+.left-arrow {
+    left: 15px;
+}
+
+.right-arrow {
+    right: 15px;
+}
+
+/* Styles pour les icônes à l'intérieur des flèches */
+.nav-arrow svg {
+    width: 16px;
+    height: 16px;
+    color: #333;
+    transition: transform var(--transition-duration) var(--transition-ease);
+}
+
+/* Animation de déplacement des icônes lors du survol */
+.nav-arrow:hover svg {
+    transform: translateX(2px);
+}
+
+/* Adaptations responsives pour les flèches */
+@media (max-width: 1024px) {
+    .nav-arrow {
+        padding: 10px;
+    }
+
+    .nav-arrow svg {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+@media (max-width: 768px) {
+    .nav-arrow {
+        padding: 8px;
+    }
+
+    .nav-arrow svg {
+        width: 12px;
+        height: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-arrow {
+        padding: 6px;
+    }
+
+    .nav-arrow svg {
+        width: 10px;
+        height: 10px;
+    }
+
+    .left-arrow {
+        left: 10px;
+    }
+
+    .right-arrow {
+        right: 10px;
+    }
+}
+
+/* Optionnel : Ajouter un effet de transition pour l'apparition des flèches */
+.place-card.modal.modal-card .nav-arrow {
+    opacity: 1;
+    transition: opacity var(--transition-duration) var(--transition-ease), transform var(--transition-duration) var(--transition-ease);
+}
+
+/* Optionnel : Masquer les flèches par défaut et les afficher uniquement lors du survol de la carte active */
+.place-card.modal.modal-card .nav-arrow {
+    opacity: 0;
+}
+
+.place-card.modal.modal-card:hover .nav-arrow {
+    opacity: 0.9;
+}
+
+/* ================== Fin des Styles pour les Flèches de Navigation ================== */
+
 /* Responsive adjustments */
 @media (max-width: 1024px) {
     :root {
@@ -418,5 +535,23 @@
 
     .modal-photo {
         height: 100%;
+    }
+
+    /* Ajustements pour les flèches sur petits écrans */
+    .nav-arrow {
+        padding: 6px;
+    }
+
+    .nav-arrow svg {
+        width: 10px;
+        height: 10px;
+    }
+
+    .left-arrow {
+        left: 10px;
+    }
+
+    .right-arrow {
+        right: 10px;
     }
 }

@@ -1,41 +1,61 @@
+// src/types/PlacesInterfaces.ts
+
 import { Attribute, Category } from "./CategoriesAttributesInterfaces";
 import { City } from "./CommonInterfaces";
 import { PlaceType, CrowdStatus } from "./EnumsInterfaces";
 
+export interface Translation {
+  slug: string;
+  name: string;
+  title: string;
+  description: string | null;
+  meta_description: string | null;
+}
+
+export interface Image {
+  id: number;
+  slug: string;
+  author?: string | null;
+  license?: string | null;
+  top: number;
+  source?: string;
+}
+
 export interface Place {
+  pets_authorized: any;
+  description_scrapio: string | null | undefined;
   id: number;
   lat: number;
   lng: number;
   slug: string;
-  translation: {
-    slug: string;
-    name: string;
-    title: string;
-    description: string | null;
-    meta_description: string | null;
-  }; // Peut être absent (optionnel)
+  translation: Translation | null;
   description: string;
   address: string;
   link_website?: string; // Peut être absent (optionnel)
   link_insta?: string;   // Peut être absent (optionnel)
   link_fb?: string;      // Peut être absent (optionnel)
-  link_maps: string;    // Peut être absent (optionnel)
+  link_maps?: string;    // Peut être absent (optionnel)
   reviews_google_rating: number;
   reviews_google_count: number;
-  images: {
-    id: number;
-    slug: string;
-    author?: string | null;
-    license?: string | null;
-    top: number;
-    source?: string;
-  }[];
+  images: Image[];
   attributes: Attribute[];
   categories: Category[];
-
+  menu?: string | null;
+  price_min?: number | null;
+  price_max?: number | null;
+  booking_link?: string | null;
+  avg_price_per_night?: number | null;
+  name_original?: string;
+  wiki_link?: string;
+  price_regular?: number | null;
+  price_children?: number | null;
+  tickets_gyg?: boolean;
+  tickets_civitatis?: boolean;
+  tickets_direct_site?: string;
+  placeType: PlaceType;
+  openingHours?: OpeningHours[];
+  crowdLevels?: CrowdLevels[];
 }
-
-
 
 export interface CrowdLevels {
   id: number;
@@ -44,7 +64,6 @@ export interface CrowdLevels {
   hour: string;
   status: CrowdStatus;
 }
-
 
 export interface OpeningHours {
   id: number;
@@ -65,6 +84,7 @@ export interface PlaceImg {
   top?: number;
   source?: string;
 }
+
 export interface Hotel {
   place: Place; // Objet Place imbriqué
   booking_link?: string;
@@ -89,3 +109,6 @@ export interface TouristAttraction {
   tickets_civitatis: boolean;
   tickets_direct_site?: string;
 }
+
+export { PlaceType };
+
