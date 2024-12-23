@@ -15,7 +15,8 @@ import { PlaceCategory } from '../../model/categories/PlaceCategory';
 import { PlaceType } from '../../model/enums/PlaceType';
 import { CrowdLevels } from '../../model/places/CrowdLevel';
 import { OpeningHours } from '../../model/places/OpeningHours';
-type PlaceEntity = RestaurantBar | Hotel | TouristAttraction;
+import { firestore } from '../../config/Firestore';
+
 
 class PlaceController {
   private placeRepository: Repository<Place>;
@@ -257,6 +258,8 @@ class PlaceController {
     } = controller;
 
     try {
+      console.time('Total Execution Time');
+
       const { citySlug } = req.params;
 
       const {
@@ -287,9 +290,11 @@ class PlaceController {
       if (!citySlug || !languageId) {
         console.error('Missing required parameters');
         res.status(400).json({ message: 'City slug and language ID are required' });
+        console.timeEnd('Total Execution Time');
         return;
       }
 
+      console.time('Fetch City and Country');
       // Fetch city and its country
       const city = await cityRepository.findOne({
         where: { slug: citySlug },
@@ -299,9 +304,13 @@ class PlaceController {
       if (!city) {
         console.error('City not found:', citySlug);
         res.status(404).json({ message: 'City not found' });
+        console.timeEnd('Fetch City and Country');
+        console.timeEnd('Total Execution Time');
         return;
       }
+      console.timeEnd('Fetch City and Country');
 
+      console.time('Fetch Translations');
       // Fetch city and country translations in parallel
       const [txCity, txCountry] = await Promise.all([
         txCityRepository.findOne({
@@ -311,19 +320,23 @@ class PlaceController {
           where: { country: { id: city.country.id }, language_id: Number(languageId) },
         }),
       ]);
+      console.timeEnd('Fetch Translations');
 
       if (!txCity) {
         console.error('TxCity not found for language ID:', languageId);
         res.status(404).json({ message: 'City translation not found' });
+        console.timeEnd('Total Execution Time');
         return;
       }
 
       if (!txCountry) {
         console.error('TxCountry not found for language ID:', languageId);
         res.status(404).json({ message: 'Country translation not found' });
+        console.timeEnd('Total Execution Time');
         return;
       }
 
+      console.time('Process Categories and Fetch Places');
       // Parse pagination parameters
       const parseNumber = (value: string | undefined, defaultValue: number) =>
         value ? parseInt(value, 10) : defaultValue;
@@ -355,6 +368,8 @@ class PlaceController {
       if (requestedCategories.length === 0) {
         console.error('No valid categories provided');
         res.status(400).json({ message: 'No valid categories provided' });
+        console.timeEnd('Process Categories and Fetch Places');
+        console.timeEnd('Total Execution Time');
         return;
       }
 
@@ -399,9 +414,13 @@ class PlaceController {
           order: { id: 'ASC' }, // Ajout de l'ordre
         });
 
-        // Enrichir les places
         const enrichedPlaces = await Promise.all(
-          entities.map((entity: any) => controller.enrichPlace(entity.place, languageId))
+          entities.map(async (entity: any) => ({
+            id: entity.id,
+            placeId: entity.place.id,
+            name: entity.place.slug,
+            ...await controller.enrichPlace(entity.place, languageId),
+          }))
         );
 
         return { label, places: enrichedPlaces, count };
@@ -410,46 +429,34 @@ class PlaceController {
       // Exécuter toutes les promesses
       const results = await Promise.all(placePromises);
       const validResults = results.filter(result => result !== null);
+      console.timeEnd('Process Categories and Fetch Places');
 
-      // Construire la réponse
-      const response: any = {
-        city: {
-          id: city.id,
-          slug: city.slug,
-          scrapio: city.scrapio,
-          timezone: city.timezone,
-          lat: city.lat,
-          lng: city.lng,
-          duration: city.duration,
-          country: {
-            id: city.country.id,
-            code: city.country.code,
-            slug: city.country.slug,
-            translation: {
-              slug: txCountry.slug,
-              name: txCountry.name,
-              description: txCountry.description,
-              meta_description: txCountry.meta_description,
-            },
-          },
-          translation: {
-            slug: txCity.slug,
-            name: txCity.name,
-            description: txCity.description,
-            meta_description: txCity.meta_description,
-          },
-        },
-        places: {},
-        counts: {},
-      };
+      console.time('Write to Firestore');
+      console.log('Final Response:', JSON.stringify(validResults, null, 2));
 
-      // Remplir les places et les counts par catégorie
-      validResults.forEach((result) => {
-        response.places[result.label] = result.places;
-        response.counts[result.label] = result.count;
-      });
+      // Nom du document Firestore: "slug-language"
+      const documentName = `${city.slug}-${languageId}`;
+      console.log(`Writing to Firestore collection: City, document: ${documentName}`);
 
-      res.status(200).json(response);
+      // Utiliser Batch Writes pour optimiser les écritures
+      const batch = firestore.batch();
+      const cityDocRef = firestore.collection("City").doc(documentName);
+
+      for (const result of validResults) {
+        const subCollectionRef = cityDocRef.collection(result.label);
+        for (const place of result.places) {
+          const placeDocRef = subCollectionRef.doc(place.placeId.toString());
+          batch.set(placeDocRef, place);
+        }
+      }
+
+      await batch.commit();
+      console.timeEnd('Write to Firestore');
+
+      // Répondre à l'utilisateur que les données ont été écrites
+      res.status(200).json({ message: `Données écrites dans Firestore sous le document ${documentName} de la collection City` });
+
+      console.timeEnd('Total Execution Time');
     } catch (error: any) {
       console.error('Error fetching all places by city:', error);
       if (!res.headersSent) {
@@ -459,7 +466,6 @@ class PlaceController {
       }
     }
   }
-
 
 
   /**

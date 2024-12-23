@@ -1,12 +1,13 @@
 // src/components/PlaceCarousel.tsx
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, FreeMode } from 'swiper/modules';
+import { Navigation, Pagination, FreeMode, Virtual } from 'swiper/modules'; // Imported Virtual
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import 'swiper/css/free-mode';
+import 'swiper/css/virtual'; // Import Virtual styles if needed
 import './PlaceCarousel.css';
 import PlaceCard from './PlaceCard';
 import { Place, PlaceType } from '../types/PlacesInterfaces';
@@ -16,7 +17,6 @@ interface PlaceCarouselProps {
     title: string;
     places: Place[];
     isPreview: boolean;
-    onLoadMore: () => void;
     hasMore: boolean;
     isLoading: boolean;
     isMobile: boolean;
@@ -27,7 +27,6 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
     title,
     places,
     isPreview,
-    onLoadMore,
     hasMore,
     isLoading,
     isMobile,
@@ -37,7 +36,58 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
     const swiperRef = useRef<any>(null);
     const [currentSlidesPerView, setCurrentSlidesPerView] = useState<number>(isMobile ? 1 : 6);
 
-    // Fonctions de navigation
+    // Filter out the active place to avoid duplication
+    const placesToRender = activePlace
+        ? places.filter(place => place.id !== activePlace.id)
+        : places;
+
+    // Determine if the active place is the first or last
+    const currentIndex = activePlace ? places.findIndex(p => p.id === activePlace.id) : -1;
+    const isFirst = currentIndex === 0;
+    const isLast = currentIndex === places.length - 1;
+
+    // Prepare a unified slides array including places, skeletons, loaders, etc.
+    const slides = useMemo(() => {
+        const slidesArray: Array<{ type: string; content?: Place | null }> = [];
+
+        if (isPreview) {
+            if (places.length === 0) {
+                // Show skeletons when in preview and no places
+                for (let i = 0; i < 6; i++) {
+                    slidesArray.push({ type: 'skeleton' });
+                }
+            } else if (places.length > 0 && places.length < 8) {
+                // Show partial skeletons when in preview and places are less than 8
+                const skeletonCount = 10 - places.length;
+                placesToRender.forEach((place) => {
+                    slidesArray.push({ type: 'place', content: place });
+                });
+                for (let i = 0; i < skeletonCount; i++) {
+                    slidesArray.push({ type: 'skeleton' });
+                }
+                return slidesArray;
+            }
+        }
+
+        // Add actual place slides
+        placesToRender.forEach((place) => {
+            slidesArray.push({ type: 'place', content: place });
+        });
+
+        if (!isPreview && places.length === 0) {
+            // Show no results message
+            slidesArray.push({ type: 'no-results' });
+        }
+
+        if (isLoading && hasMore) {
+            // Show loader
+            slidesArray.push({ type: 'loader' });
+        }
+
+        return slidesArray;
+    }, [isPreview, places, placesToRender, isLoading, hasMore]);
+
+    // Navigation functions
     const goToPrevious = useCallback(() => {
         if (!activePlace) return;
         const currentIndex = places.findIndex(place => place.id === activePlace.id);
@@ -58,7 +108,7 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
         }
     }, [activePlace, places, currentSlidesPerView]);
 
-    // Gestion des événements clavier
+    // Handle keyboard events
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (!activePlace) return;
@@ -79,7 +129,7 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
     }, [activePlace, goToPrevious, goToNext]);
 
     const handleCardClick = (place: Place) => {
-        if (isMobile) return; // Gérer l'agrandissement différemment sur mobile
+        if (isMobile) return; // Handle enlargement differently on mobile
 
         const swiper = swiperRef.current?.swiper;
         if (!swiper) return;
@@ -88,12 +138,12 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
         const clickedIndex = places.findIndex(p => p.id === place.id);
         const half = Math.floor(currentSlidesPerView / 2);
 
-        // Déterminer si le slide peut être centré
+        // Determine if the slide can be centered
         if (clickedIndex >= half && clickedIndex <= totalSlides - half - 1) {
             swiper.slideTo(clickedIndex - half);
             setActivePlace(place);
         } else {
-            // Si proche du début ou de la fin, aligner le slide cliqué à gauche ou à droite
+            // If near the beginning or end, align the clicked slide to the start or end
             if (clickedIndex < half) {
                 swiper.slideTo(0);
             } else {
@@ -103,44 +153,19 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
         }
     };
 
-    const renderSkeletons = (count: number) =>
-        Array.from({ length: count }).map((_, index) => (
-            <SwiperSlide key={`skeleton-${index}`}>
-                <div className="place-card skeleton">
-                    <div className="skeleton-image"></div>
-                    <div className="skeleton-info">
-                        <div className="skeleton-title"></div>
-                        <div className="skeleton-text"></div>
-                    </div>
-                </div>
-            </SwiperSlide>
-        ));
-
-    const showOnlySkeletons = isPreview && places.length === 0;
-    const showPartialSkeletons = isPreview && places.length > 0 && places.length < 8;
-    const showNoSkeleton = !isPreview;
-
-    // Filtrer l'activePlace du carousel pour éviter la duplication
-    const placesToRender = activePlace
-        ? places.filter(place => place.id !== activePlace.id)
-        : places;
-
-    // Détermination si la place active est la première ou la dernière
-    const currentIndex = activePlace ? places.findIndex(p => p.id === activePlace.id) : -1;
-    const isFirst = currentIndex === 0;
-    const isLast = currentIndex === places.length - 1;
 
     return (
         <div className="place-carousel">
             <h2>{title}</h2>
             <Swiper
                 ref={swiperRef}
-                modules={[Navigation, Pagination, FreeMode]}
+                modules={[Navigation, Pagination, FreeMode, Virtual]} // Added Virtual module
                 spaceBetween={16}
                 slidesPerView={isMobile ? 1 : 6}
-                navigation={!activePlace} // Désactiver la navigation lorsque une carte est active
+                navigation={!activePlace} // Disable navigation when a card is active
                 pagination={{ clickable: true, dynamicBullets: true }}
-                slideToClickedSlide={false} // Désactiver le centrage automatique de Swiper
+                virtual={{ enabled: true }} // Enabled Virtual slides
+                slideToClickedSlide={false} // Disable automatic centering
                 breakpoints={{
                     320: { slidesPerView: 2 },
                     480: { slidesPerView: 3 },
@@ -149,50 +174,55 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
                     1200: { slidesPerView: 6 },
                 }}
                 loop={false}
-                allowTouchMove={!activePlace} // Désactiver le drag lorsque une carte est active
+                allowTouchMove={!activePlace} // Disable dragging when a card is active
                 onReachEnd={() => {
-                    if (hasMore) {
-                        onLoadMore();
-                    }
+                    // Handle reaching the end if necessary
                 }}
                 onBreakpoint={(swiper) => {
                     setCurrentSlidesPerView(swiper.params.slidesPerView as number);
                 }}
             >
-                {placesToRender.map((place) => (
-                    <SwiperSlide key={`place-${place.id}`}>
-                        <PlaceCard
-                            place={place}
-                            isMobile={isMobile}
-                            onDesktopClick={() => handleCardClick(place)}
-                            isActive={activePlace?.id === place.id}
-                        />
+                {slides.map((slide, index) => (
+                    <SwiperSlide
+                        key={
+                            slide.type === 'place'
+                                ? `place-${slide.content?.id}`
+                                : `slide-${index}-${slide.type}`
+                        }
+                        virtualIndex={index} // Assign virtualIndex
+                    >
+                        {slide.type === 'place' && slide.content ? (
+                            <PlaceCard
+                                place={slide.content}
+                                isMobile={isMobile}
+                                onDesktopClick={() => handleCardClick(slide.content!)}
+                                isActive={activePlace?.id === slide.content.id}
+                            />
+                        ) : slide.type === 'skeleton' ? (
+                            <div className="place-card skeleton">
+                                <div className="skeleton-image"></div>
+                                <div className="skeleton-info">
+                                    <div className="skeleton-title"></div>
+                                    <div className="skeleton-text"></div>
+                                </div>
+                            </div>
+                        ) : slide.type === 'no-results' ? (
+                            <div className="no-results">
+                                <p>Aucun lieu trouvé.</p>
+                            </div>
+                        ) : slide.type === 'loader' ? (
+                            <div className="loader-container">
+                                <div className="spinner"></div>
+                            </div>
+                        ) : null}
                     </SwiperSlide>
                 ))}
-
-                {showOnlySkeletons && renderSkeletons(6)}
-                {showPartialSkeletons && renderSkeletons(10)}
-                {showNoSkeleton && places.length === 0 && (
-                    <SwiperSlide>
-                        <div className="no-results">
-                            <p>Aucun lieu trouvé.</p>
-                        </div>
-                    </SwiperSlide>
-                )}
-
-                {isLoading && hasMore && (
-                    <SwiperSlide key="loader">
-                        <div className="loader-container">
-                            <div className="spinner"></div>
-                        </div>
-                    </SwiperSlide>
-                )}
             </Swiper>
             {activePlace && (
                 <ModalPortal>
                     <div
                         className="backdrop"
-                        onClick={() => setActivePlace(null)} // Fermer la carte en cliquant sur le backdrop
+                        onClick={() => setActivePlace(null)} // Close the card by clicking on the backdrop
                     ></div>
                     <PlaceCard
                         place={activePlace}

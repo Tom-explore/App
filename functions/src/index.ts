@@ -1,11 +1,12 @@
+// src/index.ts
+
 import express from 'express';
 import * as functions from 'firebase-functions';
 import cors from 'cors';
 import path from 'path';
 import { initializeDataSource } from './config/AppDataSource';
-import { initializeApp } from "firebase-admin/app";
 import configureRoutes from './config/routes';
-initializeApp();
+
 
 export const app = express();
 app.use(express.json());
@@ -32,9 +33,6 @@ if (!isDev) {
 
 configureRoutes(app);
 
-
-
-
 const frontendPath = path.join(__dirname, '../../dist/build');
 app.use(express.static(frontendPath));
 
@@ -43,9 +41,9 @@ app.get('*', (req, res) => {
 });
 
 initializeDataSource().then(() => {
-  console.log('Base de données initialisée. API prête à recevoir des requêtees.');
+  console.log('Base de données initialisée. API prête à recevoir des requêtes.');
 }).catch((error) => {
-  console.error('Échec de l\'initialisation de la base de dondnées :', error);
+  console.error('Échec de l\'initialisation de la base de données :', error);
 });
 
 export const api = functions.https.onRequest(

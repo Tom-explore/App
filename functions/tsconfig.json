@@ -9,9 +9,11 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "experimentalDecorators": true,   // Active les décorateurs
-    "emitDecoratorMetadata": true,    // Active les métadonnées pour les décorateurs
+    "experimentalDecorators": true, // Active les décorateurs
+    "emitDecoratorMetadata": true, // Active les métadonnées pour les décorateurs
     "strictPropertyInitialization": false // Pour éviter les erreurs d'initialisation
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }

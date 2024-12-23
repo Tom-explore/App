@@ -4,6 +4,8 @@ import { useLanguage } from '../context/languageContext';
 import { City, CityPreview } from '../types/CommonInterfaces';
 import { Place } from '../types/PlacesInterfaces';
 import apiClient from '../config/apiClient';
+import { doc, collection, query, getDocs } from 'firebase/firestore';
+import { firestore } from '../config/firebaseconfig';
 
 // Définition des types de places
 type Places = {
@@ -29,9 +31,8 @@ type CityState = {
     hasMorePlaces: HasMorePlaces;
     setCityPreviewAndFetchData: (slug: string) => void;
     resetCity: () => void;
-    fetchMorePlaces: (category: Category) => void;
-    fetchInitialPlacesByCategory: (category: Category) => void;
     fetchAllPlaces: () => void;
+    fillUpCityFirestore: (languageId: number, slug: string) => Promise<Places>; // Mise à jour du type
 };
 
 const CityContext = createContext<CityState | undefined>(undefined);
@@ -78,7 +79,7 @@ function getPreview(languageId: number, slug: string) {
 /**
  * Récupère toutes les places en une seule requête.
  */
-const fetchAllPlacesAPI = async (languageId: number, slug: string): Promise<Places> => {
+const fillUpCityFirestore = async (languageId: number, slug: string): Promise<Places> => {
     try {
         const { data } = await apiClient.get(`/place/cities/${slug}/all-places`, {
             params: {
@@ -95,6 +96,71 @@ const fetchAllPlacesAPI = async (languageId: number, slug: string): Promise<Plac
         };
     } catch (error) {
         console.error('Error fetching all places:', error);
+        return {
+            restaurantsBars: [],
+            hotels: [],
+            touristAttractions: [],
+        };
+    }
+};
+
+const fetchAllDataFirestore = async (languageId: number, slug: string): Promise<Places> => {
+    console.log(`Début de la récupération des données pour la ville: "${slug}" avec languageId: ${languageId}`);
+
+    try {
+        const cityDocId = `${slug}-${languageId}`;
+        console.log(`Identifiant du document de la ville: "${cityDocId}"`);
+
+        const cityDocRef = doc(firestore, 'City', cityDocId);
+        console.log(`Référence au document Firestore:`, cityDocRef);
+
+        const fetchSubcollection = async (subcollectionName: string): Promise<Place[]> => {
+            console.log(`Récupération de la sous-collection: "${subcollectionName}"`);
+
+            const subcollectionRef = collection(cityDocRef, subcollectionName);
+            const q = query(subcollectionRef);
+            const querySnapshot = await getDocs(q);
+
+            console.log(`Nombre de documents récupérés dans "${subcollectionName}": ${querySnapshot.size}`);
+
+            const places: Place[] = [];
+
+            querySnapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+
+                if (typeof data.id === 'number') { // Vérifie que 'id' est bien un nombre
+                    const place: Place = { id: data.id, ...(data as Omit<Place, 'id'>) };
+                    places.push(place);
+                    console.log(`Place ajoutée:`, place);
+                } else {
+                    console.warn(`Document "${docSnap.id}" dans "${subcollectionName}" n'a pas de champ 'id' numérique. Données:`, data);
+                }
+            });
+
+            console.log(`Total de places dans "${subcollectionName}": ${places.length}`);
+            return places;
+        };
+
+        // Récupération simultanée des trois sous-collections
+        console.log(`Commence la récupération simultanée des sous-collections: "restaurantsBars", "hotels", "touristAttractions"`);
+        const [restaurantsBars, hotels, touristAttractions] = await Promise.all([
+            fetchSubcollection('restaurantsBars'),
+            fetchSubcollection('hotels'),
+            fetchSubcollection('touristAttractions'),
+        ]);
+
+        console.log(`Récupération terminée. Résumé des données:`);
+        console.log(`- Restaurants & Bars: ${restaurantsBars.length} places`);
+        console.log(`- Hôtels: ${hotels.length} places`);
+        console.log(`- Attractions Touristiques: ${touristAttractions.length} places`);
+
+        return {
+            restaurantsBars,
+            hotels,
+            touristAttractions,
+        };
+    } catch (error) {
+        console.error('Erreur lors de la récupération des données depuis Firestore:', error);
         return {
             restaurantsBars: [],
             hotels: [],
@@ -187,187 +253,35 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
     /**
      * Effet pour gérer `pendingLoad` et récupérer les places initiales.
      */
-    useEffect(() => {
-        if (!pendingLoad || !isLanguageLoaded) return;
+    // useEffect(() => {
+    //     if (!pendingLoad || !isLanguageLoaded) return;
 
-        const { originalSlug, preview } = pendingLoad;
-        let canceled = false;
+    //     const { originalSlug, preview } = pendingLoad;
+    //     let canceled = false;
 
-        const initializePlaces = async () => {
-            if (canceled) return;
-            await fetchInitialPlacesByCategoryCallback('restaurant_bar');
-            await fetchInitialPlacesByCategoryCallback('hotel');
-            await fetchInitialPlacesByCategoryCallback('tourist_attraction');
+    //     const initializePlaces = async () => {
+    //         if (canceled) return;
+    //         await fetchInitialPlacesByCategoryCallback('restaurant_bar');
+    //         await fetchInitialPlacesByCategoryCallback('hotel');
+    //         await fetchInitialPlacesByCategoryCallback('tourist_attraction');
 
-            setIsFetching(false);
-            setIsPreview(false);
-            setPendingLoad(null);
-        };
+    //         setIsFetching(false);
+    //         setIsPreview(false);
+    //         setPendingLoad(null);
+    //     };
 
-        initializePlaces();
+    //     initializePlaces();
 
-        return () => {
-            canceled = true;
-        };
-    }, [pendingLoad, isLanguageLoaded, language.id]);
+    //     return () => {
+    //         canceled = true;
+    //     };
+    // }, [pendingLoad, isLanguageLoaded, language.id]);
 
     const [isLoadingPlaces, setIsLoadingPlaces] = useState<HasMorePlaces>({
         restaurant_bar: false,
         hotel: false,
         tourist_attraction: false,
     });
-
-    /**
-     * Récupère plus de places pour une catégorie spécifique
-     */
-    const fetchMorePlaces = useCallback(async (category: Category) => {
-        if (!originalSlug || !language.id) return;
-        if (!hasMorePlaces[category]) return;
-
-        setIsLoadingPlaces(prev => ({ ...prev, [category]: true }));
-
-        let currentPlaces: Place[] = [];
-        let newOffset = 0;
-
-        switch (category) {
-            case 'restaurant_bar':
-                currentPlaces = placesRef.current.restaurantsBars;
-                newOffset = currentPlaces.length;
-                break;
-            case 'hotel':
-                currentPlaces = placesRef.current.hotels;
-                newOffset = currentPlaces.length;
-                break;
-            case 'tourist_attraction':
-                currentPlaces = placesRef.current.touristAttractions;
-                newOffset = currentPlaces.length;
-                break;
-            default:
-                console.error('Invalid category:', category);
-                setIsLoadingPlaces(prev => ({ ...prev, [category]: false }));
-                return;
-        }
-
-        try {
-            const { data } = await apiClient.get(`/place/cities/${originalSlug}/all-places`, {
-                params: {
-                    languageId: language.id,
-                    limit: 8,
-                    offset: newOffset,
-                    categories: category,
-                },
-            });
-
-            let newPlaces: Place[] = [];
-            switch (category) {
-                case 'restaurant_bar':
-                    newPlaces = data.places?.restaurantsBars || [];
-                    setPlaces(prev => ({
-                        ...prev,
-                        restaurantsBars: [
-                            ...prev.restaurantsBars,
-                            ...newPlaces.filter(newPlace => !prev.restaurantsBars.some(existingPlace => existingPlace.id === newPlace.id)),
-                        ],
-                    }));
-                    // On ne met plus hasMorePlaces à false si moins de 8, seulement si 0.
-                    if (newPlaces.length === 0) {
-                        setHasMorePlaces(prev => ({ ...prev, restaurant_bar: false }));
-                    }
-                    break;
-                case 'hotel':
-                    newPlaces = data.places?.hotels || [];
-                    setPlaces(prev => ({
-                        ...prev,
-                        hotels: [
-                            ...prev.hotels,
-                            ...newPlaces.filter(newPlace => !prev.hotels.some(existingPlace => existingPlace.id === newPlace.id)),
-                        ],
-                    }));
-                    if (newPlaces.length === 0) {
-                        setHasMorePlaces(prev => ({ ...prev, hotel: false }));
-                    }
-                    break;
-                case 'tourist_attraction':
-                    newPlaces = data.places?.touristAttractions || [];
-                    setPlaces(prev => ({
-                        ...prev,
-                        touristAttractions: [
-                            ...prev.touristAttractions,
-                            ...newPlaces.filter(newPlace => !prev.touristAttractions.some(existingPlace => existingPlace.id === newPlace.id)),
-                        ],
-                    }));
-                    if (newPlaces.length === 0) {
-                        setHasMorePlaces(prev => ({ ...prev, tourist_attraction: false }));
-                    }
-                    break;
-            }
-        } catch (error) {
-            console.error(`Error fetching more places for ${category}:`, error);
-        } finally {
-            setIsLoadingPlaces(prev => ({ ...prev, [category]: false }));
-        }
-    }, [originalSlug, language.id, hasMorePlaces]);
-
-    /**
-     * Récupère les places initiales pour une catégorie spécifique
-     */
-    const fetchInitialPlacesByCategoryCallback = useCallback(async (category: Category) => {
-        if (!city || !language.id) return;
-
-        setIsLoadingPlaces(prev => ({ ...prev, [category]: true }));
-
-        try {
-            const languageId = language.id;
-            const { data } = await apiClient.get(`/place/cities/${originalSlug}/all-places`, {
-                params: {
-                    languageId,
-                    limit: 8,
-                    offset: 0,
-                    categories: category,
-                },
-            });
-
-            let initialPlaces: Place[] = [];
-            switch (category) {
-                case 'restaurant_bar':
-                    initialPlaces = data.places?.restaurantsBars || [];
-                    setPlaces(prev => ({
-                        ...prev,
-                        restaurantsBars: initialPlaces,
-                    }));
-                    if (initialPlaces.length < 8 && initialPlaces.length === 0) {
-                        setHasMorePlaces(prev => ({ ...prev, restaurant_bar: false }));
-                    }
-                    break;
-                case 'hotel':
-                    initialPlaces = data.places?.hotels || [];
-                    setPlaces(prev => ({
-                        ...prev,
-                        hotels: initialPlaces,
-                    }));
-                    if (initialPlaces.length < 8 && initialPlaces.length === 0) {
-                        setHasMorePlaces(prev => ({ ...prev, hotel: false }));
-                    }
-                    break;
-                case 'tourist_attraction':
-                    initialPlaces = data.places?.touristAttractions || [];
-                    setPlaces(prev => ({
-                        ...prev,
-                        touristAttractions: initialPlaces,
-                    }));
-                    if (initialPlaces.length < 8 && initialPlaces.length === 0) {
-                        setHasMorePlaces(prev => ({ ...prev, tourist_attraction: false }));
-                    }
-                    break;
-                default:
-                    console.error('Invalid category:', category);
-            }
-        } catch (error) {
-            console.error(`Error fetching initial places for ${category}:`, error);
-        } finally {
-            setIsLoadingPlaces(prev => ({ ...prev, [category]: false }));
-        }
-    }, [city, language.id, originalSlug]);
 
     /**
      * Récupère toutes les places en une seule fois
@@ -382,7 +296,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         try {
-            const fetchedPlaces = await fetchAllPlacesAPI(language.id, originalSlug);
+            const fetchedPlaces = await fetchAllDataFirestore(language.id, originalSlug);
 
             setPlaces({
                 restaurantsBars: fetchedPlaces.restaurantsBars,
@@ -414,10 +328,9 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
         hasMorePlaces,
         setCityPreviewAndFetchData,
         resetCity,
-        fetchMorePlaces,
-        fetchInitialPlacesByCategory: fetchInitialPlacesByCategoryCallback,
         isLoadingPlaces,
         fetchAllPlaces,
+        fillUpCityFirestore, // Ajout de fillUpCityFirestore au contexte
     }), [
         city,
         originalSlug,
@@ -426,10 +339,9 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
         hasMorePlaces,
         setCityPreviewAndFetchData,
         resetCity,
-        fetchMorePlaces,
-        fetchInitialPlacesByCategoryCallback,
         isLoadingPlaces,
         fetchAllPlaces,
+        fillUpCityFirestore, // Ajout de fillUpCityFirestore aux dépendances
     ]);
 
     return (
@@ -467,12 +379,12 @@ export const useFetchInitialPlaces = () => {
 /**
  * Hook pour récupérer 8 lieux supplémentaires pour une catégorie spécifique.
  */
-export const useFetchMorePlaces = () => {
-    const { fetchMorePlaces } = useCity();
+// export const useFetchMorePlaces = () => {
+//     const { fetchMorePlaces } = useCity();
 
-    const fetch = useCallback(async (category: Category) => {
-        await fetchMorePlaces(category);
-    }, [fetchMorePlaces]);
+//     const fetch = useCallback(async (category: Category) => {
+//         await fetchMorePlaces(category);
+//     }, [fetchMorePlaces]);
 
-    return fetch;
-};
+//     return fetch;
+// };

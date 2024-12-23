@@ -1,14 +1,13 @@
 // src/pages/City.tsx
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
     IonContent,
     IonPage,
     IonButton,
-    IonModal,
 } from '@ionic/react';
-import { useCity, useFetchInitialPlaces, useFetchMorePlaces } from '../context/cityContext';
+import { useCity, useFetchInitialPlaces } from '../context/cityContext';
 import CityHeader from '../components/CityHeader';
 import PlaceCarousel from '../components/PlaceCarousel';
 import { useIonViewWillLeave } from '@ionic/react';
@@ -22,17 +21,14 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { IonIcon } from '@ionic/react';
 import { filterOutline } from 'ionicons/icons';
 import { PlaceType } from '../types/EnumsInterfaces';
+import { useUser } from '../context/userContext';
 
 const City: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
-    const location = useLocation();
-    const queryParams = new URLSearchParams(location.search);
-    const hasCategoriesParam = queryParams.has('categories');
-    const hasAttributesParam = queryParams.has('attributes');
+    const { user } = useUser();
 
-    const { city, places, resetCity, isPreview, hasMorePlaces, isLoadingPlaces, fetchAllPlaces } = useCity();
+    const { city, places, resetCity, isPreview, hasMorePlaces, isLoadingPlaces, fetchAllPlaces, fillUpCityFirestore } = useCity();
     const fetchInitialPlaces = useFetchInitialPlaces();
-    const fetchMorePlaces = useFetchMorePlaces();
     const { isLanguageLoaded, language } = useLanguage();
     const [isTripModalOpen, setIsTripModalOpen] = useState(false);
 
@@ -40,9 +36,6 @@ const City: React.FC = () => {
     const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
     const [isUserInteracting, setIsUserInteracting] = useState(false);
     const [isMobile, setIsMobile] = useState<boolean>(false);
-
-    // Counter for tracking fetch more places calls
-    const [fetchCounter, setFetchCounter] = useState(0);
 
     useEffect(() => {
         const checkIsMobile = () => {
@@ -70,17 +63,10 @@ const City: React.FC = () => {
     });
 
     useEffect(() => {
-        console.log(city);
-    }, [city]);
-
-    // Once initial places are loaded (isPreview = false) and city is available,
-    // if there are 'categories' or 'attributes' parameters, load all remaining in one call.
-    useEffect(() => {
-        if (city && !isPreview && (hasCategoriesParam || hasAttributesParam)) {
-            // Load all places at once
+        if (city) {
             fetchAllPlaces();
         }
-    }, [city, isPreview, hasCategoriesParam, hasAttributesParam, fetchAllPlaces]);
+    }, [city, fetchAllPlaces]);
 
     const allPlaces = useMemo(() => [
         ...places.restaurantsBars,
@@ -134,30 +120,23 @@ const City: React.FC = () => {
         filteredHotels.length > 0 ||
         filteredTouristAttractions.length > 0;
 
-    const handleLoadMoreRestaurantsBars = useCallback(() => {
-        setFetchCounter(prev => prev + 1);
-        console.log(`Fetching more restaurants/bars... Call #${fetchCounter + 1}`);
-        // If no categories/attributes params, continue loading by 8
-        if (!hasCategoriesParam && !hasAttributesParam) {
-            fetchMorePlaces('restaurant_bar');
+    const handleAddDataToFirestore = useCallback(async () => {
+        if (!language.id || !slug) {
+            console.error('ID de langue ou slug de ville manquant.');
+            alert('Impossible d\'ajouter les données. ID de langue ou slug de ville manquant.');
+            return;
         }
-    }, [fetchMorePlaces, fetchCounter, hasCategoriesParam, hasAttributesParam]);
 
-    const handleLoadMoreHotels = useCallback(() => {
-        setFetchCounter(prev => prev + 1);
-        console.log(`Fetching more hotels... Call #${fetchCounter + 1}`);
-        if (!hasCategoriesParam && !hasAttributesParam) {
-            fetchMorePlaces('hotel');
+        try {
+            await fillUpCityFirestore(language.id, slug);
+            // Après avoir ajouté les données à Firestore, vous pouvez recharger les places
+            await fetchAllPlaces();
+            alert('Données ajoutées avec succès à Firestore.');
+        } catch (error) {
+            console.error('Erreur lors de l\'ajout des données à Firestore:', error);
+            alert('Erreur lors de l\'ajout des données à Firestore.');
         }
-    }, [fetchMorePlaces, fetchCounter, hasCategoriesParam, hasAttributesParam]);
-
-    const handleLoadMoreTouristAttractions = useCallback(() => {
-        setFetchCounter(prev => prev + 1);
-        console.log(`Fetching more tourist attractions... Call #${fetchCounter + 1}`);
-        if (!hasCategoriesParam && !hasAttributesParam) {
-            fetchMorePlaces('tourist_attraction');
-        }
-    }, [fetchMorePlaces, fetchCounter, hasCategoriesParam, hasAttributesParam]);
+    }, [fillUpCityFirestore, language.id, slug, fetchAllPlaces, user]);
 
     return (
         <IonPage className={`city-page ${isFilterPanelOpen ? 'content-shift' : ''}`}>
@@ -175,13 +154,25 @@ const City: React.FC = () => {
                         />
 
                         <div className="city-buttons">
+                            {/* Bouton Filtrer */}
                             <IonButton className="filter-button" onClick={() => setIsFilterPanelOpen(true)} fill="clear">
                                 <IonIcon icon={filterOutline} />
                             </IonButton>
+
+                            {/* Bouton Créer Voyage */}
                             <IonButton onClick={() => setIsTripModalOpen(true)}>
                                 ✈️ Je crée mon voyage !
                             </IonButton>
+
+                            {user && user.admin == true ? (
+                                <IonButton color="secondary" onClick={handleAddDataToFirestore}>
+                                    Ajouter des données à Firestore
+                                </IonButton>
+                            ) : (
+                                <p>Vous n'avez pas les droits nécessaires pour ajouter des données.</p>
+                            )}
                         </div>
+
 
                         <AnimatePresence>
                             {isMobile ? (
@@ -231,7 +222,6 @@ const City: React.FC = () => {
                                             title="Restaurants & Bars"
                                             places={filteredRestaurantsBars}
                                             isPreview={isPreview}
-                                            onLoadMore={handleLoadMoreRestaurantsBars}
                                             hasMore={hasMorePlaces.restaurant_bar}
                                             isLoading={isLoadingPlaces.restaurant_bar}
                                             isMobile={isMobile}
@@ -243,7 +233,6 @@ const City: React.FC = () => {
                                             title="Hôtels"
                                             places={filteredHotels}
                                             isPreview={isPreview}
-                                            onLoadMore={handleLoadMoreHotels}
                                             hasMore={hasMorePlaces.hotel}
                                             isLoading={isLoadingPlaces.hotel}
                                             isMobile={isMobile}
@@ -255,7 +244,6 @@ const City: React.FC = () => {
                                             title="Attractions Touristiques"
                                             places={filteredTouristAttractions}
                                             isPreview={isPreview}
-                                            onLoadMore={handleLoadMoreTouristAttractions}
                                             hasMore={hasMorePlaces.tourist_attraction}
                                             isLoading={isLoadingPlaces.tourist_attraction}
                                             isMobile={isMobile}
@@ -276,7 +264,6 @@ const City: React.FC = () => {
                             title="Chargement des lieux"
                             places={[]}
                             isPreview={true}
-                            onLoadMore={() => { }}
                             hasMore={false}
                             isLoading={false}
                             isMobile={isMobile}

@@ -4,22 +4,23 @@ import { LanguageProvider } from './context/languageContext';
 import { IonReactRouter } from '@ionic/react-router';
 import { CityProvider } from './context/cityContext';
 import { TripProvider } from './context/tripContext';
+import { UserProvider } from './context/userContext';
 
 const container = document.getElementById('root');
 const root = createRoot(container!);
 
 root.render(
   <IonReactRouter>
+    <UserProvider>
+      <LanguageProvider>
+        <CityProvider>
+          <TripProvider>
 
-    <LanguageProvider>
-      <CityProvider>
-        <TripProvider>
+            <App />
+          </TripProvider>
 
-          <App />
-        </TripProvider>
-
-      </CityProvider>
-    </LanguageProvider>
-
+        </CityProvider>
+      </LanguageProvider>
+    </UserProvider>
   </IonReactRouter>,
 );

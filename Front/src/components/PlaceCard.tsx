@@ -1,6 +1,6 @@
 // src/components/PlaceCard.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInstagram, faGoogle } from '@fortawesome/free-brands-svg-icons';
@@ -9,6 +9,8 @@ import { Place, PlaceType } from '../types/PlacesInterfaces';
 import './PlaceCard.css';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Scrollbar, A11y } from 'swiper/modules';
+import SwiperCore from 'swiper';
+
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -41,6 +43,13 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
     const [isExpanded, setIsExpanded] = useState(false);
     const [touchStartY, setTouchStartY] = useState<number | null>(null);
     const navigate = useIonRouter(); // Initialisation correcte
+    const swiperRef = useRef<SwiperCore | null>(null); // Référence pour le Swiper
+
+    const handleImageClick = (index: number) => {
+        if (swiperRef.current) {
+            swiperRef.current.slideTo(index); // Défilement au slide correspondant
+        }
+    };
 
     const handleCardClick = (e: React.MouseEvent) => {
         const target = e.target as HTMLElement;
@@ -212,20 +221,22 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                             slidesPerView={1.2} // Afficher une partie de l'image suivante
                             pagination={{ clickable: true }}
                             className="modal-photo-slider"
+                            onSwiper={(swiper) => (swiperRef.current = swiper)} // Stocke l'instance Swiper
                         >
-                            {place.images.map((img) => (
+                            {place.images.map((img, index) => (
                                 <SwiperSlide key={img.id} className="image-slide">
                                     <img
                                         loading="lazy"
                                         src={`https://lh3.googleusercontent.com/p/${img.slug}`}
                                         alt={`${place.translation?.name} - ${img.id}`}
                                         className="modal-photo"
+                                        onClick={() => handleImageClick(index)} // Défilement au clic
                                     />
                                 </SwiperSlide>
                             ))}
                         </Swiper>
-
                     )}
+
 
                     {!isModalView && (
                         <img
