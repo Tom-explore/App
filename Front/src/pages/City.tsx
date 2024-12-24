@@ -6,6 +6,7 @@ import {
     IonContent,
     IonPage,
     IonButton,
+    IonIcon,
 } from '@ionic/react';
 import { useCity, useFetchInitialPlaces } from '../context/cityContext';
 import CityHeader from '../components/CityHeader';
@@ -18,7 +19,6 @@ import { Place } from '../types/PlacesInterfaces';
 import FilterPlaces from '../components/FilterPlaces';
 import FilterPlacesMobile from '../components/FilterPlacesMobile';
 import { AnimatePresence, motion } from 'framer-motion';
-import { IonIcon } from '@ionic/react';
 import { filterOutline } from 'ionicons/icons';
 import { PlaceType } from '../types/EnumsInterfaces';
 import { useUser } from '../context/userContext';
@@ -37,6 +37,7 @@ const City: React.FC = () => {
     const [isUserInteracting, setIsUserInteracting] = useState(false);
     const [isMobile, setIsMobile] = useState<boolean>(false);
 
+    // Détection de l'appareil mobile
     useEffect(() => {
         const checkIsMobile = () => {
             const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
@@ -46,12 +47,14 @@ const City: React.FC = () => {
         checkIsMobile();
     }, []);
 
+    // Récupération initiale des lieux
     useEffect(() => {
         if (slug && isLanguageLoaded) {
             fetchInitialPlaces(slug);
         }
     }, [slug, isLanguageLoaded, fetchInitialPlaces]);
 
+    // Réinitialisation de la ville lors du démontage
     useEffect(() => {
         return () => {
             resetCity();
@@ -62,18 +65,21 @@ const City: React.FC = () => {
         resetCity();
     });
 
+    // Récupération de toutes les places une fois que la ville est définie
     useEffect(() => {
         if (city) {
             fetchAllPlaces();
         }
     }, [city, fetchAllPlaces]);
 
+    // Combinaison de toutes les places
     const allPlaces = useMemo(() => [
         ...places.restaurantsBars,
         ...places.hotels,
         ...places.touristAttractions
     ], [places.restaurantsBars, places.hotels, places.touristAttractions]);
 
+    // Extraction des catégories uniques
     const uniqueCategories = useMemo(() => {
         const allCategories = [
             ...places.restaurantsBars.flatMap(place => place.categories),
@@ -83,6 +89,7 @@ const City: React.FC = () => {
         return Array.from(new Map(allCategories.map(cat => [cat.id, cat])).values());
     }, [places.restaurantsBars, places.hotels, places.touristAttractions]);
 
+    // Extraction des attributs uniques
     const uniqueAttributes = useMemo(() => {
         const allAttributes = [
             ...places.restaurantsBars.flatMap(place => place.attributes),
@@ -92,11 +99,13 @@ const City: React.FC = () => {
         return Array.from(new Map(allAttributes.map(attr => [attr.id, attr])).values());
     }, [places.restaurantsBars, places.hotels, places.touristAttractions]);
 
+    // Gestion des filtres
     const handleFilterChange = useCallback((filteredPlaces: Place[]) => {
         const ids = new Set(filteredPlaces.map(p => p.id));
         setFilteredPlacesIDs(ids);
     }, []);
 
+    // Filtres appliqués
     const filteredRestaurantsBars = useMemo(() => {
         if (!city) return [];
         if (!filteredPlacesIDs) return places.restaurantsBars;
@@ -120,6 +129,7 @@ const City: React.FC = () => {
         filteredHotels.length > 0 ||
         filteredTouristAttractions.length > 0;
 
+    // Gestion de l'ajout des données à Firestore (pour les admins)
     const handleAddDataToFirestore = useCallback(async () => {
         if (!language.id || !slug) {
             console.error('ID de langue ou slug de ville manquant.');
@@ -164,7 +174,7 @@ const City: React.FC = () => {
                                 ✈️ Je crée mon voyage !
                             </IonButton>
 
-                            {user && user.admin == true ? (
+                            {user && user.admin === true ? (
                                 <IonButton color="secondary" onClick={handleAddDataToFirestore}>
                                     Ajouter des données à Firestore
                                 </IonButton>
@@ -279,4 +289,5 @@ const City: React.FC = () => {
         </IonPage>
     )
 }
+
 export default City;

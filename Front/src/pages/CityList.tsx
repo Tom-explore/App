@@ -22,9 +22,6 @@ const CityList: React.FC<CityListProps> = ({ cities }) => {
           <AnimatePresence>
             {cities.length > 0 ? (
               cities.map((city) => {
-                // Log pour chaque ville
-                console.log('[CityList] Ville rendue:', city);
-
                 return isMobile ? (
                   <motion.div
                     className="city-list-item-mobile"

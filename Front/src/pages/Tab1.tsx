@@ -1,16 +1,34 @@
 // src/pages/Tab1.tsx
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton, IonSpinner } from '@ionic/react';
+import {
+  IonContent,
+  IonHeader,
+  IonPage,
+  IonTitle,
+  IonToolbar,
+  IonButton,
+  IonSpinner,
+  IonItem,
+  IonLabel,
+  IonInput,
+  IonSelect,
+  IonSelectOption,
+} from '@ionic/react';
 import './Tab1.css';
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { useUser } from '../context/userContext'; // Import du hook useUser
-import apiClient from '../config/apiClient';
+import citiesData from '../data/cities.json';
+import { firestore } from '../config/firebaseconfig';
+import { doc, collection, getDocs } from 'firebase/firestore';
+
 const Tab1: React.FC = () => {
   const { user, setUser } = useUser(); // Accès au contexte utilisateur
-  const [restaurantsBarsData, setRestaurantsBarsData] = useState<any[]>([]); // State pour Firestore data
   const [isLoading, setIsLoading] = useState(false); // State pour le chargement de la connexion
   const [isFetchingData, setIsFetchingData] = useState(false); // State pour le chargement des données Firestore
+
+  const [languageIdInput, setLanguageIdInput] = useState<number>(1); // Default language ID
+  const [selectedSlug, setSelectedSlug] = useState<string>(''); // Default to empty
 
   const handleLogin = useCallback(async () => {
     const auth = getAuth();
@@ -19,7 +37,9 @@ const Tab1: React.FC = () => {
     setIsLoading(true); // Début du chargement
 
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      // Vous pouvez obtenir des informations utilisateur supplémentaires ici si nécessaire
+      // Exemple: setUser(result.user);
     } catch (error: any) {
       console.error('Erreur lors de la connexion:', error);
       alert('Erreur lors de la connexion avec Google. Veuillez réessayer.');
@@ -34,16 +54,13 @@ const Tab1: React.FC = () => {
     try {
       await auth.signOut();
       console.log('Utilisateur déconnecté');
+      setUser(null);
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error);
       alert('Erreur lors de la déconnexion. Veuillez réessayer.');
     }
-  }, []);
+  }, [setUser]);
 
-  const getUser = useCallback(async () => {
-    console.log('User : ', user);
-
-  }, []);
   useEffect(() => {
     if (user) {
       console.log('Utilisateur connecté:', user);
@@ -52,11 +69,55 @@ const Tab1: React.FC = () => {
     }
   }, [user]);
 
+  const fetchFirestoreData = useCallback(async () => {
+    if (!selectedSlug) {
+      alert('Veuillez sélectionner une ville.');
+      return;
+    }
+
+    setIsFetchingData(true);
+
+    try {
+      const cityDocId = `${selectedSlug}-${languageIdInput}`;
+      const cityDocRef = doc(firestore, 'City', cityDocId);
+
+      // Fetch Restaurants & Bars
+      const restaurantsBarsRef = collection(cityDocRef, 'restaurantsBars');
+      const restaurantsBarsSnapshot = await getDocs(restaurantsBarsRef);
+      const restaurantsBars: any[] = [];
+      restaurantsBarsSnapshot.forEach((doc) => {
+        restaurantsBars.push({ id: doc.id, ...doc.data() });
+      });
+      console.log('Restaurants & Bars:', restaurantsBars);
+
+      // Fetch Tourist Attractions
+      const touristAttractionsRef = collection(cityDocRef, 'touristAttractions');
+      const touristAttractionsSnapshot = await getDocs(touristAttractionsRef);
+      const touristAttractions: any[] = [];
+      touristAttractionsSnapshot.forEach((doc) => {
+        touristAttractions.push({ id: doc.id, ...doc.data() });
+      });
+      console.log('Attractions Touristiques:', touristAttractions);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des données Firestore:', error);
+      alert('Erreur lors de la récupération des données. Veuillez réessayer.');
+    } finally {
+      setIsFetchingData(false);
+    }
+  }, [selectedSlug, languageIdInput]);
+
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle style={{ fontSize: '2rem', fontWeight: 'bold', textAlign: 'center', color: 'pink' }}>
+          <IonTitle
+            style={{
+              fontSize: '2rem',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              color: 'pink',
+            }}
+          >
             OAuth2 Login
           </IonTitle>
         </IonToolbar>
@@ -68,12 +129,12 @@ const Tab1: React.FC = () => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            height: '100%',
+            minHeight: '100%',
           }}
         >
           {user ? (
             <>
-              <p>Bienvenue, {user.name}!</p>
+              <p>Bienvenue, {user.name || 'Utilisateur'}!</p>
               <IonButton expand="block" onClick={handleLogout} color="danger">
                 Déconnexion
               </IonButton>
@@ -87,50 +148,57 @@ const Tab1: React.FC = () => {
           {/* Afficher un indicateur de chargement lors de la connexion */}
           {isLoading && <IonSpinner name="crescent" />}
 
-          <IonButton
-            expand="block"
-            onClick={getUser}
-            color="tertiary"
-            disabled={!user || isFetchingData}
-          >
-            Afficher user
-          </IonButton>
-          <IonButton
-            expand="block"
-            onClick={async () => {
-              try {
-                const response = await apiClient.post('/firestore/hello');
-                console.log('Réponse Firestore:', response.data);
-              } catch (error) {
-                console.error('Erreur Firestore:', error);
-              }
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              await fetchFirestoreData();
             }}
-            color="secondary"
+            style={{
+              width: '100%',
+              maxWidth: '400px',
+              marginTop: '2rem',
+              padding: '1rem',
+              border: '1px solid #ccc',
+              borderRadius: '8px',
+            }}
           >
-            Appeler /firestore/hello
-          </IonButton>
+            <IonItem>
+              <IonLabel position="stacked">Language ID</IonLabel>
+              <IonInput
+                type="number"
+                value={languageIdInput}
+                onIonChange={(e) => setLanguageIdInput(Number(e.detail.value))}
+                required
+                min={1}
+              />
+            </IonItem>
 
-          {restaurantsBarsData.length > 0 && (
-            <div>
-              <h3>Données des Restaurants & Bars:</h3>
-              <ul style={{ textAlign: 'left', padding: '0 1rem' }}>
-                {restaurantsBarsData.map((restaurant, index) => (
-                  <li key={restaurant.id || index} style={{ marginBottom: '1rem' }}>
-                    <strong>Nom:</strong> {restaurant.name || 'N/A'}
-                    <br />
-                    <strong>Adresse:</strong> {restaurant.translation?.address || 'Non disponible'}
-                    <br />
-                    <strong>Catégories:</strong>{' '}
-                    {restaurant.categories
-                      ? restaurant.categories.map((cat: any) => cat.slug).join(', ')
-                      : 'Aucune'}
-                    <br />
-                    <strong>Note Google:</strong> {restaurant.reviews_google_rating || 'Non évalué'} / 5
-                  </li>
+            <IonItem>
+              <IonLabel position="stacked">Ville</IonLabel>
+              <IonSelect
+                value={selectedSlug}
+                placeholder="Sélectionnez une ville"
+                onIonChange={(e) => setSelectedSlug(e.detail.value)}
+              >
+                {citiesData.map((city: any) => (
+                  <IonSelectOption key={city.slug} value={city.slug}>
+                    {city.slug}
+                  </IonSelectOption>
                 ))}
-              </ul>
-            </div>
-          )}
+              </IonSelect>
+            </IonItem>
+
+            <IonButton
+              type="submit"
+              expand="block"
+              disabled={!selectedSlug || isFetchingData}
+              style={{ marginTop: '1rem' }}
+            >
+              {isFetchingData ? <IonSpinner name="crescent" /> : 'Récupérer les Données'}
+            </IonButton>
+          </form>
+
+          {/* Removed the display of fetched data */}
         </div>
       </IonContent>
     </IonPage>

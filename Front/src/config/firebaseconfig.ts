@@ -1,7 +1,19 @@
-// config/firebaseconfig.js
+// config/firebaseconfig.js ou firebaseconfig.ts
 import { initializeApp } from 'firebase/app';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
-import { getAuth, setPersistence, browserLocalPersistence, connectAuthEmulator } from 'firebase/auth';
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentSingleTabManager,
+  // persistentMultipleTabManager, // Utilisez ceci si vous avez besoin de support multi-onglets
+  CACHE_SIZE_UNLIMITED,
+  connectFirestoreEmulator // Import statique pour l'émulateur Firestore
+} from 'firebase/firestore';
+import {
+  getAuth,
+  setPersistence,
+  browserLocalPersistence,
+  connectAuthEmulator // Import statique pour l'émulateur Auth
+} from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBjI5mRHiKUy-xIfSZi7n5ImyNSh8cCOJg",
@@ -17,15 +29,22 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 console.log("Firebase initialisé avec succès.");
 
-// Configuration Firestore
-const firestore = getFirestore(app);
-console.log("Firestore configuré.");
+// Configuration Firestore avec persistance des données en cache
+const firestore = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentSingleTabManager(undefined), // Passez `undefined` si aucun paramètre spécifique n'est requis
+    cacheSizeBytes: CACHE_SIZE_UNLIMITED, // Optionnel: Définit la taille du cache à illimité
+    // Si vous avez besoin de support multi-onglets, utilisez `persistentMultipleTabManager` :
+    // tabManager: persistentMultipleTabManager(undefined),
+  }),
+});
+console.log("Firestore configuré avec persistance des données en cache.");
 
 // Configuration Auth
 const auth = getAuth(app);
 console.log("Firebase Auth configuré.");
 
-// Configurer la persistance à 'local'
+// Configurer la persistance à 'local' pour Auth
 setPersistence(auth, browserLocalPersistence)
   .then(() => {
     console.log('Persistance Firebase Auth configurée sur local.');
@@ -36,6 +55,7 @@ setPersistence(auth, browserLocalPersistence)
 
 // Si on est en développement, connecter les émulateurs
 if (process.env.REACT_APP_IS_DEV === 'true') {
+  // Connecter l'émulateur Firestore
   connectFirestoreEmulator(firestore, 'localhost', 8080);
 }
 

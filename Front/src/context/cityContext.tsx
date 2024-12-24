@@ -32,6 +32,7 @@ type CityState = {
     setCityPreviewAndFetchData: (slug: string) => void;
     resetCity: () => void;
     fetchAllPlaces: () => void;
+    setPlaces: React.Dispatch<React.SetStateAction<Places>>; // Mise à jour de la signature
     fillUpCityFirestore: (languageId: number, slug: string) => Promise<Places>; // Mise à jour du type
 };
 
@@ -107,60 +108,91 @@ const fillUpCityFirestore = async (languageId: number, slug: string): Promise<Pl
 const fetchAllDataFirestore = async (languageId: number, slug: string): Promise<Places> => {
     console.log(`Début de la récupération des données pour la ville: "${slug}" avec languageId: ${languageId}`);
 
-    try {
-        const cityDocId = `${slug}-${languageId}`;
-        console.log(`Identifiant du document de la ville: "${cityDocId}"`);
+    if (!slug.trim()) {
+        throw new Error("Le slug ne peut pas être vide.");
+    }
 
+    const cacheKey = `${slug}-${languageId}`; // Définir une clé unique pour le cache
+
+    try {
+        // Vérifier si les données sont déjà en cache (localStorage dans cet exemple)
+        const cachedData = localStorage.getItem(cacheKey);
+
+        if (cachedData) {
+            console.log(`Données trouvées en cache pour la clé: ${cacheKey}`);
+            const parsedData = JSON.parse(cachedData) as Places;
+
+            // Vérifier si au moins une catégorie est remplie
+            if (parsedData.restaurantsBars.length || parsedData.hotels.length || parsedData.touristAttractions.length) {
+                return parsedData;
+
+            } else {
+                console.log("Données en cache trouvées mais vides. Requête vers Firestore.");
+            }
+        }
+
+        console.log(`Aucune donnée en cache pour la clé: ${cacheKey}. Récupération depuis Firestore.`);
+
+        const cityDocId = cacheKey;
         const cityDocRef = doc(firestore, 'City', cityDocId);
-        console.log(`Référence au document Firestore:`, cityDocRef);
 
         const fetchSubcollection = async (subcollectionName: string): Promise<Place[]> => {
-            console.log(`Récupération de la sous-collection: "${subcollectionName}"`);
-
             const subcollectionRef = collection(cityDocRef, subcollectionName);
             const q = query(subcollectionRef);
             const querySnapshot = await getDocs(q);
 
-            console.log(`Nombre de documents récupérés dans "${subcollectionName}": ${querySnapshot.size}`);
-
             const places: Place[] = [];
-
             querySnapshot.forEach((docSnap) => {
                 const data = docSnap.data();
 
-                if (typeof data.id === 'number') { // Vérifie que 'id' est bien un nombre
+                if (typeof data.id === 'number') {
                     const place: Place = { id: data.id, ...(data as Omit<Place, 'id'>) };
                     places.push(place);
-                    console.log(`Place ajoutée:`, place);
                 } else {
-                    console.warn(`Document "${docSnap.id}" dans "${subcollectionName}" n'a pas de champ 'id' numérique. Données:`, data);
+                    console.warn(`Document "${docSnap.id}" dans "${subcollectionName}" n'a pas de champ 'id' valide. Données:`, data);
                 }
             });
 
-            console.log(`Total de places dans "${subcollectionName}": ${places.length}`);
             return places;
         };
 
-        // Récupération simultanée des trois sous-collections
-        console.log(`Commence la récupération simultanée des sous-collections: "restaurantsBars", "hotels", "touristAttractions"`);
-        const [restaurantsBars, hotels, touristAttractions] = await Promise.all([
-            fetchSubcollection('restaurantsBars'),
-            fetchSubcollection('hotels'),
-            fetchSubcollection('touristAttractions'),
-        ]);
+        // Récupérer les sous-collections et vérifier si elles sont vides
+        let restaurantsBars = await fetchSubcollection('restaurantsBars');
+        let hotels = await fetchSubcollection('hotels');
+        let touristAttractions = await fetchSubcollection('touristAttractions');
 
-        console.log(`Récupération terminée. Résumé des données:`);
-        console.log(`- Restaurants & Bars: ${restaurantsBars.length} places`);
-        console.log(`- Hôtels: ${hotels.length} places`);
-        console.log(`- Attractions Touristiques: ${touristAttractions.length} places`);
+        // Si une ou plusieurs collections sont vides, forcer une récupération du serveur
+        // if (!restaurantsBars.length || !hotels.length || !touristAttractions.length) {
+        if (!restaurantsBars.length || !touristAttractions.length) {
 
-        return {
+            console.log("Certaines collections sont vides. Récupération des données manquantes depuis Firestore.");
+
+            if (!restaurantsBars.length) {
+                restaurantsBars = await fetchSubcollection('restaurantsBars');
+            }
+            if (!hotels.length) {
+                hotels = await fetchSubcollection('hotels');
+            }
+            if (!touristAttractions.length) {
+                touristAttractions = await fetchSubcollection('touristAttractions');
+            }
+        }
+
+        const fetchedData: Places = {
             restaurantsBars,
             hotels,
             touristAttractions,
         };
+
+        // Stocker les données récupérées dans le cache
+        localStorage.setItem(cacheKey, JSON.stringify(fetchedData));
+        console.log(`Données stockées en cache pour la clé: ${cacheKey}`);
+
+        return fetchedData;
     } catch (error) {
         console.error('Erreur lors de la récupération des données depuis Firestore:', error);
+
+        // En cas d'erreur, retourner un objet vide
         return {
             restaurantsBars: [],
             hotels: [],
@@ -250,33 +282,6 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
         [language.id, isLanguageLoaded, resetCity]
     );
 
-    /**
-     * Effet pour gérer `pendingLoad` et récupérer les places initiales.
-     */
-    // useEffect(() => {
-    //     if (!pendingLoad || !isLanguageLoaded) return;
-
-    //     const { originalSlug, preview } = pendingLoad;
-    //     let canceled = false;
-
-    //     const initializePlaces = async () => {
-    //         if (canceled) return;
-    //         await fetchInitialPlacesByCategoryCallback('restaurant_bar');
-    //         await fetchInitialPlacesByCategoryCallback('hotel');
-    //         await fetchInitialPlacesByCategoryCallback('tourist_attraction');
-
-    //         setIsFetching(false);
-    //         setIsPreview(false);
-    //         setPendingLoad(null);
-    //     };
-
-    //     initializePlaces();
-
-    //     return () => {
-    //         canceled = true;
-    //     };
-    // }, [pendingLoad, isLanguageLoaded, language.id]);
-
     const [isLoadingPlaces, setIsLoadingPlaces] = useState<HasMorePlaces>({
         restaurant_bar: false,
         hotel: false,
@@ -286,8 +291,15 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
     /**
      * Récupère toutes les places en une seule fois
      */
-    const fetchAllPlaces = useCallback(async () => {
-        if (!originalSlug || !language.id || !isLanguageLoaded) return;
+    const fetchAllPlaces = useCallback(async (): Promise<Places> => {
+        if (!originalSlug || !language.id || !isLanguageLoaded) {
+            // Return an empty places object if conditions are not met
+            return {
+                restaurantsBars: [],
+                hotels: [],
+                touristAttractions: []
+            };
+        }
 
         setIsLoadingPlaces({
             restaurant_bar: true,
@@ -309,8 +321,22 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 hotel: false,
                 tourist_attraction: false,
             });
+
+            // Return the fetched places as a Promise
+            return {
+                restaurantsBars: fetchedPlaces.restaurantsBars,
+                hotels: fetchedPlaces.hotels,
+                touristAttractions: fetchedPlaces.touristAttractions,
+            };
+
         } catch (error) {
             console.error('Error fetching all places:', error);
+            // Return a default empty structure on error as well
+            return {
+                restaurantsBars: [],
+                hotels: [],
+                touristAttractions: []
+            };
         } finally {
             setIsLoadingPlaces({
                 restaurant_bar: false,
@@ -319,6 +345,8 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
             });
         }
     }, [originalSlug, language.id, isLanguageLoaded]);
+
+
 
     const contextValue = useMemo(() => ({
         city,
@@ -331,6 +359,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoadingPlaces,
         fetchAllPlaces,
         fillUpCityFirestore, // Ajout de fillUpCityFirestore au contexte
+        setPlaces,
     }), [
         city,
         originalSlug,
@@ -342,6 +371,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoadingPlaces,
         fetchAllPlaces,
         fillUpCityFirestore, // Ajout de fillUpCityFirestore aux dépendances
+        setPlaces
     ]);
 
     return (
@@ -376,15 +406,3 @@ export const useFetchInitialPlaces = () => {
     return fetch;
 };
 
-/**
- * Hook pour récupérer 8 lieux supplémentaires pour une catégorie spécifique.
- */
-// export const useFetchMorePlaces = () => {
-//     const { fetchMorePlaces } = useCity();
-
-//     const fetch = useCallback(async (category: Category) => {
-//         await fetchMorePlaces(category);
-//     }, [fetchMorePlaces]);
-
-//     return fetch;
-// };
