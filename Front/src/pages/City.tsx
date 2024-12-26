@@ -1,12 +1,13 @@
 // src/pages/City.tsx
 
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState, useCallback, useMemo, Suspense } from 'react';
+import { useParams, useLocation } from 'react-router-dom'; // Importez useLocation
 import {
     IonContent,
     IonPage,
     IonButton,
     IonIcon,
+    IonItem,
 } from '@ionic/react';
 import { useCity, useFetchInitialPlaces } from '../context/cityContext';
 import CityHeader from '../components/CityHeader';
@@ -16,18 +17,19 @@ import { useLanguage } from '../context/languageContext';
 import TripForm from '../components/TripForm';
 import './City.css';
 import { Place } from '../types/PlacesInterfaces';
-import FilterPlaces from '../components/FilterPlaces';
-import FilterPlacesMobile from '../components/FilterPlacesMobile';
 import { AnimatePresence, motion } from 'framer-motion';
 import { filterOutline } from 'ionicons/icons';
-import { PlaceType } from '../types/EnumsInterfaces';
 import { useUser } from '../context/userContext';
+
+const FilterPlaces = React.lazy(() => import('../components/FilterPlaces'));
+const FilterPlacesMobile = React.lazy(() => import('../components/FilterPlacesMobile'));
 
 const City: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
+    const location = useLocation(); // Utilisez useLocation pour accéder aux paramètres de requête
     const { user } = useUser();
 
-    const { city, places, resetCity, isPreview, hasMorePlaces, isLoadingPlaces, fetchAllPlaces, fillUpCityFirestore } = useCity();
+    const { city, places, resetCity, isPreview, fetchAllPlaces, fillUpCityFirestore } = useCity();
     const fetchInitialPlaces = useFetchInitialPlaces();
     const { isLanguageLoaded, language } = useLanguage();
     const [isTripModalOpen, setIsTripModalOpen] = useState(false);
@@ -52,7 +54,7 @@ const City: React.FC = () => {
         if (slug && isLanguageLoaded) {
             fetchInitialPlaces(slug);
         }
-    }, [slug, isLanguageLoaded, fetchInitialPlaces]);
+    }, [fetchInitialPlaces, slug, isLanguageLoaded]);
 
     // Réinitialisation de la ville lors du démontage
     useEffect(() => {
@@ -70,16 +72,9 @@ const City: React.FC = () => {
         if (city) {
             fetchAllPlaces();
         }
-    }, [city, fetchAllPlaces]);
+    }, [fetchAllPlaces, city]);
 
-    // Combinaison de toutes les places
-    const allPlaces = useMemo(() => [
-        ...places.restaurantsBars,
-        ...places.hotels,
-        ...places.touristAttractions
-    ], [places.restaurantsBars, places.hotels, places.touristAttractions]);
-
-    // Extraction des catégories uniques
+    // Utilisation de useMemo pour calculer uniqueCategories et uniqueAttributes
     const uniqueCategories = useMemo(() => {
         const allCategories = [
             ...places.restaurantsBars.flatMap(place => place.categories),
@@ -89,7 +84,6 @@ const City: React.FC = () => {
         return Array.from(new Map(allCategories.map(cat => [cat.id, cat])).values());
     }, [places.restaurantsBars, places.hotels, places.touristAttractions]);
 
-    // Extraction des attributs uniques
     const uniqueAttributes = useMemo(() => {
         const allAttributes = [
             ...places.restaurantsBars.flatMap(place => place.attributes),
@@ -99,11 +93,37 @@ const City: React.FC = () => {
         return Array.from(new Map(allAttributes.map(attr => [attr.id, attr])).values());
     }, [places.restaurantsBars, places.hotels, places.touristAttractions]);
 
-    // Gestion des filtres
+    // Combinaison de toutes les places
+    const allPlaces = useMemo(() => [
+        ...places.restaurantsBars,
+        ...places.hotels,
+        ...places.touristAttractions
+    ], [places.restaurantsBars, places.hotels, places.touristAttractions]);
+
+    const areSetsEqual = (setA: Set<number>, setB: Set<number>): boolean => {
+        if (setA.size !== setB.size) return false;
+        for (let item of setA) {
+            if (!setB.has(item)) return false;
+        }
+        return true;
+    };
+
     const handleFilterChange = useCallback((filteredPlaces: Place[]) => {
-        const ids = new Set(filteredPlaces.map(p => p.id));
-        setFilteredPlacesIDs(ids);
+        console.log('Filtered Places:', filteredPlaces);
+        const newIds = new Set(filteredPlaces.map(p => p.id));
+        console.log('Filtered Place IDs:', newIds);
+
+        setFilteredPlacesIDs(prevIds => {
+            if (prevIds === null && newIds.size > 0) {
+                return newIds;
+            }
+            if (prevIds && areSetsEqual(prevIds, newIds)) {
+                return prevIds;
+            }
+            return newIds;
+        });
     }, []);
+
 
     // Filtres appliqués
     const filteredRestaurantsBars = useMemo(() => {
@@ -146,7 +166,51 @@ const City: React.FC = () => {
             console.error('Erreur lors de l\'ajout des données à Firestore:', error);
             alert('Erreur lors de l\'ajout des données à Firestore.');
         }
-    }, [fillUpCityFirestore, language.id, slug, fetchAllPlaces, user]);
+    }, [fillUpCityFirestore, language.id, slug, fetchAllPlaces]);
+
+    // Parsing des paramètres de l'URL et application des filtres si présents
+    useEffect(() => {
+        if (!city) return;
+
+        const searchParams = new URLSearchParams(location.search);
+        const attributeParams = searchParams.get('attributes');
+        const categoryParams = searchParams.get('categories');
+
+        // Si des attributs ou des catégories sont présents dans l'URL
+        if (attributeParams || categoryParams) {
+            let filtered = allPlaces;
+
+            // Filtrage par catégories
+            if (categoryParams) {
+                const categoryIds = categoryParams
+                    .split(',')
+                    .map(id => parseInt(id.trim(), 10))
+                    .filter(id => !isNaN(id));
+                if (categoryIds.length > 0) {
+                    filtered = filtered.filter(place =>
+                        place.categories.some(cat => categoryIds.includes(cat.id))
+                    );
+                }
+            }
+
+            // Filtrage par attributs
+            if (attributeParams) {
+                const attributeIds = attributeParams
+                    .split(',')
+                    .map(id => parseInt(id.trim(), 10))
+                    .filter(id => !isNaN(id));
+                if (attributeIds.length > 0) {
+                    filtered = filtered.filter(place =>
+                        place.attributes.some(attr => attributeIds.includes(attr.id))
+                    );
+                }
+            }
+            setFilteredPlacesIDs(new Set(filtered.map(place => place.id)));
+
+            // Ouvrir le panneau de filtres
+            setIsFilterPanelOpen(true);
+        }
+    }, [location.search, city, allPlaces]);
 
     return (
         <IonPage className={`city-page ${isFilterPanelOpen ? 'content-shift' : ''}`}>
@@ -183,85 +247,81 @@ const City: React.FC = () => {
                             )}
                         </div>
 
-
                         <AnimatePresence>
-                            {isMobile ? (
-                                <motion.div
-                                    className={`filter-panel-mobile-container ${isFilterPanelOpen ? 'open' : 'hidden'}`}
-                                    initial={{ opacity: 0, y: '-10%', visibility: 'hidden' }}
-                                    animate={isFilterPanelOpen ? { opacity: 1, y: '0%', visibility: 'visible' } : {}}
-                                    exit={{ opacity: 0, y: '-10%', visibility: 'hidden' }}
-                                    transition={{ type: 'tween', duration: 0.3 }}
-                                >
-                                    <FilterPlacesMobile
-                                        categories={uniqueCategories}
-                                        attributes={uniqueAttributes}
-                                        allPlaces={allPlaces}
-                                        languageID={language.id}
-                                        onFilterChange={handleFilterChange}
-                                        onClose={() => setIsFilterPanelOpen(false)}
-                                        onUserInteractionChange={setIsUserInteracting}
-                                    />
-                                </motion.div>
-                            ) : (
-                                <motion.div
-                                    className={`filter-panel-container ${isFilterPanelOpen ? 'open' : 'hidden'}`}
-                                    initial={{ x: '-100%' }}
-                                    animate={{ x: '0%' }}
-                                    exit={{ x: '-100%' }}
-                                    transition={{ type: 'tween', duration: 0.3 }}
-                                >
-                                    <FilterPlaces
-                                        categories={uniqueCategories}
-                                        attributes={uniqueAttributes}
-                                        allPlaces={allPlaces}
-                                        languageID={language.id}
-                                        onFilterChange={handleFilterChange}
-                                        onClose={() => setIsFilterPanelOpen(false)}
-                                        onUserInteractionChange={setIsUserInteracting}
-                                    />
-                                </motion.div>
+                            {isFilterPanelOpen && (
+                                <Suspense fallback={<div>Chargement des filtres...</div>}>
+                                    {isMobile ? (
+                                        <motion.div
+                                            className={`filter-panel-mobile-container open`}
+                                            initial={{ opacity: 0, y: '-10%', visibility: 'hidden' }}
+                                            animate={{ opacity: 1, y: '0%', visibility: 'visible' }}
+                                            exit={{ opacity: 0, y: '-10%', visibility: 'hidden' }}
+                                            transition={{ type: 'tween', duration: 0.3 }}
+                                        >
+                                            <FilterPlacesMobile
+                                                categories={uniqueCategories}
+                                                attributes={uniqueAttributes}
+                                                allPlaces={allPlaces}
+                                                languageID={language.id}
+                                                onFilterChange={handleFilterChange}
+                                                onClose={() => setIsFilterPanelOpen(false)}
+                                                onUserInteractionChange={setIsUserInteracting}
+                                            />
+                                        </motion.div>
+                                    ) : (
+                                        <motion.div
+                                            className={`filter-panel-container open`}
+                                            initial={{ x: '-100%' }}
+                                            animate={{ x: '0%' }}
+                                            exit={{ x: '-100%' }}
+                                            transition={{ type: 'tween', duration: 0.3 }}
+                                        >
+                                            <FilterPlaces
+                                                categories={uniqueCategories}
+                                                attributes={uniqueAttributes}
+                                                allPlaces={allPlaces}
+                                                languageID={language.id}
+                                                onFilterChange={handleFilterChange}
+                                                onClose={() => setIsFilterPanelOpen(false)}
+                                                onUserInteractionChange={setIsUserInteracting}
+                                            />
+                                        </motion.div>
+                                    )}
+                                </Suspense>
                             )}
                         </AnimatePresence>
 
                         <div className="city-content">
-                            {haveInitialPlaces || !isUserInteracting ? (
-                                <>
-                                    {(filteredRestaurantsBars.length > 0 || isPreview) && (
-                                        <PlaceCarousel
-                                            title="Restaurants & Bars"
-                                            places={filteredRestaurantsBars}
-                                            isPreview={isPreview}
-                                            hasMore={hasMorePlaces.restaurant_bar}
-                                            isLoading={isLoadingPlaces.restaurant_bar}
-                                            isMobile={isMobile}
-                                            placeType={PlaceType.RESTAURANT_BAR}
-                                        />
-                                    )}
-                                    {(filteredHotels.length > 0 || isPreview) && (
-                                        <PlaceCarousel
-                                            title="Hôtels"
-                                            places={filteredHotels}
-                                            isPreview={isPreview}
-                                            hasMore={hasMorePlaces.hotel}
-                                            isLoading={isLoadingPlaces.hotel}
-                                            isMobile={isMobile}
-                                            placeType={PlaceType.HOTEL}
-                                        />
-                                    )}
-                                    {(filteredTouristAttractions.length > 0 || isPreview) && (
-                                        <PlaceCarousel
-                                            title="Attractions Touristiques"
-                                            places={filteredTouristAttractions}
-                                            isPreview={isPreview}
-                                            hasMore={hasMorePlaces.tourist_attraction}
-                                            isLoading={isLoadingPlaces.tourist_attraction}
-                                            isMobile={isMobile}
-                                            placeType={PlaceType.TOURIST_ATTRACTION}
-                                        />
-                                    )}
-                                </>
-                            ) : (
+                            {/* Affichage des carrousels filtrés */}
+                            <>
+                                {(isPreview) && (
+                                    <PlaceCarousel
+                                        title="Restaurants & Bars"
+                                        places={filteredRestaurantsBars}
+                                        isPreview={isPreview}
+                                        isMobile={isMobile}
+                                    />
+                                )}
+                                {(isPreview) && (
+                                    <PlaceCarousel
+                                        title="Hôtels"
+                                        places={filteredHotels}
+                                        isPreview={isPreview}
+                                        isMobile={isMobile}
+                                    />
+                                )}
+                                {(isPreview) && (
+                                    <PlaceCarousel
+                                        title="Attractions Touristiques"
+                                        places={filteredTouristAttractions}
+                                        isPreview={isPreview}
+                                        isMobile={isMobile}
+                                    />
+                                )}
+                            </>
+
+                            {/* Affichage du message "no results" si aucun lieu ne correspond */}
+                            {isFilterPanelOpen && haveInitialPlaces === false && (
                                 <div className="no-results">
                                     <p>Oops, aucun résultat ne correspond ! 😕</p>
                                 </div>
@@ -274,10 +334,7 @@ const City: React.FC = () => {
                             title="Chargement des lieux"
                             places={[]}
                             isPreview={true}
-                            hasMore={false}
-                            isLoading={false}
                             isMobile={isMobile}
-                            placeType={PlaceType.RESTAURANT_BAR}
                         />
                     </div>
                 )}

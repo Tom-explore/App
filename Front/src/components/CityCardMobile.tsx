@@ -10,7 +10,7 @@ interface CityCardMobileProps {
     img: string;
 }
 
-const CityCardMobile: React.FC<CityCardMobileProps> = ({ id, name, country, img }) => {
+const CityCardMobile: React.FC<CityCardMobileProps> = ({ name, country, img }) => {
     return (
         <IonItem className="city-card-mobile" button lines="none">
             <IonThumbnail slot="start" className="city-card-mobile-thumbnail">

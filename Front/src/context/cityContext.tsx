@@ -27,8 +27,6 @@ type CityState = {
     originalSlug: string | null;
     places: Places;
     isPreview: boolean;
-    isLoadingPlaces: HasMorePlaces;
-    hasMorePlaces: HasMorePlaces;
     setCityPreviewAndFetchData: (slug: string) => void;
     resetCity: () => void;
     fetchAllPlaces: () => void;

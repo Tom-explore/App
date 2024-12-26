@@ -183,21 +183,32 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                 name: place.translation?.name || 'Unknown',
             });
 
-            // Ajouter les nouveaux paramètres tout en conservant l'URL actuelle
+            let needsUpdate = false;
             for (const [key, value] of params) {
-                currentUrl.searchParams.set(key, value);
+                if (currentUrl.searchParams.get(key) !== value) {
+                    needsUpdate = true;
+                    currentUrl.searchParams.set(key, value);
+                }
             }
 
-            navigate.push(`${currentUrl.pathname}?${currentUrl.searchParams.toString()}`);
+            if (needsUpdate) {
+                navigate.push(`${currentUrl.pathname}?${currentUrl.searchParams.toString()}`);
+            }
         } else {
-            // Nettoyer l'URL (retirer les paramètres spécifiques)
-            currentUrl.searchParams.delete('type');
-            currentUrl.searchParams.delete('category');
-            currentUrl.searchParams.delete('name');
+            let needsUpdate = false;
+            if (currentUrl.searchParams.has('type') || currentUrl.searchParams.has('category') || currentUrl.searchParams.has('name')) {
+                needsUpdate = true;
+                currentUrl.searchParams.delete('type');
+                currentUrl.searchParams.delete('category');
+                currentUrl.searchParams.delete('name');
+            }
 
-            navigate.push(`${currentUrl.pathname}${currentUrl.searchParams.toString() ? `?${currentUrl.searchParams.toString()}` : ''}`);
+            if (needsUpdate) {
+                navigate.push(`${currentUrl.pathname}${currentUrl.searchParams.toString() ? `?${currentUrl.searchParams.toString()}` : ''}`);
+            }
         }
     }, [isActive, place, navigate]);
+
 
     return (
         <div className="place-card-wrapper">
@@ -363,4 +374,4 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
         </div>
     );
 }
-export default PlaceCard;
+export default React.memo(PlaceCard);
