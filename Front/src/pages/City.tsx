@@ -177,7 +177,9 @@ const City: React.FC = () => {
         const categoryParams = searchParams.get('categories');
 
         // Si des attributs ou des catégories sont présents dans l'URL
-        if (attributeParams || categoryParams) {
+        if (attributeParams && attributeParams.length > 0 ||
+            categoryParams && categoryParams.length > 0
+        ) {
             let filtered = allPlaces;
 
             // Filtrage par catégories
@@ -210,7 +212,7 @@ const City: React.FC = () => {
             // Ouvrir le panneau de filtres
             setIsFilterPanelOpen(true);
         }
-    }, [location.search, city, allPlaces]);
+    }, [allPlaces]);
 
     return (
         <IonPage className={`city-page ${isFilterPanelOpen ? 'content-shift' : ''}`}>

@@ -1,6 +1,6 @@
 // src/components/PlaceCarousel.tsx
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, FreeMode, Virtual } from 'swiper/modules';
 import 'swiper/css';

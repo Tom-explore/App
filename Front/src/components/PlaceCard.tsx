@@ -1,6 +1,6 @@
 // src/components/PlaceCard.tsx
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInstagram, faGoogle } from '@fortawesome/free-brands-svg-icons';
@@ -176,11 +176,8 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
         const currentUrl = new URL(window.location.href);
 
         if (isActive) {
-            const categoryNames = place.categories.map(cat => cat.slug).join(", ");
             const params = new URLSearchParams({
-                type: place.placeType,
-                category: categoryNames,
-                name: place.translation?.name || 'Unknown',
+                name: `${place.translation?.name}-${place.id}` || '',
             });
 
             let needsUpdate = false;
@@ -209,7 +206,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
         }
     }, [isActive, place, navigate]);
 
-
     return (
         <div className="place-card-wrapper">
             <AnimatePresence>
@@ -226,28 +222,29 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                 >
                     {/* Photo Slider pour le Mode Modal */}
                     {isModalView && (
-                        <Swiper
-                            modules={[Navigation, Pagination, Scrollbar, A11y]}
-                            spaceBetween={5} // Espace entre les slides
-                            slidesPerView={1.2} // Afficher une partie de l'image suivante
-                            pagination={{ clickable: true }}
-                            className="modal-photo-slider"
-                            onSwiper={(swiper) => (swiperRef.current = swiper)} // Stocke l'instance Swiper
-                        >
-                            {place.images.map((img, index) => (
-                                <SwiperSlide key={img.id} className="image-slide">
-                                    <img
-                                        loading="lazy"
-                                        src={`https://lh3.googleusercontent.com/p/${img.slug}`}
-                                        alt={`${place.translation?.name} - ${img.id}`}
-                                        className="modal-photo"
-                                        onClick={() => handleImageClick(index)} // Défilement au clic
-                                    />
-                                </SwiperSlide>
-                            ))}
-                        </Swiper>
+                        <Suspense fallback={<div>Chargement...</div>}>
+                            <Swiper
+                                modules={[Navigation, Pagination, Scrollbar, A11y]}
+                                spaceBetween={5} // Espace entre les slides
+                                slidesPerView={1.2} // Afficher une partie de l'image suivante
+                                pagination={{ clickable: true }}
+                                className="modal-photo-slider"
+                                onSwiper={(swiper) => (swiperRef.current = swiper)} // Stocke l'instance Swiper
+                            >
+                                {place.images.map((img, index) => (
+                                    <SwiperSlide key={img.id} className="image-slide">
+                                        <img
+                                            loading="lazy"
+                                            src={`https://lh3.googleusercontent.com/p/${img.slug}`}
+                                            alt={`${place.translation?.name} - ${img.id}`}
+                                            className="modal-photo"
+                                            onClick={() => handleImageClick(index)} // Défilement au clic
+                                        />
+                                    </SwiperSlide>
+                                ))}
+                            </Swiper>
+                        </Suspense>
                     )}
-
 
                     {!isModalView && (
                         <img
@@ -373,5 +370,8 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
             )}
         </div>
     );
-}
+
+};
+
+
 export default React.memo(PlaceCard);
