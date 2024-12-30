@@ -15,7 +15,7 @@ import {
   IonSelect,
   IonSelectOption,
 } from '@ionic/react';
-import './Tab1.css';
+import '../styles/pages/Tab1.css'
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { useUser } from '../context/userContext'; // Import du hook useUser
 import citiesData from '../data/cities.json';

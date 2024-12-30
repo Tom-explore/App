@@ -15,7 +15,7 @@ import {
 } from '@ionic/react';
 import { close as closeIcon } from 'ionicons/icons';
 import { motion } from 'framer-motion';
-import './FilterPlaces.css';
+import '../styles/components/FilterPlaces.css'
 import useFilterPlaces from '../util/useFilterPlaces';
 
 interface FilterPlacesProps {
@@ -58,7 +58,6 @@ const FilterPlaces: React.FC<FilterPlacesProps> = ({
         allPlaces,
     });
 
-    // Informer le parent uniquement lorsque l'utilisateur interagit
     React.useEffect(() => {
         onUserInteractionChange(isUserInteraction);
     }, [isUserInteraction, onUserInteractionChange]);

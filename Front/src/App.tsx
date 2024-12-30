@@ -33,6 +33,7 @@ import '@ionic/react/css/display.css';
 
 import '@ionic/react/css/palettes/dark.system.css';
 import Trip from './pages/Trip';
+import Feed from './pages/Feed';
 
 setupIonicReact();
 
@@ -62,17 +63,17 @@ const App: React.FC = () => {
   return (
     <IonApp>
       <IonReactRouter>
-        {/* Route de Détails des Villes en Dehors des Onglets */}
-
-
         <IonTabs>
           <IonRouterOutlet>
             <Route path="/trip" component={Trip} exact />
             <Route path="/:lang/city/:slug" component={City} exact />
-            <Route path="/:lang/feed" component={Tab1} exact />
+            <Route path="/:lang/feed" component={Feed} exact />
+            <Route path="/:lang/feed/city/:slug" component={Feed} exact />
+
             <Route path="/:lang/destinations" component={MapDisplay} exact />
             <Route path="/:lang/city" component={CitiesDisplay} exact />
-            <Route path="/:lang/account" component={Tab3} exact />
+            <Route path="/:lang/account" component={Tab1} exact />
+
 
             <Route exact path="/">
               <Redirect to="/en/feed" />

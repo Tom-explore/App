@@ -1,7 +1,6 @@
 import React from 'react';
 import { IonItem, IonLabel, IonThumbnail } from '@ionic/react';
-import { Link } from 'react-router-dom';
-import './CityCardMobile.css';
+import '../styles/components/CityCardMobile.css'
 
 interface CityCardMobileProps {
     id: number;

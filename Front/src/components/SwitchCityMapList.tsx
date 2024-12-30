@@ -1,7 +1,7 @@
 import React from 'react';
 import { IonButton, IonIcon } from '@ionic/react';
 import { listOutline, mapOutline } from 'ionicons/icons';
-import './SwitchCityMapList.css';
+import '../styles/components/SwitchCityMapList.css'
 
 interface SwitchMapListCityProps {
     currentMode: 'list' | 'map';

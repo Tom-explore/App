@@ -6,7 +6,7 @@ import CityList from './CityList';
 import MapCityDisplay from './MapCityDisplay';
 import citiesData from '../data/cities.json';
 import { useLanguage } from '../context/languageContext';
-import './CitiesDisplay.css';
+import '../styles/pages/CitiesDisplay.css'
 
 const CitiesDisplay: React.FC = () => {
     const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
@@ -68,7 +68,7 @@ const CitiesDisplay: React.FC = () => {
                             <SwitchMapListCity currentMode={viewMode} onSwitch={handleSwitch} />
                         </div>
                         <div className="header-right">
-                            <SearchBar onSearch={handleSearch} />
+                            <SearchBar onSearch={handleSearch} placeholder='Rechercher une ville' />
                         </div>
                     </div>
                 </IonToolbar>

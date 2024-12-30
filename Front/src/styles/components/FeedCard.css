@@ -1,0 +1,215 @@
+/* src/styles/components/FeedCard.css */
+
+/* ----- Hashtags, attributs, catégories ----- */
+.hashtags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    /* Augmentation légère pour meilleure lisibilité */
+    margin-bottom: 8px;
+    /* Augmentation pour espacement */
+}
+
+.hashtags ion-chip {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    --inner-padding-end: 4px;
+    --inner-padding-start: 4px;
+    font-size: 0.65rem;
+    /* Légèrement agrandi pour meilleure lisibilité */
+    height: 24px;
+    /* Augmentation de la hauteur pour mieux accueillir le texte */
+    min-width: 32px;
+    /* Augmentation de la largeur minimale */
+    --border-radius: 12px;
+    /* Plus arrondi pour un aspect moderne */
+    line-height: 1;
+    padding: 0;
+}
+
+.more-chip,
+.less-chip {
+    cursor: pointer;
+    background-color: #f0f0f0;
+    /* Couleur neutre pour les chips de contrôle */
+}
+
+.hashtags ion-chip ion-label {
+    padding: 0;
+    margin: 0;
+}
+
+/* ----- Description ----- */
+.description {
+    flex-grow: 1;
+    font-size: 0.85rem;
+    color: #666;
+    /* Couleur légèrement plus sombre pour meilleure lisibilité */
+    margin-top: 8px;
+    line-height: 1.5;
+}
+
+.description p {
+    margin: 0;
+    position: relative;
+}
+
+.toggle-description {
+    color: #007bff;
+    cursor: pointer;
+    font-weight: 500;
+    margin-left: 5px;
+}
+
+.toggle-description:hover {
+    text-decoration: underline;
+}
+
+/* ----- Texte (Titre et Adresse) ----- */
+.title-item {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.title-item>div {
+    margin-left: 8px;
+}
+
+ion-card-title {
+    margin: 0;
+    line-height: 1.2;
+    font-size: 1.1rem;
+    /* Augmentation de la taille pour meilleure visibilité */
+    font-weight: 600;
+    /* Police plus grasse pour accentuer le titre */
+    color: #333;
+    /* Couleur plus sombre pour le titre */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Gestion des titres trop longs */
+}
+
+ion-card-subtitle {
+    margin: 0;
+    line-height: 1.2;
+    font-size: 0.85rem;
+    color: #777;
+    /* Couleur plus claire pour le sous-titre */
+    display: flex;
+    align-items: center;
+}
+
+ion-card-subtitle ion-icon {
+    margin-right: 4px;
+    /* Espacement entre l'icône et le texte */
+    color: #555;
+    /* Couleur des icônes */
+}
+
+/* ----- Container de Texte ----- */
+.text-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    /* Alignement en haut */
+    padding: 12px;
+    /* Augmentation pour meilleure espacement */
+    background-color: #fff;
+}
+
+/* ----- Card Horizontale ----- */
+.feed-card.horizontal-card {
+    display: flex;
+    flex-direction: row;
+    margin: 0;
+    /* Supprimer les marges pour éviter les chevauchements */
+    overflow: hidden;
+    border-radius: 8px;
+    /* Plus arrondi pour un aspect moderne */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    /* Ombre légère pour profondeur */
+    background-color: #fafafa;
+    width: 100%;
+    height: 100%;
+}
+
+.image-container {
+    flex: 0 0 35%;
+    position: relative;
+    height: 100%;
+    max-height: 300px;
+    /* Aligné avec CARD_HEIGHT */
+    overflow: hidden;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.modal-photo-slider {
+    height: 100%;
+}
+
+.image-slide {
+    height: 100%;
+}
+
+.modal-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ----- Responsive Design ----- */
+@media (max-width: 768px) {
+    .feed-card.horizontal-card {
+        flex-direction: column;
+        max-height: none;
+    }
+
+    .image-container {
+        flex: 0 0 100%;
+        height: 300px;
+        /* Aligné avec CARD_HEIGHT */
+        max-height: 300px;
+        border-top-right-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    .text-container {
+        padding: 10px;
+    }
+
+    .hashtags {
+        gap: 3px;
+    }
+
+    .hashtags ion-chip {
+        font-size: 0.6rem;
+        height: 20px;
+        min-width: 28px;
+    }
+
+    .more-chip ion-label,
+    .less-chip ion-label {
+        font-size: 0.6rem;
+    }
+
+    .description {
+        font-size: 0.8rem;
+    }
+
+    .toggle-description {
+        font-size: 0.6rem;
+    }
+
+    ion-card-title {
+        font-size: 1rem;
+    }
+
+    ion-card-subtitle {
+        font-size: 0.8rem;
+    }
+}

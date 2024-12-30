@@ -1,0 +1,15 @@
+/* Masquer la barre de défilement pour le composant Grid */
+.no-scrollbar {
+    /* Pour Firefox */
+    scrollbar-width: none;
+    /* Masque la barre de défilement */
+    -ms-overflow-style: none;
+    /* Pour Internet Explorer et Edge */
+
+    /* Pour les navigateurs basés sur WebKit (Chrome, Safari, Opera) */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+    /* Masque la barre de défilement */
+}

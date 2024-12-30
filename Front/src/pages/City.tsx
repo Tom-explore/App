@@ -1,13 +1,15 @@
 // src/pages/City.tsx
 
 import React, { useEffect, useState, useCallback, useMemo, Suspense } from 'react';
-import { useParams, useLocation } from 'react-router-dom'; // Importez useLocation
+import { useParams, useLocation } from 'react-router-dom';
 import {
     IonContent,
     IonPage,
     IonButton,
     IonIcon,
     IonItem,
+    IonHeader,
+    IonToolbar,
 } from '@ionic/react';
 import { useCity, useFetchInitialPlaces } from '../context/cityContext';
 import CityHeader from '../components/CityHeader';
@@ -15,31 +17,29 @@ import PlaceCarousel from '../components/PlaceCarousel';
 import { useIonViewWillLeave } from '@ionic/react';
 import { useLanguage } from '../context/languageContext';
 import TripForm from '../components/TripForm';
-import './City.css';
+import '../styles/pages/City.css'
 import { Place } from '../types/PlacesInterfaces';
 import { AnimatePresence, motion } from 'framer-motion';
 import { filterOutline } from 'ionicons/icons';
 import { useUser } from '../context/userContext';
+import SearchBar from '../components/SearchBar';
 
 const FilterPlaces = React.lazy(() => import('../components/FilterPlaces'));
 const FilterPlacesMobile = React.lazy(() => import('../components/FilterPlacesMobile'));
 
 const City: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
-    const location = useLocation(); // Utilisez useLocation pour accéder aux paramètres de requête
-    const { user } = useUser();
-
+    const location = useLocation();
     const { city, places, resetCity, isPreview, fetchAllPlaces, fillUpCityFirestore } = useCity();
     const fetchInitialPlaces = useFetchInitialPlaces();
     const { isLanguageLoaded, language } = useLanguage();
     const [isTripModalOpen, setIsTripModalOpen] = useState(false);
-
     const [filteredPlacesIDs, setFilteredPlacesIDs] = useState<Set<number> | null>(null);
     const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
     const [isUserInteracting, setIsUserInteracting] = useState(false);
     const [isMobile, setIsMobile] = useState<boolean>(false);
+    const [searchQuery, setSearchQuery] = useState<string>('');
 
-    // Détection de l'appareil mobile
     useEffect(() => {
         const checkIsMobile = () => {
             const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
@@ -49,14 +49,12 @@ const City: React.FC = () => {
         checkIsMobile();
     }, []);
 
-    // Récupération initiale des lieux
     useEffect(() => {
         if (slug && isLanguageLoaded) {
             fetchInitialPlaces(slug);
         }
     }, [fetchInitialPlaces, slug, isLanguageLoaded]);
 
-    // Réinitialisation de la ville lors du démontage
     useEffect(() => {
         return () => {
             resetCity();
@@ -67,14 +65,12 @@ const City: React.FC = () => {
         resetCity();
     });
 
-    // Récupération de toutes les places une fois que la ville est définie
     useEffect(() => {
         if (city) {
             fetchAllPlaces();
         }
     }, [fetchAllPlaces, city]);
 
-    // Utilisation de useMemo pour calculer uniqueCategories et uniqueAttributes
     const uniqueCategories = useMemo(() => {
         const allCategories = [
             ...places.restaurantsBars.flatMap(place => place.categories),
@@ -93,7 +89,6 @@ const City: React.FC = () => {
         return Array.from(new Map(allAttributes.map(attr => [attr.id, attr])).values());
     }, [places.restaurantsBars, places.hotels, places.touristAttractions]);
 
-    // Combinaison de toutes les places
     const allPlaces = useMemo(() => [
         ...places.restaurantsBars,
         ...places.hotels,
@@ -124,7 +119,6 @@ const City: React.FC = () => {
         });
     }, []);
 
-
     // Filtres appliqués
     const filteredRestaurantsBars = useMemo(() => {
         if (!city) return [];
@@ -149,7 +143,6 @@ const City: React.FC = () => {
         filteredHotels.length > 0 ||
         filteredTouristAttractions.length > 0;
 
-    // Gestion de l'ajout des données à Firestore (pour les admins)
     const handleAddDataToFirestore = useCallback(async () => {
         if (!language.id || !slug) {
             console.error('ID de langue ou slug de ville manquant.');
@@ -168,7 +161,6 @@ const City: React.FC = () => {
         }
     }, [fillUpCityFirestore, language.id, slug, fetchAllPlaces]);
 
-    // Parsing des paramètres de l'URL et application des filtres si présents
     useEffect(() => {
         if (!city) return;
 
@@ -176,46 +168,51 @@ const City: React.FC = () => {
         const attributeParams = searchParams.get('attributes');
         const categoryParams = searchParams.get('categories');
 
-        // Si des attributs ou des catégories sont présents dans l'URL
-        if (attributeParams && attributeParams.length > 0 ||
-            categoryParams && categoryParams.length > 0
-        ) {
-            let filtered = allPlaces;
+        let filtered = allPlaces;
 
-            // Filtrage par catégories
-            if (categoryParams) {
-                const categoryIds = categoryParams
-                    .split(',')
-                    .map(id => parseInt(id.trim(), 10))
-                    .filter(id => !isNaN(id));
-                if (categoryIds.length > 0) {
-                    filtered = filtered.filter(place =>
-                        place.categories.some(cat => categoryIds.includes(cat.id))
-                    );
-                }
+        // Filtrage par catégories
+        if (categoryParams) {
+            const categoryIds = categoryParams
+                .split(',')
+                .map(id => parseInt(id.trim(), 10))
+                .filter(id => !isNaN(id));
+            if (categoryIds.length > 0) {
+                filtered = filtered.filter(place =>
+                    place.categories.some(cat => categoryIds.includes(cat.id))
+                );
             }
-
-            // Filtrage par attributs
-            if (attributeParams) {
-                const attributeIds = attributeParams
-                    .split(',')
-                    .map(id => parseInt(id.trim(), 10))
-                    .filter(id => !isNaN(id));
-                if (attributeIds.length > 0) {
-                    filtered = filtered.filter(place =>
-                        place.attributes.some(attr => attributeIds.includes(attr.id))
-                    );
-                }
-            }
-            setFilteredPlacesIDs(new Set(filtered.map(place => place.id)));
-
-            // Ouvrir le panneau de filtres
-            setIsFilterPanelOpen(true);
         }
-    }, [allPlaces]);
+
+        // Filtrage par attributs
+        if (attributeParams) {
+            const attributeIds = attributeParams
+                .split(',')
+                .map(id => parseInt(id.trim(), 10))
+                .filter(id => !isNaN(id));
+            if (attributeIds.length > 0) {
+                filtered = filtered.filter(place =>
+                    place.attributes.some(attr => attributeIds.includes(attr.id))
+                );
+            }
+        }
+
+        // Filtrage par recherche
+        if (searchQuery.trim() !== '') {
+            const query = searchQuery.trim().toLowerCase();
+            filtered = filtered.filter(place =>
+                place.translation?.name.toLowerCase().includes(query) ||
+                place.address.toLowerCase().includes(query)
+            );
+        }
+
+        setFilteredPlacesIDs(new Set(filtered.map(place => place.id)));
+        setIsFilterPanelOpen(true);
+    }, [city, allPlaces, location.search, searchQuery]);
 
     return (
         <IonPage className={`city-page ${isFilterPanelOpen ? 'content-shift' : ''}`}>
+
+
             <IonContent fullscreen>
                 {city ? (
                     <>
@@ -230,6 +227,9 @@ const City: React.FC = () => {
                         />
 
                         <div className="city-buttons">
+                            <div className="search-bar-container">
+                                <SearchBar onSearch={setSearchQuery} placeholder='Rechercher un lieu' />
+                            </div>
                             {/* Bouton Filtrer */}
                             <IonButton className="filter-button" onClick={() => setIsFilterPanelOpen(true)} fill="clear">
                                 <IonIcon icon={filterOutline} />
@@ -240,13 +240,10 @@ const City: React.FC = () => {
                                 ✈️ Je crée mon voyage !
                             </IonButton>
 
-                            {user && user.admin === true ? (
-                                <IonButton color="secondary" onClick={handleAddDataToFirestore}>
-                                    Ajouter des données à Firestore
-                                </IonButton>
-                            ) : (
-                                <p>Vous n'avez pas les droits nécessaires pour ajouter des données.</p>
-                            )}
+                            <IonButton color="secondary" onClick={handleAddDataToFirestore}>
+                                Ajouter des données à Firestore
+                            </IonButton>
+
                         </div>
 
                         <AnimatePresence>
@@ -296,7 +293,7 @@ const City: React.FC = () => {
                         <div className="city-content">
                             {/* Affichage des carrousels filtrés */}
                             <>
-                                {(isPreview) && (
+                                {isPreview && (
                                     <PlaceCarousel
                                         title="Restaurants & Bars"
                                         places={filteredRestaurantsBars}
@@ -304,7 +301,7 @@ const City: React.FC = () => {
                                         isMobile={isMobile}
                                     />
                                 )}
-                                {(isPreview) && (
+                                {isPreview && (
                                     <PlaceCarousel
                                         title="Hôtels"
                                         places={filteredHotels}
@@ -312,7 +309,7 @@ const City: React.FC = () => {
                                         isMobile={isMobile}
                                     />
                                 )}
-                                {(isPreview) && (
+                                {isPreview && (
                                     <PlaceCarousel
                                         title="Attractions Touristiques"
                                         places={filteredTouristAttractions}
@@ -323,7 +320,7 @@ const City: React.FC = () => {
                             </>
 
                             {/* Affichage du message "no results" si aucun lieu ne correspond */}
-                            {isFilterPanelOpen && haveInitialPlaces === false && (
+                            {isFilterPanelOpen && !haveInitialPlaces && (
                                 <div className="no-results">
                                     <p>Oops, aucun résultat ne correspond ! 😕</p>
                                 </div>
@@ -347,6 +344,7 @@ const City: React.FC = () => {
             </IonContent>
         </IonPage>
     )
+
 }
 
 export default City;

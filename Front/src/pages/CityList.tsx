@@ -3,7 +3,7 @@ import { IonContent, IonPage, IonRouterLink } from '@ionic/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CityCard from '../components/CityCard';
 import CityCardMobile from '../components/CityCardMobile';
-import './CityList.css';
+import '../styles/pages/CityList.css'
 import { useLanguage } from '../context/languageContext';
 
 interface CityListProps {

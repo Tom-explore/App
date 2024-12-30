@@ -15,7 +15,7 @@ import {
 } from '@ionic/react';
 import { close as closeIcon } from 'ionicons/icons';
 import { motion } from 'framer-motion';
-import './FilterPlacesMobile.css';
+import '../styles/components/FilterPlacesMobile.css'
 import useFilterPlaces from '../util/useFilterPlaces';
 
 interface FilterPlacesMobileProps {

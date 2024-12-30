@@ -19,7 +19,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { City, CityPreview } from '../types/CommonInterfaces';
 import LangToLocale from '../util/LangToLocale';
-import './TripForm.css'; // Importer le fichier CSS personnalisé
+import '../styles/components/TripForm.css'
 import { useIonRouter } from '@ionic/react';
 import { useTrip } from '../context/tripContext';
 import { TripData } from '../types/TripsInterfaces';

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import './SearchBar.css';
+import '../styles/components/SearchBar.css'
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
+  placeholder: string;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ onSearch, placeholder }) => {
   const [query, setQuery] = useState('');
 
   useEffect(() => {
@@ -21,7 +22,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
       <input
         type="text"
         className="search-bar"
-        placeholder="Rechercher une ville... On l'a sûrement !"
+        placeholder={placeholder}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />

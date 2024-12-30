@@ -1,7 +1,7 @@
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { MapContainer, TileLayer, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import './Map.css';
+import '../styles/components/Map.css'
 import { useIonViewDidEnter } from '@ionic/react';
 import L from 'leaflet';
 import { CityMap } from '../types/CommonInterfaces';

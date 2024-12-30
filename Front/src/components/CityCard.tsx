@@ -6,9 +6,7 @@ import {
   IonCardSubtitle,
   IonCardTitle,
 } from '@ionic/react';
-import { Link } from 'react-router-dom';
-import './CityCard.css';
-
+import '../styles/components/CityCard.css'
 interface CityCardProps {
   id: number;
   name: string;

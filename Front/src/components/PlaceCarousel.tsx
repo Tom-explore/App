@@ -1,6 +1,6 @@
 // src/components/PlaceCarousel.tsx
 
-import React, { useState, useRef, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo, Suspense, lazy, useContext } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, FreeMode, Virtual } from 'swiper/modules';
 import 'swiper/css';
@@ -8,10 +8,16 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import 'swiper/css/free-mode';
 import 'swiper/css/virtual';
-import './PlaceCarousel.css';
+import '../styles/components/PlaceCarousel.css'
 import PlaceCard from './PlaceCard';
 import { Place } from '../types/PlacesInterfaces';
 import ModalPortal from './ModalPortal';
+import { IonButton, IonIcon } from '@ionic/react';
+import { chevronForwardOutline } from 'ionicons/icons';
+import { useIonRouter } from '@ionic/react';
+import { useParams } from 'react-router';
+import { FeedContext } from '../context/feedContext';
+import { useLanguage } from '../context/languageContext';
 
 interface PlaceCarouselProps {
     title: string;
@@ -29,6 +35,14 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
     const [activePlace, setActivePlace] = useState<Place | null>(null);
     const swiperRef = useRef<any>(null);
     const [currentSlidesPerView, setCurrentSlidesPerView] = useState<number>(isMobile ? 1 : 6);
+    const feedContext = useContext(FeedContext);
+    if (!feedContext) {
+        throw new Error('FeedContext must be used within a FeedProvider');
+    }
+    const { setFilteredPlaces } = feedContext;
+    const language = useLanguage();
+    const router = useIonRouter();
+    const { slug } = useParams<{ slug: string }>();
 
     // Exclure la carte active du carrousel
     const placesToRender = useMemo(() => {
@@ -120,10 +134,22 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
             setActivePlace(place);
         }
     };
+    const navigateToFeed = () => {
+        if (!slug) return;
+        console.log('Navigating to Feed with places:', places); // Ajout du console.log
+        setFilteredPlaces(places); // Mettre à jour le contexte avec les places filtrées
+        router.push(`/${language.language.code}/feed/city/${slug}`, 'forward'); // Définir la direction de navigation
+    };
+
 
     return (
         <div className="place-carousel">
-            <h2>{title}</h2>
+            <div className="carousel-header">
+                <h2>{title}</h2>
+                <IonButton fill="clear" onClick={navigateToFeed}>
+                    <IonIcon icon={chevronForwardOutline} size="large" />
+                </IonButton>
+            </div>
             <Swiper
                 ref={swiperRef}
                 modules={[Navigation, Pagination, FreeMode, Virtual]}

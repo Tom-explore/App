@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { IonText, IonSpinner } from '@ionic/react';
-import './Meteo.css';
+import '../styles/components/Meteo.css'
 
 interface WeatherData {
     temp: number;

@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInstagram, faGoogle } from '@fortawesome/free-brands-svg-icons';
 import { faTimes, faGlobe, faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { Place, PlaceType } from '../types/PlacesInterfaces';
-import './PlaceCard.css';
+import '../styles/components/PlaceCard.css'
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Scrollbar, A11y } from 'swiper/modules';
 import SwiperCore from 'swiper';
@@ -177,7 +177,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
 
         if (isActive) {
             const params = new URLSearchParams({
-                name: `${place.translation?.name}-${place.id}` || '',
+                name: `${place.id}-${place.translation?.slug}` || '',
             });
 
             let needsUpdate = false;

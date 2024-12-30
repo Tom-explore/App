@@ -61,7 +61,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                         }
                     } else {
                         console.error('Erreur lors de la vérification de l\'utilisateur:', error);
-                        alert('Erreur lors de la connexion. Veuillez réessayer.');
+                        // alert('Erreur lors de la connexion. Veuillez réessayer.');
                     }
                 }
             } else {

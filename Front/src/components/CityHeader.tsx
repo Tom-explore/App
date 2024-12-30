@@ -1,6 +1,6 @@
 import React from 'react';
 import { IonText, IonButtons, IonBackButton } from '@ionic/react';
-import './CityHeader.css';
+import '../styles/components/CityHeader.css'
 import Meteo from './Meteo';
 import { useLanguage } from '../context/languageContext';
 
