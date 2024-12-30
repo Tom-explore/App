@@ -19,9 +19,9 @@ root.render(
             <FeedProvider>
 
               <App />
+
             </FeedProvider>
           </TripProvider>
-
         </CityProvider>
       </LanguageProvider>
     </UserProvider>

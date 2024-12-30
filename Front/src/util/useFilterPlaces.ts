@@ -1,4 +1,5 @@
-// useFilterPlaces.ts
+// src/hooks/useFilterPlaces.ts
+
 import { useState, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { Attribute, Category } from '../types/CategoriesAttributesInterfaces';
@@ -83,7 +84,7 @@ const useFilterPlaces = ({
 
         const categorySlugs = selectedCategories
             .map(categoryId => categories.find(category => category.id === categoryId)?.slug)
-            .filter(Boolean);
+            .filter(Boolean) as string[];
 
         if (categorySlugs.length > 0) {
             params.set('categories', categorySlugs.join(','));
@@ -93,7 +94,7 @@ const useFilterPlaces = ({
 
         const attributeSlugs = selectedAttributes
             .map(attributeId => attributes.find(attribute => attribute.id === attributeId)?.slug)
-            .filter(Boolean);
+            .filter(Boolean) as string[];
 
         if (attributeSlugs.length > 0) {
             params.set('attributes', attributeSlugs.join(','));

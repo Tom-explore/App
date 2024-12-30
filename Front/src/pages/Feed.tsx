@@ -20,6 +20,7 @@ import SearchBar from '../components/SearchBar';
 import FeedCard from '../components/FeedCard';
 import '../styles/pages/Feed.css';
 import { Place } from '../types/PlacesInterfaces';
+import { useLanguage } from '../context/languageContext';
 
 const Feed: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();

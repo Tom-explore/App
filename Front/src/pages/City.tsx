@@ -1,45 +1,36 @@
 // src/pages/City.tsx
 
-import React, { useEffect, useState, useCallback, useMemo, Suspense } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import {
     IonContent,
     IonPage,
     IonButton,
     IonIcon,
-    IonItem,
-    IonHeader,
-    IonToolbar,
 } from '@ionic/react';
 import { useCity, useFetchInitialPlaces } from '../context/cityContext';
 import CityHeader from '../components/CityHeader';
 import PlaceCarousel from '../components/PlaceCarousel';
 import { useIonViewWillLeave } from '@ionic/react';
 import { useLanguage } from '../context/languageContext';
-import TripForm from '../components/TripForm';
-import '../styles/pages/City.css'
+import '../styles/pages/City.css';
 import { Place } from '../types/PlacesInterfaces';
-import { AnimatePresence, motion } from 'framer-motion';
-import { filterOutline } from 'ionicons/icons';
-import { useUser } from '../context/userContext';
+import { Category, Attribute } from '../types/CategoriesAttributesInterfaces';
 import SearchBar from '../components/SearchBar';
-
-const FilterPlaces = React.lazy(() => import('../components/FilterPlaces'));
-const FilterPlacesMobile = React.lazy(() => import('../components/FilterPlacesMobile'));
+import placeCarouselConfig from '../util/PlacesCarouselConfig';
+import useFilterPlaces from '../util/useFilterPlaces';
+import { filterOutline } from 'ionicons/icons';
 
 const City: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
-    const location = useLocation();
     const { city, places, resetCity, isPreview, fetchAllPlaces, fillUpCityFirestore } = useCity();
     const fetchInitialPlaces = useFetchInitialPlaces();
     const { isLanguageLoaded, language } = useLanguage();
     const [isTripModalOpen, setIsTripModalOpen] = useState(false);
-    const [filteredPlacesIDs, setFilteredPlacesIDs] = useState<Set<number> | null>(null);
-    const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
-    const [isUserInteracting, setIsUserInteracting] = useState(false);
     const [isMobile, setIsMobile] = useState<boolean>(false);
     const [searchQuery, setSearchQuery] = useState<string>('');
 
+    // Détection de l'appareil mobile
     useEffect(() => {
         const checkIsMobile = () => {
             const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
@@ -49,29 +40,41 @@ const City: React.FC = () => {
         checkIsMobile();
     }, []);
 
+    // Récupération initiale des lieux
     useEffect(() => {
         if (slug && isLanguageLoaded) {
             fetchInitialPlaces(slug);
         }
     }, [fetchInitialPlaces, slug, isLanguageLoaded]);
 
+    // Réinitialisation de la ville lors du démontage
     useEffect(() => {
         return () => {
             resetCity();
         };
     }, [resetCity]);
 
+    // Réinitialisation lors du départ de la vue
     useIonViewWillLeave(() => {
         resetCity();
     });
 
+    // Récupération de toutes les places une fois que la ville est définie
     useEffect(() => {
         if (city) {
             fetchAllPlaces();
         }
     }, [fetchAllPlaces, city]);
 
-    const uniqueCategories = useMemo(() => {
+    // Combinaison de toutes les places en une seule liste
+    const allPlaces = useMemo(() => [
+        ...places.restaurantsBars,
+        ...places.hotels,
+        ...places.touristAttractions
+    ], [places.restaurantsBars, places.hotels, places.touristAttractions]);
+
+    // Extraire les catégories et attributs uniques pour les passer au hook
+    const uniqueCategories: Category[] = useMemo(() => {
         const allCategories = [
             ...places.restaurantsBars.flatMap(place => place.categories),
             ...places.hotels.flatMap(place => place.categories),
@@ -80,7 +83,7 @@ const City: React.FC = () => {
         return Array.from(new Map(allCategories.map(cat => [cat.id, cat])).values());
     }, [places.restaurantsBars, places.hotels, places.touristAttractions]);
 
-    const uniqueAttributes = useMemo(() => {
+    const uniqueAttributes: Attribute[] = useMemo(() => {
         const allAttributes = [
             ...places.restaurantsBars.flatMap(place => place.attributes),
             ...places.hotels.flatMap(place => place.attributes),
@@ -89,130 +92,44 @@ const City: React.FC = () => {
         return Array.from(new Map(allAttributes.map(attr => [attr.id, attr])).values());
     }, [places.restaurantsBars, places.hotels, places.touristAttractions]);
 
-    const allPlaces = useMemo(() => [
-        ...places.restaurantsBars,
-        ...places.hotels,
-        ...places.touristAttractions
-    ], [places.restaurantsBars, places.hotels, places.touristAttractions]);
+    // Déterminer la configuration des carrousels en fonction de la ville
+    const carouselConfigurations = useMemo(() => {
+        if (!slug) return placeCarouselConfig['default'];
+        return placeCarouselConfig[slug] || placeCarouselConfig['default'];
+    }, [slug]);
 
-    const areSetsEqual = (setA: Set<number>, setB: Set<number>): boolean => {
-        if (setA.size !== setB.size) return false;
-        for (let item of setA) {
-            if (!setB.has(item)) return false;
-        }
-        return true;
-    };
+    const {
+        getTranslation,
+        isUserInteraction,
+    } = useFilterPlaces({
+        categories: uniqueCategories,
+        attributes: uniqueAttributes,
+        onFilterChange: (filteredPlaces: Place[]) => {
+        },
+        languageID: language.id,
+        allPlaces: allPlaces,
+    });
 
-    const handleFilterChange = useCallback((filteredPlaces: Place[]) => {
-        console.log('Filtered Places:', filteredPlaces);
-        const newIds = new Set(filteredPlaces.map(p => p.id));
-        console.log('Filtered Place IDs:', newIds);
-
-        setFilteredPlacesIDs(prevIds => {
-            if (prevIds === null && newIds.size > 0) {
-                return newIds;
-            }
-            if (prevIds && areSetsEqual(prevIds, newIds)) {
-                return prevIds;
-            }
-            return newIds;
-        });
-    }, []);
-
-    // Filtres appliqués
-    const filteredRestaurantsBars = useMemo(() => {
-        if (!city) return [];
-        if (!filteredPlacesIDs) return places.restaurantsBars;
-        return places.restaurantsBars.filter(p => filteredPlacesIDs.has(p.id));
-    }, [city, places.restaurantsBars, filteredPlacesIDs]);
-
-    const filteredHotels = useMemo(() => {
-        if (!city) return [];
-        if (!filteredPlacesIDs) return places.hotels;
-        return places.hotels.filter(p => filteredPlacesIDs.has(p.id));
-    }, [city, places.hotels, filteredPlacesIDs]);
-
-    const filteredTouristAttractions = useMemo(() => {
-        if (!city) return [];
-        if (!filteredPlacesIDs) return places.touristAttractions;
-        return places.touristAttractions.filter(p => filteredPlacesIDs.has(p.id));
-    }, [city, places.touristAttractions, filteredPlacesIDs]);
-
-    const haveInitialPlaces =
-        filteredRestaurantsBars.length > 0 ||
-        filteredHotels.length > 0 ||
-        filteredTouristAttractions.length > 0;
-
+    // Handler pour ajouter des données à Firestore
     const handleAddDataToFirestore = useCallback(async () => {
         if (!language.id || !slug) {
-            console.error('ID de langue ou slug de ville manquant.');
-            alert('Impossible d\'ajouter les données. ID de langue ou slug de ville manquant.');
+            console.error('Language ID or city slug is missing.');
+            alert('Unable to add data. Language ID or city slug is missing.');
             return;
         }
 
         try {
             await fillUpCityFirestore(language.id, slug);
-            // Après avoir ajouté les données à Firestore, vous pouvez recharger les places
             await fetchAllPlaces();
-            alert('Données ajoutées avec succès à Firestore.');
+            alert('Data successfully added to Firestore.');
         } catch (error) {
-            console.error('Erreur lors de l\'ajout des données à Firestore:', error);
-            alert('Erreur lors de l\'ajout des données à Firestore.');
+            console.error('Error adding data to Firestore:', error);
+            alert('Error adding data to Firestore.');
         }
     }, [fillUpCityFirestore, language.id, slug, fetchAllPlaces]);
 
-    useEffect(() => {
-        if (!city) return;
-
-        const searchParams = new URLSearchParams(location.search);
-        const attributeParams = searchParams.get('attributes');
-        const categoryParams = searchParams.get('categories');
-
-        let filtered = allPlaces;
-
-        // Filtrage par catégories
-        if (categoryParams) {
-            const categoryIds = categoryParams
-                .split(',')
-                .map(id => parseInt(id.trim(), 10))
-                .filter(id => !isNaN(id));
-            if (categoryIds.length > 0) {
-                filtered = filtered.filter(place =>
-                    place.categories.some(cat => categoryIds.includes(cat.id))
-                );
-            }
-        }
-
-        // Filtrage par attributs
-        if (attributeParams) {
-            const attributeIds = attributeParams
-                .split(',')
-                .map(id => parseInt(id.trim(), 10))
-                .filter(id => !isNaN(id));
-            if (attributeIds.length > 0) {
-                filtered = filtered.filter(place =>
-                    place.attributes.some(attr => attributeIds.includes(attr.id))
-                );
-            }
-        }
-
-        // Filtrage par recherche
-        if (searchQuery.trim() !== '') {
-            const query = searchQuery.trim().toLowerCase();
-            filtered = filtered.filter(place =>
-                place.translation?.name.toLowerCase().includes(query) ||
-                place.address.toLowerCase().includes(query)
-            );
-        }
-
-        setFilteredPlacesIDs(new Set(filtered.map(place => place.id)));
-        setIsFilterPanelOpen(true);
-    }, [city, allPlaces, location.search, searchQuery]);
-
     return (
-        <IonPage className={`city-page ${isFilterPanelOpen ? 'content-shift' : ''}`}>
-
-
+        <IonPage className={`city-page ${isUserInteraction ? 'content-shift' : ''}`}>
             <IonContent fullscreen>
                 {city ? (
                     <>
@@ -230,8 +147,9 @@ const City: React.FC = () => {
                             <div className="search-bar-container">
                                 <SearchBar onSearch={setSearchQuery} placeholder='Rechercher un lieu' />
                             </div>
+
                             {/* Bouton Filtrer */}
-                            <IonButton className="filter-button" onClick={() => setIsFilterPanelOpen(true)} fill="clear">
+                            <IonButton className="filter-button" onClick={() => { /* Logic to open filter panel */ }} fill="clear">
                                 <IonIcon icon={filterOutline} />
                             </IonButton>
 
@@ -243,97 +161,46 @@ const City: React.FC = () => {
                             <IonButton color="secondary" onClick={handleAddDataToFirestore}>
                                 Ajouter des données à Firestore
                             </IonButton>
-
                         </div>
 
-                        <AnimatePresence>
-                            {isFilterPanelOpen && (
-                                <Suspense fallback={<div>Chargement des filtres...</div>}>
-                                    {isMobile ? (
-                                        <motion.div
-                                            className={`filter-panel-mobile-container open`}
-                                            initial={{ opacity: 0, y: '-10%', visibility: 'hidden' }}
-                                            animate={{ opacity: 1, y: '0%', visibility: 'visible' }}
-                                            exit={{ opacity: 0, y: '-10%', visibility: 'hidden' }}
-                                            transition={{ type: 'tween', duration: 0.3 }}
-                                        >
-                                            <FilterPlacesMobile
-                                                categories={uniqueCategories}
-                                                attributes={uniqueAttributes}
-                                                allPlaces={allPlaces}
-                                                languageID={language.id}
-                                                onFilterChange={handleFilterChange}
-                                                onClose={() => setIsFilterPanelOpen(false)}
-                                                onUserInteractionChange={setIsUserInteracting}
-                                            />
-                                        </motion.div>
-                                    ) : (
-                                        <motion.div
-                                            className={`filter-panel-container open`}
-                                            initial={{ x: '-100%' }}
-                                            animate={{ x: '0%' }}
-                                            exit={{ x: '-100%' }}
-                                            transition={{ type: 'tween', duration: 0.3 }}
-                                        >
-                                            <FilterPlaces
-                                                categories={uniqueCategories}
-                                                attributes={uniqueAttributes}
-                                                allPlaces={allPlaces}
-                                                languageID={language.id}
-                                                onFilterChange={handleFilterChange}
-                                                onClose={() => setIsFilterPanelOpen(false)}
-                                                onUserInteractionChange={setIsUserInteracting}
-                                            />
-                                        </motion.div>
-                                    )}
-                                </Suspense>
-                            )}
-                        </AnimatePresence>
-
+                        {/* Carrousels Dynamiques */}
                         <div className="city-content">
-                            {/* Affichage des carrousels filtrés */}
-                            <>
-                                {isPreview && (
-                                    <PlaceCarousel
-                                        title="Restaurants & Bars"
-                                        places={filteredRestaurantsBars}
-                                        isPreview={isPreview}
-                                        isMobile={isMobile}
-                                    />
-                                )}
-                                {isPreview && (
-                                    <PlaceCarousel
-                                        title="Hôtels"
-                                        places={filteredHotels}
-                                        isPreview={isPreview}
-                                        isMobile={isMobile}
-                                    />
-                                )}
-                                {isPreview && (
-                                    <PlaceCarousel
-                                        title="Attractions Touristiques"
-                                        places={filteredTouristAttractions}
-                                        isPreview={isPreview}
-                                        isMobile={isMobile}
-                                    />
-                                )}
-                            </>
+                            {carouselConfigurations.map((config, index) => {
+                                // Trouver l'objet Category correspondant au slug
+                                const category = uniqueCategories.find(cat => cat.slug === config.categorySlug);
+                                if (!category) {
+                                    console.warn(`Category with slug "${config.categorySlug}" not found.`);
+                                    return null;
+                                }
 
-                            {/* Affichage du message "no results" si aucun lieu ne correspond */}
-                            {isFilterPanelOpen && !haveInitialPlaces && (
-                                <div className="no-results">
-                                    <p>Oops, aucun résultat ne correspond ! 😕</p>
-                                </div>
-                            )}
+                                const translatedCategoryName = getTranslation(category.slug, 'categories');
+
+                                // Générer le titre traduit
+                                if (city.slug) {
+                                    const title = config.title(city.slug, translatedCategoryName, language.code);
+
+                                    return (
+                                        <div key={index}>
+                                            <h2>{title}</h2>
+                                            <PlaceCarousel
+                                                allPlaces={allPlaces}
+                                                isPreview={isPreview}
+                                                isMobile={isMobile}
+                                                category={category}
+                                            />
+                                        </div>
+                                    );
+                                }
+                            })}
                         </div>
                     </>
                 ) : (
                     <div className="loading">
                         <PlaceCarousel
-                            title="Chargement des lieux"
-                            places={[]}
+                            allPlaces={[]}
                             isPreview={true}
                             isMobile={isMobile}
+                            category={null}
                         />
                     </div>
                 )}
@@ -343,8 +210,8 @@ const City: React.FC = () => {
                 </IonModal> */}
             </IonContent>
         </IonPage>
-    )
+    );
 
-}
+};
 
 export default City;

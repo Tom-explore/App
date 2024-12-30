@@ -103,34 +103,57 @@ const fillUpCityFirestore = async (languageId: number, slug: string): Promise<Pl
     }
 };
 
-const fetchAllDataFirestore = async (languageId: number, slug: string): Promise<Places> => {
-    console.log(`Début de la récupération des données pour la ville: "${slug}" avec languageId: ${languageId}`);
+
+
+export const fetchAllDataFirestore = async (
+    languageId: number,
+    slug: string
+): Promise<Places> => {
+    console.log(
+        `Début de la récupération des données pour la ville: "${slug}" avec languageId: ${languageId}`
+    );
 
     if (!slug.trim()) {
         throw new Error("Le slug ne peut pas être vide.");
     }
 
-    const cacheKey = `${slug}-${languageId}`; // Définir une clé unique pour le cache
+    // Clé unique pour le cache local
+    const cacheKey = `${slug}-${languageId}`;
 
     try {
-        // Vérifier si les données sont déjà en cache (localStorage dans cet exemple)
-        const cachedData = localStorage.getItem(cacheKey);
+        // ----------------------------------------------------------
+        // 1. TENTATIVE DE LECTURE DEPUIS LE CACHE localStorage
+        // ----------------------------------------------------------
+        let parsedData: Places | null = null;
+        try {
+            const cachedData = localStorage.getItem(cacheKey);
 
-        if (cachedData) {
-            console.log(`Données trouvées en cache pour la clé: ${cacheKey}`);
-            const parsedData = JSON.parse(cachedData) as Places;
+            if (cachedData) {
+                console.log(`Données trouvées en cache pour la clé: ${cacheKey}`);
+                parsedData = JSON.parse(cachedData) as Places;
 
-            // Vérifier si au moins une catégorie est remplie
-            if (parsedData.restaurantsBars.length || parsedData.hotels.length || parsedData.touristAttractions.length) {
-                return parsedData;
-
+                // Vérifier si au moins une catégorie est remplie
+                if (
+                    parsedData.restaurantsBars.length ||
+                    parsedData.hotels.length ||
+                    parsedData.touristAttractions.length
+                ) {
+                    // On a des données valides en cache, on peut les retourner.
+                    return parsedData;
+                } else {
+                    console.log("Données en cache trouvées mais vides. Requête vers Firestore.");
+                }
             } else {
-                console.log("Données en cache trouvées mais vides. Requête vers Firestore.");
+                console.log(`Aucune donnée en cache pour la clé: ${cacheKey}. Récupération depuis Firestore.`);
             }
+        } catch (error) {
+            // Si la lecture depuis localStorage échoue (QuotaExceededError, etc.)
+            console.warn("Impossible de lire les données depuis localStorage:", error);
         }
 
-        console.log(`Aucune donnée en cache pour la clé: ${cacheKey}. Récupération depuis Firestore.`);
-
+        // ----------------------------------------------------------
+        // 2. RÉCUPÉRATION DES DONNÉES DEPUIS FIRESTORE
+        // ----------------------------------------------------------
         const cityDocId = cacheKey;
         const cityDocRef = doc(firestore, 'City', cityDocId);
 
@@ -147,22 +170,23 @@ const fetchAllDataFirestore = async (languageId: number, slug: string): Promise<
                     const place: Place = { id: data.id, ...(data as Omit<Place, 'id'>) };
                     places.push(place);
                 } else {
-                    console.warn(`Document "${docSnap.id}" dans "${subcollectionName}" n'a pas de champ 'id' valide. Données:`, data);
+                    console.warn(
+                        `Document "${docSnap.id}" dans "${subcollectionName}" n'a pas de champ 'id' valide. Données:`,
+                        data
+                    );
                 }
             });
 
             return places;
         };
 
-        // Récupérer les sous-collections et vérifier si elles sont vides
         let restaurantsBars = await fetchSubcollection('restaurantsBars');
         let hotels = await fetchSubcollection('hotels');
         let touristAttractions = await fetchSubcollection('touristAttractions');
 
-        // Si une ou plusieurs collections sont vides, forcer une récupération du serveur
-        // if (!restaurantsBars.length || !hotels.length || !touristAttractions.length) {
+        // Exemple de logique : si certaines collections sont vides,
+        // on retente de les charger à nouveau depuis Firestore, etc.
         if (!restaurantsBars.length || !touristAttractions.length) {
-
             console.log("Certaines collections sont vides. Récupération des données manquantes depuis Firestore.");
 
             if (!restaurantsBars.length) {
@@ -182,13 +206,25 @@ const fetchAllDataFirestore = async (languageId: number, slug: string): Promise<
             touristAttractions,
         };
 
-        // Stocker les données récupérées dans le cache
-        localStorage.setItem(cacheKey, JSON.stringify(fetchedData));
-        console.log(`Données stockées en cache pour la clé: ${cacheKey}`);
+        // ----------------------------------------------------------
+        // 3. TENTATIVE D'ÉCRITURE DANS LE CACHE localStorage
+        // ----------------------------------------------------------
+        try {
+            localStorage.setItem(cacheKey, JSON.stringify(fetchedData));
+            console.log(`Données stockées en cache pour la clé: ${cacheKey}`);
+        } catch (error) {
+            // Si l'écriture échoue (quota dépassé, etc.),
+            // on avertit sans bloquer l’exécution
+            console.warn(
+                "Impossible de stocker les données dans localStorage (QuotaExceededError ou autre).",
+                error
+            );
+        }
 
+        // Retourner les données fraîchement récupérées depuis Firestore
         return fetchedData;
     } catch (error) {
-        console.error('Erreur lors de la récupération des données depuis Firestore:', error);
+        console.error("Erreur lors de la récupération des données depuis Firestore:", error);
 
         // En cas d'erreur, retourner un objet vide
         return {
