@@ -4,13 +4,13 @@ import { useLanguage } from '../context/languageContext';
 import { City, CityPreview } from '../types/CommonInterfaces';
 import { Place } from '../types/PlacesInterfaces';
 import apiClient from '../config/apiClient';
-import { doc, collection, query, getDocs } from 'firebase/firestore';
+import { doc, collection, query, getDocs, getDocsFromCache, getDocsFromServer } from 'firebase/firestore';
 import { firestore } from '../config/firebaseconfig';
 
 // Définition des types de places
 type Places = {
     restaurantsBars: Place[];
-    hotels: Place[];
+    // hotels: Place[];
     touristAttractions: Place[];
 };
 
@@ -30,8 +30,8 @@ type CityState = {
     setCityPreviewAndFetchData: (slug: string) => void;
     resetCity: () => void;
     fetchAllPlaces: () => void;
-    setPlaces: React.Dispatch<React.SetStateAction<Places>>; // Mise à jour de la signature
-    fillUpCityFirestore: (languageId: number, slug: string) => Promise<Places>; // Mise à jour du type
+    setPlaces: React.Dispatch<React.SetStateAction<Places>>;
+    fillUpCityFirestore: (languageId: number, slug: string) => Promise<Places>;
 };
 
 const CityContext = createContext<CityState | undefined>(undefined);
@@ -53,7 +53,6 @@ function getPreview(languageId: number, slug: string) {
     let translation = cityData.translations.find((t: any) => t.language === languageId);
 
     if (!translation && languageId === 1) {
-        // Fallback à la langue par défaut si la traduction n'est pas trouvée
         translation = { slug: cityData.slug, name: cityData.name, description: cityData.description };
     }
 
@@ -83,21 +82,21 @@ const fillUpCityFirestore = async (languageId: number, slug: string): Promise<Pl
         const { data } = await apiClient.get(`/place/cities/${slug}/all-places`, {
             params: {
                 languageId,
-                limit: 1000, // On suppose que 1000 est suffisant pour toutes les places
+                limit: 1000,
                 offset: 0,
             },
         });
 
         return {
             restaurantsBars: data.places?.restaurantsBars || [],
-            hotels: data.places?.hotels || [],
+            // hotels: data.places?.hotels || [],
             touristAttractions: data.places?.touristAttractions || [],
         };
     } catch (error) {
         console.error('Error fetching all places:', error);
         return {
             restaurantsBars: [],
-            hotels: [],
+            // hotels: [],
             touristAttractions: [],
         };
     }
@@ -117,119 +116,71 @@ export const fetchAllDataFirestore = async (
         throw new Error("Le slug ne peut pas être vide.");
     }
 
-    // Clé unique pour le cache local
-    const cacheKey = `${slug}-${languageId}`;
+    // Clé unique pour identifier le document Firestore
+    const cityDocId = `${slug}-${languageId}`;
+    const cityDocRef = doc(firestore, 'City', cityDocId);
 
-    try {
-        // ----------------------------------------------------------
-        // 1. TENTATIVE DE LECTURE DEPUIS LE CACHE localStorage
-        // ----------------------------------------------------------
-        let parsedData: Places | null = null;
+    const fetchSubcollection = async (subcollectionName: string): Promise<Place[]> => {
+        const subcollectionRef = collection(cityDocRef, subcollectionName);
+        const q = query(subcollectionRef);
+
         try {
-            const cachedData = localStorage.getItem(cacheKey);
+            let querySnapshot;
 
-            if (cachedData) {
-                console.log(`Données trouvées en cache pour la clé: ${cacheKey}`);
-                parsedData = JSON.parse(cachedData) as Places;
-
-                // Vérifier si au moins une catégorie est remplie
-                if (
-                    parsedData.restaurantsBars.length ||
-                    parsedData.hotels.length ||
-                    parsedData.touristAttractions.length
-                ) {
-                    // On a des données valides en cache, on peut les retourner.
-                    return parsedData;
+            try {
+                querySnapshot = await getDocsFromCache(q);
+                if (!querySnapshot.empty) {
+                    console.log(`Données récupérées depuis le cache pour la sous-collection: ${subcollectionName}`);
                 } else {
-                    console.log("Données en cache trouvées mais vides. Requête vers Firestore.");
+                    throw new Error("Cache vide");
                 }
-            } else {
-                console.log(`Aucune donnée en cache pour la clé: ${cacheKey}. Récupération depuis Firestore.`);
+            } catch {
+                console.log(`Récup data Firestore : ${subcollectionName}`);
+
+                querySnapshot = await getDocsFromServer(q);
+                console.log(`Données récupérées depuis le serveur pour la sous-collection: ${subcollectionName}`);
             }
-        } catch (error) {
-            // Si la lecture depuis localStorage échoue (QuotaExceededError, etc.)
-            console.warn("Impossible de lire les données depuis localStorage:", error);
-        }
 
-        // ----------------------------------------------------------
-        // 2. RÉCUPÉRATION DES DONNÉES DEPUIS FIRESTORE
-        // ----------------------------------------------------------
-        const cityDocId = cacheKey;
-        const cityDocRef = doc(firestore, 'City', cityDocId);
-
-        const fetchSubcollection = async (subcollectionName: string): Promise<Place[]> => {
-            const subcollectionRef = collection(cityDocRef, subcollectionName);
-            const q = query(subcollectionRef);
-            const querySnapshot = await getDocs(q);
-
-            const places: Place[] = [];
-            querySnapshot.forEach((docSnap) => {
+            return querySnapshot.docs.map(docSnap => {
                 const data = docSnap.data();
-
                 if (typeof data.id === 'number') {
-                    const place: Place = { id: data.id, ...(data as Omit<Place, 'id'>) };
-                    places.push(place);
+                    return { id: data.id, ...(data as Omit<Place, 'id'>) };
                 } else {
                     console.warn(
                         `Document "${docSnap.id}" dans "${subcollectionName}" n'a pas de champ 'id' valide. Données:`,
                         data
                     );
+                    return null;
                 }
-            });
+            }).filter(place => place !== null) as Place[];
 
-            return places;
-        };
-
-        let restaurantsBars = await fetchSubcollection('restaurantsBars');
-        let hotels = await fetchSubcollection('hotels');
-        let touristAttractions = await fetchSubcollection('touristAttractions');
-
-        // Exemple de logique : si certaines collections sont vides,
-        // on retente de les charger à nouveau depuis Firestore, etc.
-        if (!restaurantsBars.length || !touristAttractions.length) {
-            console.log("Certaines collections sont vides. Récupération des données manquantes depuis Firestore.");
-
-            if (!restaurantsBars.length) {
-                restaurantsBars = await fetchSubcollection('restaurantsBars');
-            }
-            if (!hotels.length) {
-                hotels = await fetchSubcollection('hotels');
-            }
-            if (!touristAttractions.length) {
-                touristAttractions = await fetchSubcollection('touristAttractions');
-            }
+        } catch (error) {
+            console.error(`Erreur lors de la récupération de la sous-collection "${subcollectionName}":`, error);
+            return [];
         }
+    };
+    try {
+        // Récupérer les sous-collections
+        const [restaurantsBars, touristAttractions] = await Promise.all([
+            fetchSubcollection('restaurantsBars'),
+            // fetchSubcollection('hotels'),
+            fetchSubcollection('touristAttractions')
+        ]);
 
         const fetchedData: Places = {
             restaurantsBars,
-            hotels,
+            // hotels,
             touristAttractions,
         };
 
-        // ----------------------------------------------------------
-        // 3. TENTATIVE D'ÉCRITURE DANS LE CACHE localStorage
-        // ----------------------------------------------------------
-        try {
-            localStorage.setItem(cacheKey, JSON.stringify(fetchedData));
-            console.log(`Données stockées en cache pour la clé: ${cacheKey}`);
-        } catch (error) {
-            // Si l'écriture échoue (quota dépassé, etc.),
-            // on avertit sans bloquer l’exécution
-            console.warn(
-                "Impossible de stocker les données dans localStorage (QuotaExceededError ou autre).",
-                error
-            );
-        }
 
-        // Retourner les données fraîchement récupérées depuis Firestore
         return fetchedData;
     } catch (error) {
         console.error("Erreur lors de la récupération des données depuis Firestore:", error);
 
-        // En cas d'erreur, retourner un objet vide
         return {
             restaurantsBars: [],
-            hotels: [],
+            // hotels: [],
             touristAttractions: [],
         };
     }
@@ -241,7 +192,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [originalSlug, setOriginalSlug] = useState<string | null>(null);
     const [places, setPlaces] = useState<Places>({
         restaurantsBars: [],
-        hotels: [],
+        // hotels: [],
         touristAttractions: [],
     });
     const [isPreview, setIsPreview] = useState(false);
@@ -278,7 +229,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setOriginalSlug(null);
         setPlaces({
             restaurantsBars: [],
-            hotels: [],
+            // hotels: [],
             touristAttractions: [],
         });
         setIsPreview(false);
@@ -330,7 +281,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Return an empty places object if conditions are not met
             return {
                 restaurantsBars: [],
-                hotels: [],
+                // hotels: [],
                 touristAttractions: []
             };
         }
@@ -346,7 +297,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             setPlaces({
                 restaurantsBars: fetchedPlaces.restaurantsBars,
-                hotels: fetchedPlaces.hotels,
+                // hotels: fetchedPlaces.hotels,
                 touristAttractions: fetchedPlaces.touristAttractions,
             });
 
@@ -359,7 +310,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Return the fetched places as a Promise
             return {
                 restaurantsBars: fetchedPlaces.restaurantsBars,
-                hotels: fetchedPlaces.hotels,
+                // hotels: fetchedPlaces.hotels,
                 touristAttractions: fetchedPlaces.touristAttractions,
             };
 
@@ -368,7 +319,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Return a default empty structure on error as well
             return {
                 restaurantsBars: [],
-                hotels: [],
+                // hotels: [],
                 touristAttractions: []
             };
         } finally {

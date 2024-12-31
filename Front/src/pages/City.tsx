@@ -69,28 +69,28 @@ const City: React.FC = () => {
     // Combinaison de toutes les places en une seule liste
     const allPlaces = useMemo(() => [
         ...places.restaurantsBars,
-        ...places.hotels,
+        // ...places.hotels,
         ...places.touristAttractions
-    ], [places.restaurantsBars, places.hotels, places.touristAttractions]);
+    ], [places.restaurantsBars, places.touristAttractions]);
 
     // Extraire les catégories et attributs uniques pour les passer au hook
     const uniqueCategories: Category[] = useMemo(() => {
         const allCategories = [
             ...places.restaurantsBars.flatMap(place => place.categories),
-            ...places.hotels.flatMap(place => place.categories),
+            // ...places.hotels.flatMap(place => place.categories),
             ...places.touristAttractions.flatMap(place => place.categories),
         ];
         return Array.from(new Map(allCategories.map(cat => [cat.id, cat])).values());
-    }, [places.restaurantsBars, places.hotels, places.touristAttractions]);
+    }, [places.restaurantsBars, places.touristAttractions]);
 
     const uniqueAttributes: Attribute[] = useMemo(() => {
         const allAttributes = [
             ...places.restaurantsBars.flatMap(place => place.attributes),
-            ...places.hotels.flatMap(place => place.attributes),
+            // ...places.hotels.flatMap(place => place.attributes),
             ...places.touristAttractions.flatMap(place => place.attributes),
         ];
         return Array.from(new Map(allAttributes.map(attr => [attr.id, attr])).values());
-    }, [places.restaurantsBars, places.hotels, places.touristAttractions]);
+    }, [places.restaurantsBars, places.touristAttractions]);
 
     // Déterminer la configuration des carrousels en fonction de la ville
     const carouselConfigurations = useMemo(() => {
