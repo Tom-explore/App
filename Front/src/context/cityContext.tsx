@@ -4,7 +4,7 @@ import { useLanguage } from '../context/languageContext';
 import { City, CityPreview } from '../types/CommonInterfaces';
 import { Place } from '../types/PlacesInterfaces';
 import apiClient from '../config/apiClient';
-import { doc, collection, query, getDocs, getDocsFromCache, getDocsFromServer } from 'firebase/firestore';
+import { doc, collection, query, getDocsFromCache, getDocsFromServer } from 'firebase/firestore';
 import { firestore } from '../config/firebaseconfig';
 
 // Définition des types de places
@@ -13,8 +13,6 @@ type Places = {
     // hotels: Place[];
     touristAttractions: Place[];
 };
-
-type Category = 'restaurant_bar' | 'hotel' | 'tourist_attraction';
 
 type HasMorePlaces = {
     restaurant_bar: boolean;
@@ -27,6 +25,7 @@ type CityState = {
     originalSlug: string | null;
     places: Places;
     isPreview: boolean;
+    isAllPlacesLoaded: boolean;
     setCityPreviewAndFetchData: (slug: string) => void;
     resetCity: () => void;
     fetchAllPlaces: () => void;
@@ -63,6 +62,7 @@ function getPreview(languageId: number, slug: string) {
         lat: cityData.lat,
         lng: cityData.lng,
         slug: translation?.slug || cityData.slug,
+        originalSlug: originalSlug,
         name: translation?.name || cityData.name || 'Unknown name',
         description: translation?.description || cityData.description || 'No description available',
         country: {
@@ -197,6 +197,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     const [isPreview, setIsPreview] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
+    const [isAllPlacesLoaded, setIsAllPlacesLoaded] = useState(false);
 
     // State pour suivre s'il reste des lieux à charger par catégorie
     const [hasMorePlaces, setHasMorePlaces] = useState<HasMorePlaces>({
@@ -300,6 +301,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 // hotels: fetchedPlaces.hotels,
                 touristAttractions: fetchedPlaces.touristAttractions,
             });
+            setIsAllPlacesLoaded(true);
 
             setHasMorePlaces({
                 restaurant_bar: false,
@@ -345,6 +347,8 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
         fetchAllPlaces,
         fillUpCityFirestore, // Ajout de fillUpCityFirestore au contexte
         setPlaces,
+        isAllPlacesLoaded,
+
     }), [
         city,
         originalSlug,
@@ -356,7 +360,9 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoadingPlaces,
         fetchAllPlaces,
         fillUpCityFirestore, // Ajout de fillUpCityFirestore aux dépendances
-        setPlaces
+        setPlaces,
+        isAllPlacesLoaded,
+
     ]);
 
     return (

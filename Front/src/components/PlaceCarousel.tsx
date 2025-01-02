@@ -1,5 +1,3 @@
-// src/components/PlaceCarousel.tsx
-
 import React, { useState, useRef, useEffect, useCallback, useMemo, useContext } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, FreeMode, Virtual } from 'swiper/modules';
@@ -45,12 +43,8 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
     const router = useIonRouter();
     const { slug } = useParams<{ slug: string }>();
 
-    // Filtrer les lieux en fonction de la catégorie
-    // "main" n'est imposé que pour restaurant et tourist-attraction
     const filteredByCategory = useMemo(() => {
         if (!category) return [];
-
-        // Petites vérifications
         const isRestaurant = category.slug === 'restaurant';
         const isTouristAttraction = category.slug === 'tourist-attraction';
 
@@ -73,9 +67,9 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
             .filter(place => (place.reviews_google_count || 0) >= 100) // Exclure les lieux avec moins de 100 reviews
             .sort((a, b) => {
                 if (b.reviews_google_rating !== a.reviews_google_rating) {
-                    return b.reviews_google_rating - a.reviews_google_rating; // Meilleures reviews en premier
+                    return b.reviews_google_rating - a.reviews_google_rating;
                 }
-                return (b.reviews_google_count || 0) - (a.reviews_google_count || 0); // Plus d'avis en premier
+                return (b.reviews_google_count || 0) - (a.reviews_google_count || 0);
             });
     }, [filteredByCategory]);
 
@@ -97,21 +91,17 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
 
     const hasMore = useMemo(() => placesToRender.length > 8, [placesToRender]);
 
-    // Préparer le tableau des slides
     const slides = useMemo(() => {
         const slidesArray: Array<{ type: string; content?: Place | null }> = [];
 
-        // Ajouter les lieux réels
         displayPlaces.forEach((place) => {
             slidesArray.push({ type: 'place', content: place });
         });
 
-        // Ajouter le slide "Voir plus" si nécessaire
         if (hasMore) {
             slidesArray.push({ type: 'see-more' });
         }
 
-        // Ajouter le message "aucun résultat" si nécessaire
         if (!isPreview && slidesArray.length === 0) {
             slidesArray.push({ type: 'no-results' });
         }
@@ -119,7 +109,6 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
         return slidesArray;
     }, [displayPlaces, hasMore, isPreview]);
 
-    // Fonctions de navigation
     const goToPrevious = useCallback(() => {
         if (!activePlace) return;
         const currentIndex = sortedPlaces.findIndex(place => place.id === activePlace.id);
@@ -140,7 +129,6 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
         }
     }, [activePlace, sortedPlaces, currentSlidesPerView]);
 
-    // Gestion des événements clavier
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (!activePlace) return;
@@ -160,9 +148,8 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
         };
     }, [activePlace, goToPrevious, goToNext]);
 
-    // Gestion du clic sur une carte
     const handleCardClick = (place: Place) => {
-        if (isMobile) return; // Gérer l'agrandissement différemment sur mobile
+        if (isMobile) return;
         console.log(place);
         const swiper = swiperRef.current?.swiper;
         if (!swiper) return;
@@ -171,12 +158,10 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
         const clickedIndex = sortedPlaces.findIndex(p => p.id === place.id);
         const half = Math.floor(currentSlidesPerView / 2);
 
-        // Déterminer si la diapositive peut être centrée
         if (clickedIndex >= half && clickedIndex <= totalSlides - half - 1) {
             swiper.slideTo(clickedIndex - half);
             setActivePlace(place);
         } else {
-            // Si proche du début ou de la fin, aligner la diapositive cliquée au début ou à la fin
             if (clickedIndex < half) {
                 swiper.slideTo(0);
             } else {
@@ -186,7 +171,6 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
         }
     };
 
-    // Navigation vers le feed filtré
     const navigateToFeed = () => {
         if (!slug || !category) return;
         console.log('Navigating to Feed with places:', sortedPlaces); // Ajout d'un console.log
@@ -194,17 +178,14 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
         router.push(`/${language.language.code}/feed/city/${slug}`, 'forward'); // Définir la direction de navigation
     };
 
-    // Gestion du clic sur "Voir plus"
     const handleSeeMore = () => {
         if (!slug || !category) return;
-        router.push(`/${language.language.code}/feed/city/${slug}/category/${category.slug}`, 'forward');
+        router.push(`/${language.language.code}/feed/city/${slug}?categories=${category.slug}`, 'forward');
     };
 
     return (
         <div className="place-carousel">
-            {/* Afficher le titre passé depuis City.tsx */}
             <div className="carousel-header">
-                <h2>{/* Titre déjà affiché dans City.tsx, donc peut être vide ou utilisé pour d'autres éléments */}</h2>
                 {category && (
                     <IonButton fill="clear" onClick={navigateToFeed}>
                         <IonIcon icon={chevronForwardOutline} size="large" />
@@ -216,10 +197,10 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
                 modules={[Navigation, Pagination, FreeMode, Virtual]}
                 spaceBetween={16}
                 slidesPerView={isMobile ? 1 : 6}
-                navigation={!activePlace} // Désactiver la navigation lorsqu'une carte est active
+                navigation={!activePlace}
                 pagination={{ clickable: true, dynamicBullets: true }}
                 virtual={{ enabled: true }}
-                slideToClickedSlide={false} // Désactiver le centrage automatique
+                slideToClickedSlide={false}
                 breakpoints={{
                     320: { slidesPerView: 2 },
                     480: { slidesPerView: 3 },
@@ -228,9 +209,9 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
                     1200: { slidesPerView: 6 },
                 }}
                 loop={false}
-                allowTouchMove={!activePlace} // Désactiver le défilement lorsqu'une carte est active
-                speed={300} // Vitesse de transition
-                observer={true} // Permettre à Swiper de se mettre à jour sur les changements de diapositive
+                allowTouchMove={!activePlace}
+                speed={300}
+                observer={true}
                 observeParents={true}
                 onBreakpoint={(swiper) => {
                     setCurrentSlidesPerView(swiper.params.slidesPerView as number);
@@ -243,7 +224,7 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
                                 ? `place-${slide.content?.id}`
                                 : `see-more-${index}`
                         }
-                        virtualIndex={index} // Assigner virtualIndex
+                        virtualIndex={index}
                     >
                         {slide.type === 'place' && slide.content ? (
                             <div
@@ -274,7 +255,7 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
                 <ModalPortal>
                     <div
                         className="backdrop"
-                        onClick={() => setActivePlace(null)} // Fermer le modal en cliquant sur le backdrop
+                        onClick={() => setActivePlace(null)}
                     ></div>
                     <PlaceCard
                         place={activePlace}
@@ -284,8 +265,8 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
                         isActive={true}
                         onPrevious={goToPrevious}
                         onNext={goToNext}
-                        isFirst={false} // Déterminer si c'est le premier
-                        isLast={false} // Déterminer si c'est le dernier
+                        isFirst={false}
+                        isLast={false}
                     />
                 </ModalPortal>
             )}

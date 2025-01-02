@@ -1,85 +1,51 @@
-// FilterPlaces.tsx
+// src/components/FilterPlaces.tsx
+
 import React from 'react';
 import { Attribute, Category } from '../types/CategoriesAttributesInterfaces';
 import { Place } from '../types/PlacesInterfaces';
 import {
-    IonIcon,
     IonList,
     IonItem,
     IonLabel,
-    IonButton,
+    IonToggle,
     IonGrid,
     IonRow,
     IonCol,
-    IonToggle,
 } from '@ionic/react';
-import { close as closeIcon } from 'ionicons/icons';
-import { motion } from 'framer-motion';
 import '../styles/components/FilterPlaces.css'
-import useFilterPlaces from '../util/useFilterPlaces';
 
 interface FilterPlacesProps {
     categories: Category[];
     attributes: Attribute[];
-    onFilterChange: (filteredPlaces: Place[]) => void;
-    languageID: number;
-    allPlaces: Place[];
-    onClose: () => void;
+    selectedCategories: number[];
+    selectedAttributes: number[];
+    handleCategoryChange: (categoryId: number) => void;
+    handleAttributeChange: (attributeId: number) => void;
+    getTranslation: (slug: string, type: 'attributes' | 'categories') => string;
     onUserInteractionChange: (isInteracting: boolean) => void;
 }
-
-const panelVariants = {
-    hidden: { x: '-100%' },
-    visible: { x: '0%' },
-    exit: { x: '-100%' },
-};
 
 const FilterPlaces: React.FC<FilterPlacesProps> = ({
     categories,
     attributes,
-    onFilterChange,
-    allPlaces,
-    languageID,
-    onClose,
+    selectedCategories,
+    selectedAttributes,
+    handleCategoryChange,
+    handleAttributeChange,
+    getTranslation,
     onUserInteractionChange,
 }) => {
-    const {
-        selectedCategories,
-        selectedAttributes,
-        handleCategoryChange,
-        handleAttributeChange,
-        getTranslation,
-        isUserInteraction, // Utiliser l'état exposé
-    } = useFilterPlaces({
-        categories,
-        attributes,
-        onFilterChange,
-        languageID,
-        allPlaces,
-    });
 
-    React.useEffect(() => {
-        onUserInteractionChange(isUserInteraction);
-    }, [isUserInteraction, onUserInteractionChange]);
+    // Ici, on n'utilise plus useFilterPlaces, car tout est géré via les props
 
     return (
-        <motion.div
-            className="filter-panel"
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={panelVariants}
-            transition={{ type: 'tween', duration: 0.3 }}
-        >
+        <div className="filter-panel">
             <IonGrid>
                 <IonRow>
                     <IonCol size="12" className="filter-header">
                         <IonLabel>
                             <strong>Filtrer les Lieux</strong>
                         </IonLabel>
-                        <IonButton fill="clear" onClick={onClose}>
-                            <IonIcon icon={closeIcon} />
-                        </IonButton>
                     </IonCol>
                 </IonRow>
                 <IonRow>
@@ -120,15 +86,8 @@ const FilterPlaces: React.FC<FilterPlacesProps> = ({
                         </IonList>
                     </IonCol>
                 </IonRow>
-                <IonRow>
-                    <IonCol className="ion-text-center ion-margin-top">
-                        <IonButton expand="block" onClick={onClose}>
-                            Appliquer les filtres
-                        </IonButton>
-                    </IonCol>
-                </IonRow>
             </IonGrid>
-        </motion.div>
+        </div>
     );
 };
 

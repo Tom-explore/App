@@ -48,6 +48,7 @@ export interface CityPreview {
   lat: number;
   lng: number;
   slug: string;
+  originalSlug: string;
   name: string;
   description: string;
   country: {

@@ -1,6 +1,13 @@
-// src/pages/Feed.tsx
+/* src/pages/Feed.tsx */
 
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import React, {
+    useEffect,
+    useState,
+    useMemo,
+    useRef,
+    useCallback,
+    useLayoutEffect
+} from 'react';
 import {
     IonContent,
     IonPage,
@@ -9,18 +16,24 @@ import {
     IonTitle,
     IonButtons,
     IonButton,
-    IonIcon
+    IonIcon,
+    IonSpinner,
+    IonChip,
+    IonLabel
 } from '@ionic/react';
 import { FixedSizeGrid as Grid } from 'react-window';
 import { useIonRouter } from '@ionic/react';
 import { useParams } from 'react-router';
-import { chevronBackOutline } from 'ionicons/icons';
+import { chevronBackOutline, close as closeIcon } from 'ionicons/icons'; // Importer l'icône de fermeture
 import { useCity } from '../context/cityContext';
 import SearchBar from '../components/SearchBar';
 import FeedCard from '../components/FeedCard';
 import '../styles/pages/Feed.css';
 import { Place } from '../types/PlacesInterfaces';
 import { useLanguage } from '../context/languageContext';
+import FilterPlaces from '../components/FilterPlaces';
+import { Category, Attribute } from '../types/CategoriesAttributesInterfaces';
+import useFilterPlaces from '../util/useFilterPlaces'; // Assurez-vous que le chemin est correct
 
 const Feed: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -31,83 +44,52 @@ const Feed: React.FC = () => {
         fetchAllPlaces,
         setCityPreviewAndFetchData,
         city,
+        isAllPlacesLoaded
     } = useCity();
 
-    const [searchQuery, setSearchQuery] = useState<string>('');
-    const [displayedPlaces, setDisplayedPlaces] = useState<Place[]>([]);
+    const { language } = useLanguage();
 
-    const calculateScore = (rating: number, reviewCount: number): number => {
-        return rating * Math.log10(reviewCount + 1);
-    };
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [filteredPlaces, setFilteredPlaces] = useState<Place[]>([]);
+
+    const [isInteracting, setIsInteracting] = useState<boolean>(false);
 
     const allPlaces = useMemo(() => {
         return [
             ...places.restaurantsBars,
-            ...places.hotels,
+            // ...places.hotels,
             ...places.touristAttractions
         ];
-    }, [places.restaurantsBars, places.hotels, places.touristAttractions]);
+    }, [
+        places.restaurantsBars,
+        places.touristAttractions
+        // places.hotels, // si vous gérez les hôtels
+    ]);
 
-    const ensureDiversity = (sortedPlaces: Place[], maxConsecutive: number = 3): Place[] => {
-        const result: Place[] = [];
-        const typeCounters: { [key: string]: number } = {};
-        const typeQueues: { [key: string]: Place[] } = {};
+    useEffect(() => {
+        setFilteredPlaces(allPlaces);
+    }, [allPlaces]);
 
-        sortedPlaces.forEach(place => {
-            if (!typeQueues[place.placeType]) {
-                typeQueues[place.placeType] = [];
-            }
-            typeQueues[place.placeType].push(place);
-        });
-
-        const placeTypes = Object.keys(typeQueues);
-
-        while (result.length < sortedPlaces.length) {
-            let added = false;
-
-            for (const type of placeTypes) {
-                if ((typeCounters[type] || 0) < maxConsecutive && typeQueues[type].length > 0) {
-                    result.push(typeQueues[type].shift()!);
-                    typeCounters[type] = (typeCounters[type] || 0) + 1;
-
-                    for (const otherType of placeTypes) {
-                        if (otherType !== type) {
-                            typeCounters[otherType] = 0;
-                        }
-                    }
-                    added = true;
-                    break;
-                }
-            }
-
-            if (!added) {
-                for (const type of placeTypes) {
-                    if (typeQueues[type].length > 0) {
-                        result.push(typeQueues[type].shift()!);
-                        typeCounters[type] = (typeCounters[type] || 0) + 1;
-
-                        for (const otherType of placeTypes) {
-                            if (otherType !== type) {
-                                typeCounters[otherType] = 0;
-                            }
-                        }
-                        added = true;
-                        break;
-                    }
-                }
-
-                if (!added) {
-                    break;
-                }
-            }
+    // 1. Sélection de la ville (slug) si on arrive directement sur /feed/...
+    //    Si la ville est déjà définie (city != null), on ne ré-initialise pas.
+    useEffect(() => {
+        if (slug && !city) {
+            console.log("setCityPreview");
+            setCityPreviewAndFetchData(slug);
         }
+    }, [slug, city, setCityPreviewAndFetchData]);
 
-        return result;
-    };
+    // 2. Une fois la ville définie, si *toutes* les places ne sont pas encore chargées,
+    //    on appelle *fetchAllPlaces*. Sinon, on réutilise directement le *allPlaces* du contexte.
+    useEffect(() => {
+        if (city && !isAllPlacesLoaded) {
+            console.log("fetchAllPlaces");
+            fetchAllPlaces();
+        }
+    }, [city, isAllPlacesLoaded, fetchAllPlaces]);
 
     const sortedFilteredPlaces = useMemo(() => {
-        let filtered = allPlaces;
-
+        let filtered = filteredPlaces.length > 0 ? filteredPlaces : allPlaces;
         if (searchQuery.trim() !== '') {
             const query = searchQuery.trim().toLowerCase();
             filtered = filtered.filter(place =>
@@ -116,79 +98,110 @@ const Feed: React.FC = () => {
             );
         }
 
-        const scoredPlaces = filtered.map(place => ({
-            ...place,
-            score: calculateScore(place.reviews_google_rating, place.reviews_google_count)
-        }));
+        filtered = filtered.filter(place => (place.reviews_google_count || 0) >= 100);
 
-        scoredPlaces.sort((a, b) => b.score - a.score);
+        filtered.sort((a, b) => {
+            if (b.reviews_google_rating !== a.reviews_google_rating) {
+                return b.reviews_google_rating - a.reviews_google_rating;
+            }
+            return (b.reviews_google_count || 0) - (a.reviews_google_count || 0);
+        });
 
-        const diversePlaces = ensureDiversity(scoredPlaces);
+        return filtered;
+    }, [filteredPlaces, searchQuery, allPlaces]);
 
-        return diversePlaces;
-    }, [allPlaces, searchQuery]);
+    // ----- Extraction des catégories & attributs -----
+    const uniqueCategories = useMemo(() => {
+        const categoriesMap = new Map<number, Category>();
+        allPlaces.forEach(place => {
+            place.categories.forEach(category => {
+                if (!categoriesMap.has(category.id)) {
+                    categoriesMap.set(category.id, category);
+                }
+            });
+        });
+        return Array.from(categoriesMap.values());
+    }, [allPlaces]);
 
-    useEffect(() => {
-        setDisplayedPlaces(sortedFilteredPlaces);
-    }, [sortedFilteredPlaces]);
+    const uniqueAttributes = useMemo(() => {
+        const attributesMap = new Map<number, Attribute>();
+        allPlaces.forEach(place => {
+            place.attributes.forEach(attribute => {
+                if (!attributesMap.has(attribute.id)) {
+                    attributesMap.set(attribute.id, attribute);
+                }
+            });
+        });
+        return Array.from(attributesMap.values());
+    }, [allPlaces]);
 
-    useEffect(() => {
-        if (slug) {
-            setCityPreviewAndFetchData(slug);
-        }
-    }, [setCityPreviewAndFetchData, slug]);
+    // ----- Utilisation du hook useFilterPlaces -----
+    const {
+        selectedCategories,
+        selectedAttributes,
+        handleCategoryChange,
+        handleAttributeChange,
+        getTranslation,
+        isUserInteraction
+    } = useFilterPlaces({
+        categories: uniqueCategories,
+        attributes: uniqueAttributes,
+        onFilterChange: setFilteredPlaces,
+        languageID: language.id,
+        allPlaces: allPlaces
+    });
 
-    useEffect(() => {
-        if (city) {
-            fetchAllPlaces();
-        }
-    }, [fetchAllPlaces, city]);
-
+    // ----- Mise en page avec react-window -----
     const COLUMN_COUNT = 2;
-    const ITEM_HEIGHT = 320; // Ajusté pour correspondre à la hauteur maximale de la carte
+    const ITEM_HEIGHT = 450;
     const HORIZONTAL_GAP_PERCENT = 2;
     const VERTICAL_GAP_PERCENT = 2;
 
     const containerRef = useRef<HTMLDivElement>(null);
-    const [containerWidth, setContainerWidth] = useState<number>(window.innerWidth);
-    const [containerHeight, setContainerHeight] = useState<number>(0);
+    const [containerWidth, setContainerWidth] = useState<number>(300);
+    const [containerHeight, setContainerHeight] = useState<number>(500);
 
-    useEffect(() => {
-        const handleResize = () => {
-            if (containerRef.current) {
-                const rect = containerRef.current.getBoundingClientRect();
-                const newHeight = window.innerHeight - rect.top - 20; // Ajustez 20 selon vos marges
-                setContainerHeight(newHeight > 0 ? newHeight : 500); // Valeur par défaut si négatif
+    useLayoutEffect(() => {
+        if (!containerRef.current) return;
+
+        const resizeObserver = new ResizeObserver(entries => {
+            if (entries[0].contentRect) {
+                const { width, height, top } = entries[0].contentRect;
+                const newHeight = window.innerHeight - top - 20;
+                setContainerHeight(newHeight > 0 ? newHeight : 500);
+                setContainerWidth(width);
             }
-        };
+        });
 
-        handleResize();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        resizeObserver.observe(containerRef.current);
+
+        return () => {
+            resizeObserver.disconnect();
+        };
     }, []);
 
-    // Calculer la largeur de chaque colonne
     const horizontalGap = containerWidth * (HORIZONTAL_GAP_PERCENT / 100);
     const verticalGap = containerWidth * (VERTICAL_GAP_PERCENT / 100);
 
-    // Calculer la largeur de chaque colonne
     const ITEM_WIDTH = (containerWidth - (COLUMN_COUNT - 1) * horizontalGap) / COLUMN_COUNT;
-
-    // Calculer la hauteur totale de chaque rangée incluant l'espacement vertical
     const rowHeight = ITEM_HEIGHT + verticalGap;
-
-    // Calculer le nombre de rangées
-    const rowCount = Math.ceil(displayedPlaces.length / COLUMN_COUNT);
-
-    // Hauteur du Grid
+    const rowCount = Math.ceil(sortedFilteredPlaces.length / COLUMN_COUNT);
     const LIST_HEIGHT = containerHeight;
 
-    const Cell = ({ columnIndex, rowIndex, style }: { columnIndex: number; rowIndex: number; style: React.CSSProperties }) => {
+    const Cell = ({
+        columnIndex,
+        rowIndex,
+        style
+    }: {
+        columnIndex: number;
+        rowIndex: number;
+        style: React.CSSProperties;
+    }) => {
         const index = rowIndex * COLUMN_COUNT + columnIndex;
-        if (index >= displayedPlaces.length) {
+        if (index >= sortedFilteredPlaces.length) {
             return null;
         }
-        const place = displayedPlaces[index];
+        const place = sortedFilteredPlaces[index];
         return (
             <div
                 style={{
@@ -198,7 +211,14 @@ const Feed: React.FC = () => {
                     boxSizing: 'border-box'
                 }}
             >
-                <FeedCard place={place} />
+                <FeedCard
+                    place={place}
+                    selectedCategories={selectedCategories}
+                    selectedAttributes={selectedAttributes}
+                    handleCategoryChange={handleCategoryChange}
+                    handleAttributeChange={handleAttributeChange}
+                    getTranslation={getTranslation}
+                />
             </div>
         );
     };
@@ -217,31 +237,88 @@ const Feed: React.FC = () => {
             </IonHeader>
 
             <IonContent fullscreen className="ion-no-padding">
-                <div className="feed-container" ref={containerRef}>
-                    <div className="search-bar-container">
-                        <SearchBar onSearch={setSearchQuery} placeholder="Rechercher un lieu" />
+                <div className="feed-layout">
+                    <div className="filter-panel">
+                        <FilterPlaces
+                            categories={uniqueCategories}
+                            attributes={uniqueAttributes}
+                            selectedCategories={selectedCategories}
+                            selectedAttributes={selectedAttributes}
+                            handleCategoryChange={handleCategoryChange}
+                            handleAttributeChange={handleAttributeChange}
+                            getTranslation={getTranslation}
+                            onUserInteractionChange={setIsInteracting}
+                        />
                     </div>
 
-                    <div className="grid-container">
-                        {displayedPlaces.length > 0 ? (
-                            <Grid
-                                className="no-scrollbar" // Ajoutez cette classe pour masquer la scrollbar
-                                columnCount={COLUMN_COUNT}
-                                columnWidth={ITEM_WIDTH}
-                                height={LIST_HEIGHT}
-                                rowCount={rowCount}
-                                rowHeight={rowHeight}
-                                width={containerWidth}
-                            >
-                                {Cell}
-                            </Grid>
-                        ) : (
-                            <div className="no-results">
-                                <p>Oops, aucun résultat ne correspond ! 😕</p>
+                    <div className="main-content" ref={containerRef}>
+                        <div className="search-bar-container">
+                            <SearchBar
+                                onSearch={setSearchQuery}
+                                placeholder="Rechercher un lieu"
+                            />
+                        </div>
+
+                        {/* Section des filtres sélectionnés */}
+                        {(selectedCategories.length > 0 || selectedAttributes.length > 0) && (
+                            <div className="selected-filters">
+                                {selectedCategories.map((categoryId: number) => {
+                                    const category = uniqueCategories.find(cat => cat.id === categoryId);
+                                    return category ? (
+                                        <IonChip
+                                            key={`category-${category.id}`}
+                                            color="secondary"
+                                            onClick={() => handleCategoryChange(category.id)}
+                                            className="selected-chip"
+                                        >
+                                            <IonLabel>{getTranslation(category.slug, 'categories')}</IonLabel>
+                                            <IonIcon icon={closeIcon} />
+                                        </IonChip>
+                                    ) : null;
+                                })}
+                                {selectedAttributes.map((attributeId: number) => {
+                                    const attribute = uniqueAttributes.find(attr => attr.id === attributeId);
+                                    return attribute ? (
+                                        <IonChip
+                                            key={`attribute-${attribute.id}`}
+                                            color="primary"
+                                            onClick={() => handleAttributeChange(attribute.id)}
+                                            className="selected-chip"
+                                        >
+                                            <IonLabel>{getTranslation(attribute.slug, 'attributes')}</IonLabel>
+                                            <IonIcon icon={closeIcon} />
+                                        </IonChip>
+                                    ) : null;
+                                })}
                             </div>
                         )}
+
+                        <div className="grid-container">
+                            {sortedFilteredPlaces.length > 0 ? (
+                                <Grid
+                                    className="no-scrollbar"
+                                    columnCount={COLUMN_COUNT}
+                                    columnWidth={ITEM_WIDTH}
+                                    height={LIST_HEIGHT}
+                                    rowCount={rowCount}
+                                    rowHeight={rowHeight}
+                                    width={containerWidth}
+                                >
+                                    {Cell}
+                                </Grid>
+                            ) : (
+                                <div className="no-results">
+                                    <p>Oops, aucun résultat ne correspond ! 😕</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
+                {isInteracting && (
+                    <div className="loading-overlay">
+                        <IonSpinner name="crescent" />
+                    </div>
+                )}
             </IonContent>
         </IonPage>
     );

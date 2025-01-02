@@ -1,15 +1,116 @@
+/* src/styles/pages/Feed.css */
+
+/* Conteneur principal utilisant Flexbox */
+.feed-layout {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    /* Hauteur totale de la fenêtre */
+}
+
+/* Panneau de filtres fixe à gauche */
+.filter-panel {
+    width: 300px;
+    /* Largeur fixe du panneau de filtres */
+    background-color: #f8f8f8;
+    /* Couleur de fond */
+    border-right: 1px solid #ddd;
+    /* Bordure droite pour séparation */
+    overflow-y: auto;
+    /* Défilement vertical si contenu déborde */
+    padding: 16px;
+    /* Espacement interne */
+}
+
+/* Contenu principal à droite */
+.main-content {
+    flex-grow: 1;
+    /* Prend tout l'espace restant */
+    display: flex;
+    flex-direction: column;
+    /* Organisation verticale */
+    overflow: hidden;
+    /* Empêche le débordement */
+}
+
+/* Conteneur de la barre de recherche */
+.search-bar-container {
+    padding: 16px;
+    border-bottom: 1px solid #ddd;
+    /* Bordure inférieure */
+    background-color: #fff;
+    /* Couleur de fond */
+    z-index: 1;
+    /* Assure que la barre de recherche reste au-dessus */
+}
+
+/* Conteneur de la grille de cartes */
+.grid-container {
+    flex-grow: 1;
+    /* Prend tout l'espace restant sous la barre de recherche */
+    padding: 16px;
+    overflow: hidden;
+    /* Empêche le débordement */
+}
+
 /* Masquer la barre de défilement pour le composant Grid */
 .no-scrollbar {
-    /* Pour Firefox */
     scrollbar-width: none;
-    /* Masque la barre de défilement */
+    /* Firefox */
     -ms-overflow-style: none;
-    /* Pour Internet Explorer et Edge */
-
-    /* Pour les navigateurs basés sur WebKit (Chrome, Safari, Opera) */
+    /* Internet Explorer et Edge */
 }
 
 .no-scrollbar::-webkit-scrollbar {
     display: none;
-    /* Masque la barre de défilement */
+    /* Chrome, Safari, Opera */
+}
+
+/* Style pour les messages "Aucun résultat" */
+.no-results {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: #888;
+    font-size: 1.2em;
+}
+
+/* Styles responsives */
+@media screen and (max-width: 768px) {
+    .filter-panel {
+        width: 250px;
+        /* Ajuste la largeur pour les écrans plus petits */
+        padding: 12px;
+        /* Réduit le padding */
+    }
+
+    .search-bar-container {
+        padding: 12px;
+        /* Réduit le padding */
+    }
+
+    .filter-panel ion-toggle {
+        --handle-background: var(--ion-color-primary-shade);
+        --background-checked: var(--ion-color-primary-tint);
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .filter-panel {
+        width: 200px;
+        /* Réduit davantage la largeur pour les très petits écrans */
+        padding: 10px;
+        /* Réduit le padding */
+    }
+
+    .search-bar-container {
+        padding: 10px;
+        /* Réduit le padding */
+    }
+
+    .filter-panel ion-toggle {
+        --background-checked: var(--ion-color-primary);
+        --handle-background: var(--ion-color-primary);
+    }
 }
