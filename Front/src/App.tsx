@@ -70,7 +70,7 @@ const App: React.FC = () => {
             <Route path="/:lang/feed" component={Feed} exact />
             <Route path="/:lang/feed/city/:slug" component={Feed} exact />
 
-            <Route path="/:lang/destinations" component={MapDisplay} exact />
+            <Route path="/:lang/destinations" component={Tab3} exact />
             <Route path="/:lang/city" component={CitiesDisplay} exact />
             <Route path="/:lang/account" component={Tab1} exact />
 

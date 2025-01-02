@@ -1,60 +1,59 @@
-import React, { useEffect, useState } from 'react';
-import { IonContent, IonPage, IonSpinner } from '@ionic/react';
-import { firestore } from '../config/firebaseconfig'; // Assurez-vous que le chemin est correct
-import { doc, getDoc } from 'firebase/firestore';
+import React, { useContext, useState } from 'react';
+import { GeolocationContext } from '../context/geolocationContext';
+import { useCity } from '../context/cityContext';
 
 const Tab3: React.FC = () => {
-  const [data, setData] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const { nearestCitySlug, error } = useContext(GeolocationContext);
+  const { city, setCityPreviewAndFetchData, isPreview, places, fetchAllPlaces } = useCity();
+  const [citySlug, setCitySlug] = useState('');
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        console.log('Tentative de récupération des données depuis Firestore...');
+  const handleShowNearestCity = () => {
+    console.log('handleShowNearestCity called');
+    if (error) {
+      console.log(`Error: ${error}`);
+      alert(`Error: ${error}`);
+    } else {
+      console.log(`Nearest city slug: ${nearestCitySlug}`);
+      alert(`Nearest city slug: ${nearestCitySlug}`);
+    }
+  };
 
-        // Référence au document Firestore
-        const docRef = doc(firestore, 'tomexplore', 'ANl0D1aPYGBQkkvBisG2');
-        console.log('Référence du document obtenue :', docRef);
-
-        // Lecture du document
-        const docSnapshot = await getDoc(docRef);
-        console.log('Snapshot du document récupéré :', docSnapshot);
-
-        if (docSnapshot.exists()) {
-          const docData = docSnapshot.data();
-          console.log('Données du document Firestore :', docData);
-          setData(docData?.message || 'Aucune donnée trouvée.');
-        } else {
-          console.warn('Document non trouvé dans Firestore.');
-          setData('Document non trouvé.');
+  const handleRequestGeolocation = () => {
+    console.log('handleRequestGeolocation called');
+    if ("geolocation" in navigator) {
+      console.log('Geolocation is supported by the browser');
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log(`Geolocation successful: Latitude=${position.coords.latitude}, Longitude=${position.coords.longitude}`);
+          alert(`Geolocation successful!\nLatitude: ${position.coords.latitude}\nLongitude: ${position.coords.longitude}`);
+        },
+        (err) => {
+          console.log(`Geolocation error: ${err.message}`);
+          alert(`Geolocation error: ${err.message}`);
         }
-      } catch (error) {
-        console.error('Erreur lors de la lecture du document Firestore :', error);
-        setData('Erreur lors de la lecture des données.');
-      } finally {
-        setLoading(false);
-      }
-    };
+      );
+    } else {
+      console.log('Geolocation is not supported by the browser');
+      alert('Geolocation is not supported by your browser.');
+    }
+  };
 
-    fetchData();
-  }, []);
+  const handleFetchCity = async () => {
+    console.log(`Fetching city with slug: ${citySlug}`);
+    await setCityPreviewAndFetchData(citySlug);
+    await fetchAllPlaces();
+  };
 
   return (
-    <IonPage>
-      <IonContent className="ion-padding">
-        {loading ? (
-          <>
-            <IonSpinner name="crescent" />
-            <p>Chargement des données Firestore...</p>
-          </>
-        ) : (
-          <div>
-            <h2>Données Firestore :</h2>
-            <p>{data}</p>
-          </div>
-        )}
-      </IonContent>
-    </IonPage>
+    <div style={{ padding: '20px' }}>
+      <h1>Geolocation Context Tester</h1>
+      <button onClick={handleShowNearestCity} style={{ margin: '10px' }}>Show Nearest City</button>
+      <button onClick={handleRequestGeolocation} style={{ margin: '10px' }}>Request Geolocation</button>
+      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+      {!error && nearestCitySlug && <p>Nearest City: {nearestCitySlug}</p>}
+
+
+    </div>
   );
 };
 

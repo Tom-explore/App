@@ -98,9 +98,8 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
             slidesArray.push({ type: 'place', content: place });
         });
 
-        if (hasMore) {
-            slidesArray.push({ type: 'see-more' });
-        }
+        slidesArray.push({ type: 'see-more' });
+
 
         if (!isPreview && slidesArray.length === 0) {
             slidesArray.push({ type: 'no-results' });

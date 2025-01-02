@@ -6,7 +6,7 @@ import { CityProvider } from './context/cityContext';
 import { TripProvider } from './context/tripContext';
 import { UserProvider } from './context/userContext';
 import { FeedProvider } from './context/feedContext';
-
+import GeolocationProvider from './context/geolocationContext';
 const container = document.getElementById('root');
 const root = createRoot(container!);
 
@@ -15,13 +15,15 @@ root.render(
     <UserProvider>
       <LanguageProvider>
         <CityProvider>
-          <TripProvider>
-            <FeedProvider>
+          <GeolocationProvider>
+            <TripProvider>
+              <FeedProvider>
 
-              <App />
+                <App />
 
-            </FeedProvider>
-          </TripProvider>
+              </FeedProvider>
+            </TripProvider>
+          </GeolocationProvider>
         </CityProvider>
       </LanguageProvider>
     </UserProvider>

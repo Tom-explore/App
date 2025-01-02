@@ -1,4 +1,4 @@
-/* src/pages/Feed.tsx */
+// src/components/Feed.tsx
 
 import React, {
     useEffect,
@@ -6,7 +6,8 @@ import React, {
     useMemo,
     useRef,
     useCallback,
-    useLayoutEffect
+    useLayoutEffect,
+    useContext
 } from 'react';
 import {
     IonContent,
@@ -24,7 +25,7 @@ import {
 import { FixedSizeGrid as Grid } from 'react-window';
 import { useIonRouter } from '@ionic/react';
 import { useParams } from 'react-router';
-import { chevronBackOutline, close as closeIcon } from 'ionicons/icons'; // Importer l'icône de fermeture
+import { chevronBackOutline, close as closeIcon } from 'ionicons/icons';
 import { useCity } from '../context/cityContext';
 import SearchBar from '../components/SearchBar';
 import FeedCard from '../components/FeedCard';
@@ -33,11 +34,23 @@ import { Place } from '../types/PlacesInterfaces';
 import { useLanguage } from '../context/languageContext';
 import FilterPlaces from '../components/FilterPlaces';
 import { Category, Attribute } from '../types/CategoriesAttributesInterfaces';
-import useFilterPlaces from '../util/useFilterPlaces'; // Assurez-vous que le chemin est correct
+import useFilterPlaces from '../util/useFilterPlaces';
+import { GeolocationContext } from '../context/geolocationContext';
 
 const Feed: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
     const router = useIonRouter();
+
+    const {
+        nearestCitySlug,
+        geolocation,
+        isGeolocationEnabled,
+        loading: geoLoading,
+        error: geoError,
+        requestIPGeolocation,
+        requestBrowserGeolocation,
+        disableBrowserGeolocation,
+    } = useContext(GeolocationContext);
 
     const {
         places,
@@ -51,7 +64,6 @@ const Feed: React.FC = () => {
 
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [filteredPlaces, setFilteredPlaces] = useState<Place[]>([]);
-
     const [isInteracting, setIsInteracting] = useState<boolean>(false);
 
     const allPlaces = useMemo(() => {
@@ -63,27 +75,46 @@ const Feed: React.FC = () => {
     }, [
         places.restaurantsBars,
         places.touristAttractions
-        // places.hotels, // si vous gérez les hôtels
+        // places.hotels, // if managing hotels
     ]);
 
     useEffect(() => {
         setFilteredPlaces(allPlaces);
     }, [allPlaces]);
 
-    // 1. Sélection de la ville (slug) si on arrive directement sur /feed/...
-    //    Si la ville est déjà définie (city != null), on ne ré-initialise pas.
+    // 1. Handle city selection based on URL slug or geolocation
     useEffect(() => {
         if (slug && !city) {
-            console.log("setCityPreview");
+            console.log("[Feed] Setting city based on URL slug:", slug);
             setCityPreviewAndFetchData(slug);
         }
     }, [slug, city, setCityPreviewAndFetchData]);
 
-    // 2. Une fois la ville définie, si *toutes* les places ne sont pas encore chargées,
-    //    on appelle *fetchAllPlaces*. Sinon, on réutilise directement le *allPlaces* du contexte.
+    // 2. If no slug is provided, use geolocation to determine the city
+    useEffect(() => {
+        if (!slug) {
+            console.log("[Feed] No slug provided, determining city based on geolocation.");
+            if (geoLoading) {
+                console.log("[Feed] Geolocation is still loading.");
+                return;
+            }
+            if (geoError) {
+                console.error('[Feed] Geolocation error:', geoError);
+                return;
+            }
+            if (nearestCitySlug && !city) {
+                console.log("[Feed] Setting city based on geolocation:", nearestCitySlug);
+                setCityPreviewAndFetchData(nearestCitySlug);
+            } else if (!nearestCitySlug && !geoLoading && !geoError) {
+                console.warn('[Feed] Nearest city slug is not available.');
+            }
+        }
+    }, [slug, geoLoading, geoError, nearestCitySlug, setCityPreviewAndFetchData, city]);
+
+    // 3. Once the city is defined, fetch all places if not already loaded
     useEffect(() => {
         if (city && !isAllPlacesLoaded) {
-            console.log("fetchAllPlaces");
+            console.log("[Feed] Fetching all places for city:", city.slug);
             fetchAllPlaces();
         }
     }, [city, isAllPlacesLoaded, fetchAllPlaces]);
@@ -110,7 +141,7 @@ const Feed: React.FC = () => {
         return filtered;
     }, [filteredPlaces, searchQuery, allPlaces]);
 
-    // ----- Extraction des catégories & attributs -----
+    // ----- Extract categories & attributes -----
     const uniqueCategories = useMemo(() => {
         const categoriesMap = new Map<number, Category>();
         allPlaces.forEach(place => {
@@ -135,7 +166,7 @@ const Feed: React.FC = () => {
         return Array.from(attributesMap.values());
     }, [allPlaces]);
 
-    // ----- Utilisation du hook useFilterPlaces -----
+    // ----- Use the custom useFilterPlaces hook -----
     const {
         selectedCategories,
         selectedAttributes,
@@ -151,7 +182,7 @@ const Feed: React.FC = () => {
         allPlaces: allPlaces
     });
 
-    // ----- Mise en page avec react-window -----
+    // ----- Layout with react-window -----
     const COLUMN_COUNT = 2;
     const ITEM_HEIGHT = 450;
     const HORIZONTAL_GAP_PERCENT = 2;
@@ -223,6 +254,33 @@ const Feed: React.FC = () => {
         );
     };
 
+    // Helper to get city name with translation if available
+    const getCityName = (): string => {
+        if (city && 'translation' in city && city.translation?.name) {
+            console.log("récup city name");
+            return city.translation.name;
+        } else if (city && 'name' in city) {
+            return city.name;
+        }
+        return '';
+    };
+
+    // Using useMemo instead of useEffect and state for cityName
+    const cityName = useMemo(() => {
+        const name = getCityName();
+        console.log('Computed cityName:', name);
+        return name;
+    }, [city]);
+
+    // Handlers for Geolocation Buttons
+    const handleEnableGeolocation = () => {
+        requestBrowserGeolocation();
+    };
+
+    const handleDisableGeolocation = () => {
+        disableBrowserGeolocation();
+    };
+
     return (
         <IonPage>
             <IonHeader>
@@ -237,6 +295,49 @@ const Feed: React.FC = () => {
             </IonHeader>
 
             <IonContent fullscreen className="ion-no-padding">
+                {/* Display loading indicator if determining location */}
+                {(geoLoading) && (
+                    <div className="loading-geolocation">
+                        <IonSpinner name="crescent" />
+                        <p>Détermination de votre localisation...</p>
+                    </div>
+                )}
+
+                {/* Handle geolocation error */}
+                {(geoError) && (
+                    <div className="geolocation-error">
+                        <p>Impossible de déterminer votre localisation. Veuillez réessayer.</p>
+                        <IonButton onClick={requestIPGeolocation} disabled={geoLoading}>
+                            Réessayer la géolocalisation par IP
+                        </IonButton>
+                    </div>
+                )}
+
+                {/* Informational Text and Geolocation Buttons */}
+                {(!slug && city) && (
+                    <div className="info-geolocation">
+                        <p>Découvertes à {cityName}</p>
+                        {!isGeolocationEnabled ? (
+                            <IonButton
+                                onClick={handleEnableGeolocation}
+                                disabled={geoLoading}
+                                className="geolocation-button"
+                            >
+                                {geoLoading ? <IonSpinner name="crescent" /> : "Pour vous aiguiller plus précisément, pensez à activer la géolocalisation !"}
+                            </IonButton>
+                        ) : (
+                            <IonButton
+                                onClick={handleDisableGeolocation}
+                                disabled={geoLoading}
+                                className="geolocation-button"
+                                color="danger"
+                            >
+                                {geoLoading ? <IonSpinner name="crescent" /> : "Désactiver la géolocalisation"}
+                            </IonButton>
+                        )}
+                    </div>
+                )}
+
                 <div className="feed-layout">
                     <div className="filter-panel">
                         <FilterPlaces
@@ -322,6 +423,7 @@ const Feed: React.FC = () => {
             </IonContent>
         </IonPage>
     );
+
 };
 
 export default Feed;
