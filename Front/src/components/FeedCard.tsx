@@ -1,6 +1,6 @@
-/* src/components/FeedCard.tsx */
+// src/components/FeedCard.tsx
 
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState } from 'react';
 import {
     IonCard,
     IonCardTitle,
@@ -11,7 +11,7 @@ import {
     IonItem,
     IonIcon
 } from '@ionic/react';
-import { pinOutline, starHalfOutline, starSharp } from 'ionicons/icons';
+import { pinOutline, starHalfOutline, starSharp, navigateOutline } from 'ionicons/icons';
 import '../styles/components/FeedCard.css';
 import { Place } from '../types/PlacesInterfaces';
 import { useLanguage } from '../context/languageContext';
@@ -30,10 +30,11 @@ interface FeedCardProps {
     handleCategoryChange: (categoryId: number) => void;
     handleAttributeChange: (attributeId: number) => void;
     getTranslation: (slug: string, type: 'attributes' | 'categories') => string;
+    distance?: number; // New optional prop
 }
 
 const MAX_VISIBLE_HASHTAGS = 4;
-const MAX_DESCRIPTION_LENGTH = 150; // Définir la longueur maximale de la description affichée initialement
+const MAX_DESCRIPTION_LENGTH = 150; // Define maximum description length initially displayed
 
 const FeedCard: React.FC<FeedCardProps> = ({
     place,
@@ -41,13 +42,14 @@ const FeedCard: React.FC<FeedCardProps> = ({
     selectedAttributes,
     handleCategoryChange,
     handleAttributeChange,
-    getTranslation
+    getTranslation,
+    distance
 }) => {
     const swiperRef = useRef<SwiperCore | null>(null);
     const [hashtagsExpanded, setHashtagsExpanded] = useState(false);
     const [descriptionExpanded, setDescriptionExpanded] = useState(false);
 
-    const languageID = useLanguage().language.id; // Récupère l'ID de langue du contexte
+    const languageID = useLanguage().language.id; // Get language ID from context
 
     const handleImageClick = (index: number) => {
         if (swiperRef.current) {
@@ -55,7 +57,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
         }
     };
 
-    // Combiner attributs et catégories en un seul tableau de hashtags
+    // Combine attributes and categories into a single array of hashtags
     const hashtags = [
         ...place.attributes.map(attr => ({
             type: 'attribute' as const,
@@ -78,7 +80,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
         setHashtagsExpanded(prev => !prev);
     };
 
-    // Fonction pour déterminer si un hashtag est actif
+    // Function to determine if a hashtag is active
     const isHashtagActive = (hashtag: typeof hashtags[0]): boolean => {
         if (hashtag.type === 'category') {
             return selectedCategories.includes(hashtag.id);
@@ -87,7 +89,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
         }
     };
 
-    // Fonction pour gérer le clic sur un hashtag
+    // Function to handle hashtag click
     const handleHashtagClick = (hashtag: typeof hashtags[0]) => {
         if (hashtag.type === 'category') {
             handleCategoryChange(hashtag.id);
@@ -96,7 +98,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
         }
     };
 
-    const description = place.description_scrapio ?? ''; // Fournir une chaîne vide par défaut
+    const description = place.description_scrapio ?? ''; // Provide an empty string by default
     const isDescriptionLong = description.length > MAX_DESCRIPTION_LENGTH;
     const visibleDescription = descriptionExpanded
         ? description
@@ -135,7 +137,17 @@ const FeedCard: React.FC<FeedCardProps> = ({
                 <IonItem lines="none" className="title-item">
                     <IconFinder categories={place.categories} attributes={place.attributes} />
                     <div>
-                        <IonCardTitle>{place.translation?.name}</IonCardTitle>
+                        <IonCardTitle>
+                            {place.translation?.name}
+                            {distance !== undefined && (
+                                <span className="distance-container">
+                                    <IonIcon icon={navigateOutline} className="travel-icon" />
+                                    <span className="distance-text">
+                                        {distance.toFixed(2)} km
+                                    </span>
+                                </span>
+                            )}
+                        </IonCardTitle>
                         <IonCardSubtitle>
                             <IonIcon icon={pinOutline} /> {place.address}
                         </IonCardSubtitle>
@@ -244,6 +256,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
                 </IonCardContent>
             </div>
         </IonCard>
-    );
+    )
 };
+
 export default FeedCard;

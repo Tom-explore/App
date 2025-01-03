@@ -50,27 +50,34 @@
 /* Styles spécifiques pour les appareils mobiles */
 @media (max-width: 768px) {
     .custom-marker-icon {
-        transition: none !important; /* Supprime les transitions pour éviter les problèmes */
+        transition: none !important;
+        /* Supprime les transitions pour éviter les problèmes */
     }
 
     .popup-content {
-        max-width: 150px; /* Réduit la largeur de la popup */
-        padding: 8px; /* Ajuste l'espace intérieur */
+        max-width: 150px;
+        /* Réduit la largeur de la popup */
+        padding: 8px;
+        /* Ajuste l'espace intérieur */
     }
 
     .popup-title {
-        font-size: 14px; /* Réduit la taille du texte pour mobile */
+        font-size: 14px;
+        /* Réduit la taille du texte pour mobile */
     }
 
     .popup-description {
-        font-size: 12px; /* Réduit également la description */
+        font-size: 12px;
+        /* Réduit également la description */
     }
 
     .popup-image {
-        border-radius: 6px; /* Ajuste le rayon des coins de l'image */
+        border-radius: 6px;
+        /* Ajuste le rayon des coins de l'image */
     }
 
     .leaflet-container {
-        touch-action: none; /* Améliore le comportement du tactile */
+        touch-action: none;
+        /* Améliore le comportement du tactile */
     }
 }

@@ -25,7 +25,7 @@ import {
 import { FixedSizeGrid as Grid } from 'react-window';
 import { useIonRouter } from '@ionic/react';
 import { useParams } from 'react-router';
-import { chevronBackOutline, close as closeIcon } from 'ionicons/icons';
+import { chevronBackOutline, close as closeIcon, chevronForwardOutline } from 'ionicons/icons';
 import { useCity } from '../context/cityContext';
 import SearchBar from '../components/SearchBar';
 import FeedCard from '../components/FeedCard';
@@ -42,14 +42,14 @@ const Feed: React.FC = () => {
     const router = useIonRouter();
 
     const {
-        nearestCitySlug,
         geolocation,
+        nearestCitySlug,
         isGeolocationEnabled,
         loading: geoLoading,
         error: geoError,
-        requestIPGeolocation,
         requestBrowserGeolocation,
         disableBrowserGeolocation,
+        calculateDistanceFromPlace,
     } = useContext(GeolocationContext);
 
     const {
@@ -61,6 +61,7 @@ const Feed: React.FC = () => {
     } = useCity();
 
     const { language } = useLanguage();
+    const languageCode = language.code; // Extracted language code
 
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [filteredPlaces, setFilteredPlaces] = useState<Place[]>([]);
@@ -131,6 +132,7 @@ const Feed: React.FC = () => {
 
         filtered = filtered.filter(place => (place.reviews_google_count || 0) >= 100);
 
+        // Remove distance-based sorting
         filtered.sort((a, b) => {
             if (b.reviews_google_rating !== a.reviews_google_rating) {
                 return b.reviews_google_rating - a.reviews_google_rating;
@@ -233,6 +235,12 @@ const Feed: React.FC = () => {
             return null;
         }
         const place = sortedFilteredPlaces[index];
+
+        // Calculate distance if geolocation is available
+        const distance = geolocation
+            ? calculateDistanceFromPlace(geolocation, { lat: place.lat, lng: place.lng })
+            : undefined;
+
         return (
             <div
                 style={{
@@ -249,6 +257,7 @@ const Feed: React.FC = () => {
                     handleCategoryChange={handleCategoryChange}
                     handleAttributeChange={handleAttributeChange}
                     getTranslation={getTranslation}
+                    distance={distance} // Pass distance prop
                 />
             </div>
         );
@@ -295,48 +304,6 @@ const Feed: React.FC = () => {
             </IonHeader>
 
             <IonContent fullscreen className="ion-no-padding">
-                {/* Display loading indicator if determining location */}
-                {(geoLoading) && (
-                    <div className="loading-geolocation">
-                        <IonSpinner name="crescent" />
-                        <p>Détermination de votre localisation...</p>
-                    </div>
-                )}
-
-                {/* Handle geolocation error */}
-                {(geoError) && (
-                    <div className="geolocation-error">
-                        <p>Impossible de déterminer votre localisation. Veuillez réessayer.</p>
-                        <IonButton onClick={requestIPGeolocation} disabled={geoLoading}>
-                            Réessayer la géolocalisation par IP
-                        </IonButton>
-                    </div>
-                )}
-
-                {/* Informational Text and Geolocation Buttons */}
-                {(!slug && city) && (
-                    <div className="info-geolocation">
-                        <p>Découvertes à {cityName}</p>
-                        {!isGeolocationEnabled ? (
-                            <IonButton
-                                onClick={handleEnableGeolocation}
-                                disabled={geoLoading}
-                                className="geolocation-button"
-                            >
-                                {geoLoading ? <IonSpinner name="crescent" /> : "Pour vous aiguiller plus précisément, pensez à activer la géolocalisation !"}
-                            </IonButton>
-                        ) : (
-                            <IonButton
-                                onClick={handleDisableGeolocation}
-                                disabled={geoLoading}
-                                className="geolocation-button"
-                                color="danger"
-                            >
-                                {geoLoading ? <IonSpinner name="crescent" /> : "Désactiver la géolocalisation"}
-                            </IonButton>
-                        )}
-                    </div>
-                )}
 
                 <div className="feed-layout">
                     <div className="filter-panel">
@@ -359,6 +326,54 @@ const Feed: React.FC = () => {
                                 placeholder="Rechercher un lieu"
                             />
                         </div>
+                        {/* Display loading indicator if determining location */}
+                        {(geoLoading) && (
+                            <div className="loading-geolocation">
+                                <IonSpinner name="crescent" />
+                                <p>Détermination de votre localisation...</p>
+                            </div>
+                        )}
+
+                        {/* ----- Modified Geolocation Information Section ----- */}
+                        {(!slug && city) && (
+                            <div className="info-geolocation">
+                                <p>
+                                    Géolocalisation proposée :{' '}
+                                    <IonButton
+                                        routerLink={`/${languageCode}/city/${city.slug}`}
+                                        fill="clear"
+                                        className="city-link-button"
+                                    >
+                                        {cityName} <IonIcon icon={chevronForwardOutline} />
+                                    </IonButton>
+                                </p>
+                                <IonButton
+                                    routerLink={`/${languageCode}/city`}
+                                    className="see-all-destinations-button"
+                                >
+                                    Voir les autres destinations
+                                </IonButton>
+                                {!isGeolocationEnabled ? (
+                                    <IonButton
+                                        onClick={handleEnableGeolocation}
+                                        disabled={geoLoading}
+                                        className="geolocation-button"
+                                    >
+                                        {geoLoading ? <IonSpinner name="crescent" /> : "Pour vous aiguiller plus précisément, pensez à activer la géolocalisation !"}
+                                    </IonButton>
+                                ) : (
+                                    <IonButton
+                                        onClick={handleDisableGeolocation}
+                                        disabled={geoLoading}
+                                        className="geolocation-button"
+                                        color="danger"
+                                    >
+                                        {geoLoading ? <IonSpinner name="crescent" /> : "Désactiver la géolocalisation"}
+                                    </IonButton>
+                                )}
+                            </div>
+                        )}
+                        {/* ----- End of Modified Section ----- */}
 
                         {/* Section des filtres sélectionnés */}
                         {(selectedCategories.length > 0 || selectedAttributes.length > 0) && (

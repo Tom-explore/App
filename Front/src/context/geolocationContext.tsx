@@ -1,5 +1,3 @@
-// context/geolocationProvider.tsx
-
 import React, {
     createContext,
     useState,
@@ -18,6 +16,7 @@ interface GeolocationContextProps {
     requestIPGeolocation: () => void;
     requestBrowserGeolocation: () => void;
     disableBrowserGeolocation: () => void;
+    calculateDistanceFromPlace: (userCoords: { lat: number; lng: number }, placeCoords: { lat: number; lng: number }) => number;
 }
 
 export const GeolocationContext = createContext<GeolocationContextProps>({
@@ -29,6 +28,7 @@ export const GeolocationContext = createContext<GeolocationContextProps>({
     requestIPGeolocation: () => { },
     requestBrowserGeolocation: () => { },
     disableBrowserGeolocation: () => { },
+    calculateDistanceFromPlace: () => 0, // Default implementation
 });
 
 interface GeolocationProviderProps {
@@ -63,6 +63,19 @@ const GeolocationProvider: React.FC<GeolocationProviderProps> = ({ children }) =
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         const d = R * c; // Distance in km
         return d;
+    };
+
+    // New function to calculate distance between user and a place
+    const calculateDistanceFromPlace = (
+        userCoords: { lat: number; lng: number },
+        placeCoords: { lat: number; lng: number }
+    ): number => {
+        return getDistanceFromLatLonInKm(
+            userCoords.lat,
+            userCoords.lng,
+            placeCoords.lat,
+            placeCoords.lng
+        );
     };
 
     // Function to find the nearest city based on coordinates
@@ -177,6 +190,7 @@ const GeolocationProvider: React.FC<GeolocationProviderProps> = ({ children }) =
                 requestIPGeolocation,
                 requestBrowserGeolocation,
                 disableBrowserGeolocation,
+                calculateDistanceFromPlace, // Added the function to context
             }}
         >
             {children}

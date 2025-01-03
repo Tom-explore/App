@@ -59,7 +59,16 @@
     display: flex;
     align-items: center;
     height: 60px;
-    /* Hauteur fixe */
+    background-color: #888;
+    /* Fond gris */
+    padding: 0 16px;
+    /* Augmentation du padding de 8px à 16px */
+    border-top-right-radius: 4px;
+    /* Arrondir les coins si nécessaire */
+    border-bottom-left-radius: 0;
+    /* Pas d'arrondi en bas à gauche */
+    position: relative;
+    /* Pour positionner la distance */
 }
 
 .title-item>div {
@@ -68,28 +77,51 @@
 }
 
 ion-card-title {
+    display: flex;
+    justify-content: space-between;
+    /* Espace entre le titre et la distance */
+    align-items: center;
     margin: 0;
     line-height: 1.2;
     font-size: 1.1rem;
     font-weight: 600;
-    color: #333;
+    color: #fff;
+    /* Texte blanc */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    padding-right: 16px;
+    /* Ajout d'un padding à droite pour plus d'espace */
+}
+
+.distance-container {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #fff;
+    /* Texte blanc */
+    margin-left: 350px;
+    /* Ajout d'une marge droite de 8px */
+}
+
+.travel-icon {
+    margin-right: 4px;
+    font-size: 1rem;
 }
 
 ion-card-subtitle {
     margin: 0;
     line-height: 1.2;
     font-size: 0.85rem;
-    color: #777;
+    color: #ddd;
+    /* Couleur plus claire pour le sous-titre */
     display: flex;
     align-items: center;
 }
 
 ion-card-subtitle ion-icon {
     margin-right: 4px;
-    color: #555;
+    color: #ccc;
 }
 
 /* Hashtags */
