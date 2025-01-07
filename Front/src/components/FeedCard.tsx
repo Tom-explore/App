@@ -23,6 +23,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInstagram, faGoogle } from '@fortawesome/free-brands-svg-icons';
 import { faGlobe } from '@fortawesome/free-solid-svg-icons';
 
+// Import du composant Compass
+import Compass from './Compass';
+
 interface FeedCardProps {
     place: Place;
     selectedCategories: number[];
@@ -49,7 +52,8 @@ const FeedCard: React.FC<FeedCardProps> = ({
     const [hashtagsExpanded, setHashtagsExpanded] = useState(false);
     const [descriptionExpanded, setDescriptionExpanded] = useState(false);
 
-    const languageID = useLanguage().language.id; // Get language ID from context
+    // Détecte si on est sur un device mobile (simple regex user-agent)
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     const handleImageClick = (index: number) => {
         if (swiperRef.current) {
@@ -57,7 +61,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
         }
     };
 
-    // Combine attributes and categories into a single array of hashtags
+    // Combine attributes et categories en un tableau commun
     const hashtags = [
         ...place.attributes.map(attr => ({
             type: 'attribute' as const,
@@ -80,7 +84,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
         setHashtagsExpanded(prev => !prev);
     };
 
-    // Function to determine if a hashtag is active
+    // Vérifie si un hashtag est actif
     const isHashtagActive = (hashtag: typeof hashtags[0]): boolean => {
         if (hashtag.type === 'category') {
             return selectedCategories.includes(hashtag.id);
@@ -89,7 +93,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
         }
     };
 
-    // Function to handle hashtag click
+    // Gestion du clic sur un hashtag
     const handleHashtagClick = (hashtag: typeof hashtags[0]) => {
         if (hashtag.type === 'category') {
             handleCategoryChange(hashtag.id);
@@ -98,7 +102,8 @@ const FeedCard: React.FC<FeedCardProps> = ({
         }
     };
 
-    const description = place.description_scrapio ?? ''; // Provide an empty string by default
+    // Gestion de la description
+    const description = place.description_scrapio ?? '';
     const isDescriptionLong = description.length > MAX_DESCRIPTION_LENGTH;
     const visibleDescription = descriptionExpanded
         ? description
@@ -109,7 +114,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
     };
 
     return (
-        <IonCard className="feed-card horizontal-card">
+        <IonCard className="feed-card">
             <div className="image-container">
                 <Swiper
                     modules={[Navigation, Pagination, Scrollbar, A11y]}
@@ -135,19 +140,45 @@ const FeedCard: React.FC<FeedCardProps> = ({
 
             <div className="text-container">
                 <IonItem lines="none" className="title-item">
-                    <IconFinder categories={place.categories} attributes={place.attributes} />
+                    <IconFinder
+                        categories={place.categories}
+                        attributes={place.attributes}
+                    />
                     <div>
                         <IonCardTitle>
                             {place.translation?.name}
+
+                            {/* Condition : si distance est défini */}
                             {distance !== undefined && (
-                                <span className="distance-container">
-                                    <IonIcon icon={navigateOutline} className="travel-icon" />
-                                    <span className="distance-text">
-                                        {distance.toFixed(2)} km
-                                    </span>
-                                </span>
+                                <>
+                                    {/* Sur mobile => on affiche le compas */}
+                                    {isMobile ? (
+                                        // Mini conteneur pour le compas
+                                        <span className="distance-mobile">
+                                            <Compass
+                                                targetCoordinates={{
+                                                    lat: 47.731914,
+                                                    lng: -2.8555392,
+                                                }}
+                                            />
+                                            <span className="distance-text">
+                                                {distance.toFixed(2)} km
+                                            </span>
+                                        </span>
+
+                                    ) : (
+                                        // Sur desktop => icône + distance
+                                        <span className="distance-container">
+                                            <IonIcon icon={navigateOutline} className="travel-icon" />
+                                            <span className="distance-text">
+                                                {distance.toFixed(2)} km
+                                            </span>
+                                        </span>
+                                    )}
+                                </>
                             )}
                         </IonCardTitle>
+
                         <IonCardSubtitle>
                             <IonIcon icon={pinOutline} /> {place.address}
                         </IonCardSubtitle>
@@ -159,7 +190,13 @@ const FeedCard: React.FC<FeedCardProps> = ({
                         {visibleHashtags.map((hashtag, index) => (
                             <IonChip
                                 key={`${hashtag.type}-${hashtag.id}`}
-                                color={isHashtagActive(hashtag) ? (hashtag.type === 'attribute' ? 'primary' : 'secondary') : 'light'}
+                                color={
+                                    isHashtagActive(hashtag)
+                                        ? hashtag.type === 'attribute'
+                                            ? 'primary'
+                                            : 'secondary'
+                                        : 'light'
+                                }
                                 onClick={() => handleHashtagClick(hashtag)}
                                 className={isHashtagActive(hashtag) ? 'active-chip' : ''}
                             >
@@ -202,20 +239,21 @@ const FeedCard: React.FC<FeedCardProps> = ({
                     </IonCardContent>
                 )}
 
-                {place.reviews_google_rating !== undefined && place.reviews_google_count !== undefined && (
-                    <IonCardContent className="reviews">
-                        <div className="rating">
-                            <IonIcon icon={starSharp} color="warning" />
-                            <IonIcon icon={starSharp} color="warning" />
-                            <IonIcon icon={starSharp} color="warning" />
-                            <IonIcon icon={starSharp} color="warning" />
-                            <IonIcon icon={starHalfOutline} color="warning" />
-                            <IonLabel>
-                                {place.reviews_google_rating}⭐ ({place.reviews_google_count} avis)
-                            </IonLabel>
-                        </div>
-                    </IonCardContent>
-                )}
+                {place.reviews_google_rating !== undefined &&
+                    place.reviews_google_count !== undefined && (
+                        <IonCardContent className="reviews">
+                            <div className="rating">
+                                <IonIcon icon={starSharp} color="warning" />
+                                <IonIcon icon={starSharp} color="warning" />
+                                <IonIcon icon={starSharp} color="warning" />
+                                <IonIcon icon={starSharp} color="warning" />
+                                <IonIcon icon={starHalfOutline} color="warning" />
+                                <IonLabel>
+                                    {place.reviews_google_rating}⭐ ({place.reviews_google_count} avis)
+                                </IonLabel>
+                            </div>
+                        </IonCardContent>
+                    )}
 
                 <IonCardContent className="place-links">
                     <div className="links-container">
@@ -256,7 +294,8 @@ const FeedCard: React.FC<FeedCardProps> = ({
                 </IonCardContent>
             </div>
         </IonCard>
-    )
+    );
+
 };
 
 export default FeedCard;

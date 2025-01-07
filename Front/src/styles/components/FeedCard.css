@@ -1,362 +1,251 @@
-/* src/styles/components/FeedCard.css */
+/* src/styles/components/FeedCardMobile.css */
 
-/* ----- Card Horizontale avec Hauteur Fixe ----- */
-.feed-card.horizontal-card {
-    display: flex;
-    flex-direction: row;
-    margin: 0;
+/* Mobile-Only Feed Card Styling */
+.feed-card {
+    margin: 8px;
+    border-radius: 10px;
     overflow: hidden;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    background-color: #fafafa;
-    width: 100%;
-    height: 450px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
 }
 
-/* ----- Conteneur d'Images ----- */
+/* Image Container */
 .image-container {
-    flex: 0 0 35%;
+    width: 100%;
     position: relative;
-    height: 100%;
-    max-height: 450px;
-    /* Aligner avec la hauteur de la carte */
-    overflow: hidden;
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
 }
 
 .modal-photo-slider {
-    height: 100%;
+    width: 100%;
+    height: auto;
 }
 
 .image-slide {
-    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .modal-photo {
     width: 100%;
-    height: 100%;
+    height: auto;
     object-fit: cover;
-    display: block;
+    border-bottom: 1px solid #e0e0e0;
 }
 
-/* ----- Conteneur de Texte ----- */
+/* Text Container */
 .text-container {
-    flex: 1;
+    padding: 12px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    padding: 12px;
-    background-color: #fff;
-    height: 100%;
-    box-sizing: border-box;
+    gap: 8px;
 }
 
-/* ----- Sections Internes avec Hauteurs Fixes ----- */
-
-/* Titre + Adresse */
+/* Title Item */
 .title-item {
     display: flex;
-    align-items: center;
-    height: 60px;
-    background-color: #888;
-    /* Fond gris */
-    padding: 0 16px;
-    /* Augmentation du padding de 8px à 16px */
-    border-top-right-radius: 4px;
-    /* Arrondir les coins si nécessaire */
-    border-bottom-left-radius: 0;
-    /* Pas d'arrondi en bas à gauche */
-    position: relative;
-    /* Pour positionner la distance */
+    align-items: flex-start;
+    gap: 8px;
 }
 
-.title-item>div {
-    margin-left: 8px;
-    overflow: hidden;
+.title-item ion-icon {
+    font-size: 20px;
+    color: #3880ff;
+    margin-top: 2px;
 }
 
-ion-card-title {
+.title-item div {
+    flex: 1;
+}
+
+/* Card Title */
+.feed-card ion-card-title {
+    font-size: 1.1em;
+    font-weight: bold;
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    /* Espace entre le titre et la distance */
-    align-items: center;
-    margin: 0;
-    line-height: 1.2;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #fff;
-    /* Texte blanc */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding-right: 16px;
-    /* Ajout d'un padding à droite pour plus d'espace */
+    flex-wrap: wrap;
 }
 
-.distance-container {
+.distance-mobile {
     display: flex;
     align-items: center;
-    font-size: 0.9rem;
-    color: #fff;
-    /* Texte blanc */
-    margin-left: 350px;
-    /* Ajout d'une marge droite de 8px */
+    margin-top: 4px;
+}
+
+.distance-text {
+    font-size: 0.85em;
+    color: #555555;
+    margin-left: 4px;
 }
 
 .travel-icon {
-    margin-right: 4px;
-    font-size: 1rem;
+    font-size: 0.9em;
+    margin-right: 3px;
 }
 
-ion-card-subtitle {
-    margin: 0;
-    line-height: 1.2;
-    font-size: 0.85rem;
-    color: #ddd;
-    /* Couleur plus claire pour le sous-titre */
+/* Card Subtitle */
+.feed-card ion-card-subtitle {
     display: flex;
     align-items: center;
+    font-size: 0.9em;
+    color: #777777;
 }
 
-ion-card-subtitle ion-icon {
+.feed-card ion-card-subtitle ion-icon {
     margin-right: 4px;
-    color: #ccc;
+    font-size: 0.95em;
+    color: #555555;
 }
 
 /* Hashtags */
-.hashtags-section {
-    height: 40px;
-    /* Hauteur fixe */
-    overflow: hidden;
-}
-
 .hashtags {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
-    margin-bottom: 4px;
+    gap: 6px;
+    margin-top: 8px;
 }
 
-.hashtags ion-chip {
-    --padding-start: 8px;
-    --padding-end: 8px;
-    --inner-padding-end: 4px;
-    --inner-padding-start: 4px;
-    font-size: 0.65rem;
-    height: 24px;
-    min-width: 32px;
-    --border-radius: 12px;
-    line-height: 1;
-    padding: 0;
+.ion-chip {
+    --padding-start: 10px;
+    --padding-end: 10px;
+    --border-radius: 20px;
+    font-size: 0.75em;
+    height: 28px;
 }
 
-.more-chip,
-.less-chip {
+.active-chip {
+    /* Style for active chips */
+}
+
+.more-chip {
     cursor: pointer;
-    background-color: #f0f0f0;
-}
-
-.hashtags ion-chip ion-label {
-    padding: 0;
-    margin: 0;
 }
 
 /* Description */
-.description-section {
-    height: 80px;
-    /* Hauteur fixe */
-    overflow: hidden;
-    font-size: 0.85rem;
-    color: #666;
-    margin-top: 8px;
-    line-height: 1.5;
-}
-
-.description-section p {
-    margin: 0;
-    position: relative;
+.description p {
+    font-size: 0.9em;
+    color: #333333;
+    line-height: 1.4;
 }
 
 .toggle-description {
-    color: #007bff;
+    color: #3880ff;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: bold;
     margin-left: 5px;
 }
 
-.toggle-description:hover {
+.toggle-description:focus {
+    outline: none;
     text-decoration: underline;
 }
 
-/* Avis */
-.reviews-section {
-    height: 40px;
-    /* Hauteur fixe */
+/* Reviews */
+.reviews .rating {
     display: flex;
     align-items: center;
-    margin-top: 8px;
+    gap: 2px;
 }
 
-.rating {
+.reviews ion-icon {
+    font-size: 1em;
+}
+
+.reviews ion-label {
+    font-size: 0.85em;
+    color: #555555;
+    margin-left: 4px;
+}
+
+/* Place Links */
+.place-links .links-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.links-container a {
     display: flex;
     align-items: center;
-}
-
-.rating ion-icon {
-    margin-right: 4px;
-    font-size: 1.2em;
-}
-
-/* Liens */
-.links-section {
-    height: 40px;
-    /* Hauteur fixe */
-    display: flex;
-    align-items: center;
-    margin-top: 8px;
-}
-
-.place-links {
-    display: flex;
-    gap: 10px;
-}
-
-.place-links a {
-    display: flex;
-    align-items: center;
+    gap: 5px;
     text-decoration: none;
-    color: inherit;
+    padding: 8px 10px;
+    border-radius: 18px;
+    font-size: 0.85em;
+    transition: background-color 0.3s;
 }
 
-.place-links a span {
-    margin-left: 5px;
+.insta-link {
+    background-color: #E1306C;
+    color: #ffffff;
 }
 
-.place-links a:hover {
-    text-decoration: underline;
+.insta-link:hover {
+    background-color: #c12a5e;
 }
 
-/* ----- Responsive Design ----- */
-@media (max-width: 768px) {
-    .feed-card.horizontal-card {
-        flex-direction: column;
-        height: auto;
-        /* Ajuster la hauteur pour mobile si nécessaire */
-    }
-
-    .image-container {
-        flex: 0 0 100%;
-        height: 200px;
-        max-height: 200px;
-        border-top-right-radius: 0;
-        border-bottom-left-radius: 0;
-    }
-
-    .text-container {
-        padding: 10px;
-    }
-
-    .title-item {
-        height: 50px;
-    }
-
-    ion-card-title {
-        font-size: 1rem;
-    }
-
-    ion-card-subtitle {
-        font-size: 0.8rem;
-    }
-
-    .hashtags-section {
-        height: 35px;
-    }
-
-    .hashtags ion-chip {
-        font-size: 0.6rem;
-        height: 20px;
-        min-width: 28px;
-    }
-
-    .more-chip ion-label,
-    .less-chip ion-label {
-        font-size: 0.6rem;
-    }
-
-    .description-section {
-        height: 60px;
-        font-size: 0.8rem;
-    }
-
-    .toggle-description {
-        font-size: 0.6rem;
-    }
-
-    .reviews-section {
-        height: 35px;
-    }
-
-    .links-section {
-        height: 35px;
-    }
-
-    .rating ion-icon {
-        font-size: 1em;
-    }
+.maps-link {
+    background-color: #4285F4;
+    color: #ffffff;
 }
 
-@media (max-width: 480px) {
-    .feed-card.horizontal-card {
-        height: auto;
-        /* Ajuster la hauteur pour très petits écrans */
-    }
+.maps-link:hover {
+    background-color: #3367d6;
+}
 
-    .image-container {
-        height: 150px;
-        max-height: 150px;
-    }
+.website-link {
+    background-color: #34A853;
+    color: #ffffff;
+}
 
-    .title-item {
-        height: 45px;
-    }
+.website-link:hover {
+    background-color: #2c8a45;
+}
 
-    ion-card-title {
-        font-size: 0.95rem;
-    }
+/* Compass Component */
+.distance-mobile .compass {
+    margin-right: 4px;
+}
 
-    ion-card-subtitle {
-        font-size: 0.75rem;
-    }
+/* Ensuring Touch-Friendly Elements */
+.hashtags .ion-chip,
+.place-links .links-container a,
+.toggle-description {
+    touch-action: manipulation;
+}
 
-    .hashtags-section {
-        height: 30px;
-    }
+.hashtags .ion-chip {
+    min-width: 60px;
+    text-align: center;
+}
 
-    .hashtags ion-chip {
-        font-size: 0.55rem;
-        height: 18px;
-        min-width: 24px;
-    }
+.place-links .links-container a {
+    flex: 1 1 auto;
+    justify-content: center;
+}
 
-    .description-section {
-        height: 50px;
-        font-size: 0.75rem;
-    }
+/* Accessibility Enhancements */
+.toggle-description:focus,
+.hashtags .ion-chip:focus,
+.place-links .links-container a:focus {
+    outline: 2px solid #3880ff;
+    outline-offset: 2px;
+}
 
-    .toggle-description {
-        font-size: 0.55rem;
-    }
+/* Scrollbar Styling for Swiper */
+.modal-photo-slider .swiper-scrollbar {
+    background: rgba(0, 0, 0, 0.1);
+}
 
-    .reviews-section {
-        height: 30px;
-    }
+.modal-photo-slider .swiper-pagination-bullet {
+    background: #3880ff;
+    opacity: 0.7;
+}
 
-    .links-section {
-        height: 30px;
-    }
-
-    .rating ion-icon {
-        font-size: 1em;
-    }
+.modal-photo-slider .swiper-pagination-bullet-active {
+    opacity: 1;
 }

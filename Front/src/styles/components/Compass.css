@@ -1,0 +1,36 @@
+.compass-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    position: relative;
+    width: 100px;
+    /* Ajustez la taille globale si nécessaire */
+    height: 100px;
+    margin: 0 auto;
+}
+
+.compass-needle {
+    width: 50px;
+    /* Définit la largeur de l'aiguille comme une icône */
+    height: 50px;
+    /* Définit la hauteur de l'aiguille comme une icône */
+    transform-origin: center center;
+    /* Rotation autour du centre */
+    position: absolute;
+    top: 50%;
+    /* Centré verticalement */
+    left: 50%;
+    /* Centré horizontalement */
+    transform: translate(-50%, -50%) rotate(0deg);
+    /* Ajuste le centre et l'angle initial */
+}
+
+.compass-container img {
+    max-width: 100%;
+    /* Garantit que l'image ne dépasse pas la taille définie */
+    max-height: 100%;
+    /* Garantit que l'image reste proportionnelle */
+    pointer-events: none;
+    /* Empêche l'utilisateur d'interagir avec l'image */
+}

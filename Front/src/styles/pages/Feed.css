@@ -49,8 +49,8 @@
     flex-grow: 1;
     /* Prend tout l'espace restant sous la barre de recherche */
     padding: 16px;
-    overflow: hidden;
-    /* Empêche le débordement */
+    overflow: auto;
+    /* Permet le défilement si nécessaire */
 }
 
 /* Masquer la barre de défilement pour le composant Grid */
@@ -76,8 +76,7 @@
     font-size: 1.2em;
 }
 
-/* src/styles/pages/Feed.css */
-
+/* Informations de géolocalisation */
 .info-geolocation {
     display: flex;
     flex-direction: column;
@@ -102,15 +101,47 @@
     text-align: center;
 }
 
+/* Section des filtres sélectionnés */
+.selected-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 16px 16px 16px;
+}
 
+.selected-chip {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
 
-/* Styles responsives */
+/* Loading overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Responsive adjustments */
 @media screen and (max-width: 768px) {
+    .feed-layout {
+        flex-direction: column;
+    }
+
     .filter-panel {
-        width: 250px;
-        /* Ajuste la largeur pour les écrans plus petits */
-        padding: 12px;
-        /* Réduit le padding */
+        display: none;
+        /* Remove filter panel on mobile */
+    }
+
+    .main-content {
+        width: 100%;
     }
 
     .search-bar-container {
@@ -125,11 +156,16 @@
 }
 
 @media screen and (max-width: 480px) {
+    .feed-layout {
+        flex-direction: column;
+    }
+
     .filter-panel {
-        width: 200px;
-        /* Réduit davantage la largeur pour les très petits écrans */
-        padding: 10px;
-        /* Réduit le padding */
+        display: none;
+    }
+
+    .main-content {
+        width: 100%;
     }
 
     .search-bar-container {

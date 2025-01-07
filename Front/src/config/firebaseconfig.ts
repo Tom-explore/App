@@ -1,18 +1,15 @@
-// config/firebaseconfig.js ou firebaseconfig.ts
 import { initializeApp } from 'firebase/app';
 import {
   initializeFirestore,
   persistentLocalCache,
   persistentSingleTabManager,
-  // persistentMultipleTabManager, // Utilisez ceci si vous avez besoin de support multi-onglets
   CACHE_SIZE_UNLIMITED,
-  connectFirestoreEmulator // Import statique pour l'émulateur Firestore
+  connectFirestoreEmulator
 } from 'firebase/firestore';
 import {
   getAuth,
   setPersistence,
-  browserLocalPersistence,
-  connectAuthEmulator // Import statique pour l'émulateur Auth
+  browserLocalPersistence
 } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -32,10 +29,8 @@ console.log("Firebase initialisé avec succès.");
 // Configuration Firestore avec persistance des données en cache
 const firestore = initializeFirestore(app, {
   localCache: persistentLocalCache({
-    tabManager: persistentSingleTabManager(undefined), // Passez `undefined` si aucun paramètre spécifique n'est requis
-    cacheSizeBytes: CACHE_SIZE_UNLIMITED, // Optionnel: Définit la taille du cache à illimité
-    // Si vous avez besoin de support multi-onglets, utilisez `persistentMultipleTabManager` :
-    // tabManager: persistentMultipleTabManager(undefined),
+    tabManager: persistentSingleTabManager(undefined),
+    cacheSizeBytes: CACHE_SIZE_UNLIMITED,
   }),
 });
 console.log("Firestore configuré avec persistance des données en cache.");
@@ -53,11 +48,27 @@ setPersistence(auth, browserLocalPersistence)
     console.error('Erreur lors de la configuration de la persistance Firebase Auth:', error);
   });
 
-// Si on est en développement, connecter les émulateurs
-if (process.env.REACT_APP_IS_DEV === 'true') {
-  // Connecter l'émulateur Firestore
-  connectFirestoreEmulator(firestore, 'localhost', 8080);
-}
+// // Fonction pour détecter si l'on est sur mobile
+// function isMobileDevice() {
+//   var result = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+//   alert(result);
+//   return result;
+// }
+
+// // Si on est en développement, connecter les émulateurs
+// if (process.env.REACT_APP_IS_DEV === 'true') {
+//   let emulatorHost = 'localhost';
+//   let emulatorPort = 8080;
+
+//   if (isMobileDevice()) {
+//     // Utiliser window.location.hostname pour extraire l'hôte
+//     const currentHostname = window.location.hostname;
+//     emulatorHost = currentHostname;
+//   }
+
+//   alert(`Connexion à l'émulateur Firestore à ${emulatorHost}:${emulatorPort}`);
+//   connectFirestoreEmulator(firestore, emulatorHost, emulatorPort);
+// }
 
 export default app;
 export { firestore, auth };

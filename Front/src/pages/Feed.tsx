@@ -5,7 +5,6 @@ import React, {
     useState,
     useMemo,
     useRef,
-    useCallback,
     useLayoutEffect,
     useContext
 } from 'react';
@@ -27,7 +26,7 @@ import { useIonRouter } from '@ionic/react';
 import { useParams } from 'react-router';
 import { chevronBackOutline, close as closeIcon, chevronForwardOutline } from 'ionicons/icons';
 import { useCity } from '../context/cityContext';
-import SearchBar from '../components/SearchBar';
+// import SearchBar from './SearchBar';
 import FeedCard from '../components/FeedCard';
 import '../styles/pages/Feed.css';
 import { Place } from '../types/PlacesInterfaces';
@@ -185,40 +184,46 @@ const Feed: React.FC = () => {
     });
 
     // ----- Layout with react-window -----
-    const COLUMN_COUNT = 2;
-    const ITEM_HEIGHT = 450;
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const COLUMN_COUNT = isMobile ? 1 : 2;
+    const ITEM_HEIGHT = 450; // Fixed height for desktop cards
+    const MOBILE_ITEM_HEIGHT = 600; // Adjusted height for mobile cards
     const HORIZONTAL_GAP_PERCENT = 2;
     const VERTICAL_GAP_PERCENT = 2;
 
     const containerRef = useRef<HTMLDivElement>(null);
-    const [containerWidth, setContainerWidth] = useState<number>(300);
-    const [containerHeight, setContainerHeight] = useState<number>(500);
+    const [containerWidth, setContainerWidth] = useState<number>(window.innerWidth);
+    const [containerHeight, setContainerHeight] = useState<number>(window.innerHeight - 100); // Adjust as needed
 
     useLayoutEffect(() => {
-        if (!containerRef.current) return;
-
-        const resizeObserver = new ResizeObserver(entries => {
-            if (entries[0].contentRect) {
-                const { width, height, top } = entries[0].contentRect;
+        const handleResize = () => {
+            if (containerRef.current) {
+                const { width, height, top } = containerRef.current.getBoundingClientRect();
                 const newHeight = window.innerHeight - top - 20;
-                setContainerHeight(newHeight > 0 ? newHeight : 500);
+                setContainerHeight(newHeight > 0 ? newHeight : window.innerHeight - 100);
                 setContainerWidth(width);
             }
-        });
+        };
 
-        resizeObserver.observe(containerRef.current);
+        handleResize(); // Initial call
 
+        window.addEventListener('resize', handleResize);
         return () => {
-            resizeObserver.disconnect();
+            window.removeEventListener('resize', handleResize);
         };
     }, []);
 
     const horizontalGap = containerWidth * (HORIZONTAL_GAP_PERCENT / 100);
     const verticalGap = containerWidth * (VERTICAL_GAP_PERCENT / 100);
 
-    const ITEM_WIDTH = (containerWidth - (COLUMN_COUNT - 1) * horizontalGap) / COLUMN_COUNT;
-    const rowHeight = ITEM_HEIGHT + verticalGap;
-    const rowCount = Math.ceil(sortedFilteredPlaces.length / COLUMN_COUNT);
+    const ITEM_WIDTH = useMemo(() => {
+        return (containerWidth - (COLUMN_COUNT - 1) * horizontalGap) / COLUMN_COUNT;
+    }, [containerWidth, COLUMN_COUNT, horizontalGap]);
+
+    const rowCount = useMemo(() => {
+        return Math.ceil(sortedFilteredPlaces.length / COLUMN_COUNT);
+    }, [sortedFilteredPlaces.length, COLUMN_COUNT]);
+
     const LIST_HEIGHT = containerHeight;
 
     const Cell = ({
@@ -292,50 +297,43 @@ const Feed: React.FC = () => {
 
     return (
         <IonPage>
-            <IonHeader>
-                <IonToolbar>
-                    <IonButtons slot="start">
-                        <IonButton onClick={() => router.goBack()}>
-                            <IonIcon icon={chevronBackOutline} />
-                        </IonButton>
-                    </IonButtons>
-                    <IonTitle>Feed</IonTitle>
-                </IonToolbar>
-            </IonHeader>
+
 
             <IonContent fullscreen className="ion-no-padding">
-
                 <div className="feed-layout">
-                    <div className="filter-panel">
-                        <FilterPlaces
-                            categories={uniqueCategories}
-                            attributes={uniqueAttributes}
-                            selectedCategories={selectedCategories}
-                            selectedAttributes={selectedAttributes}
-                            handleCategoryChange={handleCategoryChange}
-                            handleAttributeChange={handleAttributeChange}
-                            getTranslation={getTranslation}
-                            onUserInteractionChange={setIsInteracting}
-                        />
-                    </div>
+                    {/* Render filter panel only on non-mobile devices */}
+                    {!isMobile && (
+                        <div className="filter-panel">
+                            <FilterPlaces
+                                categories={uniqueCategories}
+                                attributes={uniqueAttributes}
+                                selectedCategories={selectedCategories}
+                                selectedAttributes={selectedAttributes}
+                                handleCategoryChange={handleCategoryChange}
+                                handleAttributeChange={handleAttributeChange}
+                                getTranslation={getTranslation}
+                                onUserInteractionChange={setIsInteracting}
+                            />
+                        </div>
+                    )}
 
                     <div className="main-content" ref={containerRef}>
-                        <div className="search-bar-container">
+                        {/* <div className="search-bar-container">
                             <SearchBar
                                 onSearch={setSearchQuery}
                                 placeholder="Rechercher un lieu"
                             />
-                        </div>
+                        </div> */}
                         {/* Display loading indicator if determining location */}
-                        {(geoLoading) && (
+                        {/* {geoLoading && (
                             <div className="loading-geolocation">
                                 <IonSpinner name="crescent" />
                                 <p>Détermination de votre localisation...</p>
                             </div>
-                        )}
+                        )} */}
 
-                        {/* ----- Modified Geolocation Information Section ----- */}
-                        {(!slug && city) && (
+                        {/* ----- Geolocation Information Section ----- */}
+                        {/* {!slug && city && (
                             <div className="info-geolocation">
                                 <p>
                                     Géolocalisation proposée :{' '}
@@ -372,8 +370,8 @@ const Feed: React.FC = () => {
                                     </IonButton>
                                 )}
                             </div>
-                        )}
-                        {/* ----- End of Modified Section ----- */}
+                        )} */}
+                        {/* ----- End of Geolocation Information Section ----- */}
 
                         {/* Section des filtres sélectionnés */}
                         {(selectedCategories.length > 0 || selectedAttributes.length > 0) && (
@@ -417,7 +415,7 @@ const Feed: React.FC = () => {
                                     columnWidth={ITEM_WIDTH}
                                     height={LIST_HEIGHT}
                                     rowCount={rowCount}
-                                    rowHeight={rowHeight}
+                                    rowHeight={isMobile ? MOBILE_ITEM_HEIGHT : ITEM_HEIGHT + verticalGap}
                                     width={containerWidth}
                                 >
                                     {Cell}
