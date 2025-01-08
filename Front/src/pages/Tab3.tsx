@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useRef } from 'react';
 import {
   IonPage,
   IonHeader,
@@ -6,9 +6,6 @@ import {
   IonTitle,
   IonContent,
   IonButton,
-  IonInput,
-  IonLabel,
-  IonItem,
   IonGrid,
   IonRow,
   IonCol,
@@ -18,12 +15,9 @@ import {
   IonCardContent,
 } from '@ionic/react';
 import { GeolocationContext } from '../context/geolocationContext';
-import './compass.css';
+import './Compass.css';
 
-interface Coordinates {
-  lat: number;
-  lng: number;
-}
+const TARGET_COORDINATES = { lat: 48.1159843, lng: -1.729643 };
 
 const CompassOrientationDisplay: React.FC = () => {
   const {
@@ -33,11 +27,13 @@ const CompassOrientationDisplay: React.FC = () => {
     disableBrowserGeolocation,
   } = useContext(GeolocationContext);
 
+  const compassNeedleRef = useRef<HTMLDivElement>(null);
+
   const [heading, setHeading] = useState<number | null>(null);
   const [orientationPermission, setOrientationPermission] = useState<boolean>(false);
   const [orientationError, setOrientationError] = useState<string | null>(null);
-  const [targetCoordinates, setTargetCoordinates] = useState<Coordinates | null>(null);
   const [bearing, setBearing] = useState<number | null>(null);
+  const [isAligned, setIsAligned] = useState(false);
 
   const requestOrientationPermission = async () => {
     if (
@@ -61,6 +57,27 @@ const CompassOrientationDisplay: React.FC = () => {
     }
   };
 
+  const calcDegreeToTarget = (latitude: number, longitude: number) => {
+    const phiK = (TARGET_COORDINATES.lat * Math.PI) / 180.0;
+    const lambdaK = (TARGET_COORDINATES.lng * Math.PI) / 180.0;
+    const phi = (latitude * Math.PI) / 180.0;
+    const lambda = (longitude * Math.PI) / 180.0;
+    const psi =
+      (180.0 / Math.PI) *
+      Math.atan2(
+        Math.sin(lambdaK - lambda),
+        Math.cos(phi) * Math.tan(phiK) -
+        Math.sin(phi) * Math.cos(lambdaK - lambda)
+      );
+    return Math.round((psi + 360) % 360);
+  };
+
+  useEffect(() => {
+    if (geolocation) {
+      setBearing(calcDegreeToTarget(geolocation.lat, geolocation.lng));
+    }
+  }, [geolocation]);
+
   useEffect(() => {
     function handleDeviceOrientation(event: DeviceOrientationEvent) {
       let deviceHeading = 0;
@@ -72,55 +89,18 @@ const CompassOrientationDisplay: React.FC = () => {
       }
       deviceHeading = (deviceHeading + 360) % 360;
       setHeading(deviceHeading);
+      if (bearing !== null && compassNeedleRef.current) {
+        const rotationAngle = (bearing - deviceHeading + 360) % 360;
+        compassNeedleRef.current.style.transform = `rotate(${rotationAngle}deg)`;
+        setIsAligned(Math.abs(rotationAngle) <= 15);
+      }
     }
 
     window.addEventListener('deviceorientation', handleDeviceOrientation, true);
     return () => {
       window.removeEventListener('deviceorientation', handleDeviceOrientation, true);
     };
-  }, []);
-
-  useEffect(() => {
-    if (geolocation && targetCoordinates) {
-      calculateBearingToTarget();
-    }
-  }, [geolocation, targetCoordinates]);
-
-  const calculateBearingToTarget = () => {
-    if (!geolocation || !targetCoordinates) return;
-
-    const lat1 = geolocation.lat * (Math.PI / 180);
-    const lon1 = geolocation.lng * (Math.PI / 180);
-    const lat2 = targetCoordinates.lat * (Math.PI / 180);
-    const lon2 = targetCoordinates.lng * (Math.PI / 180);
-
-    const dLon = lon2 - lon1;
-    const y = Math.sin(dLon) * Math.cos(lat2);
-    const x =
-      Math.cos(lat1) * Math.sin(lat2) -
-      Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
-
-    let bearingDeg = Math.atan2(y, x) * (180 / Math.PI);
-    bearingDeg = (bearingDeg + 360) % 360;
-
-    setBearing(bearingDeg);
-  };
-
-  const angleToTarget = (() => {
-    if (bearing === null || heading === null) return 0;
-    let angle = (bearing - heading + 360) % 360;
-    return angle;
-  })();
-
-  const handleCoordinateChange = (e: CustomEvent, type: 'lat' | 'lng') => {
-    const value = parseFloat(e.detail.value);
-    if (!isNaN(value)) {
-      setTargetCoordinates((prev) => ({
-        ...prev,
-        [type]: value,
-      } as Coordinates));
-    }
-  };
+  }, [bearing]);
 
   return (
     <IonPage>
@@ -147,45 +127,30 @@ const CompassOrientationDisplay: React.FC = () => {
         </IonCard>
 
         <div className="compass-container">
-          <div
-            style={{ transform: `rotate(${angleToTarget}deg)` }}
-          >
-            <img
-              src="/assets/img/compass.png"
-              alt="Compass Needle"
-              className="compass-needle-image"
-            />
+          <div className="compass-circle">
+            <div ref={compassNeedleRef} className="compass-needle">
+              <img
+                src="/assets/img/compass.png"
+                alt="Compass Needle"
+                className="compass-needle-image"
+              />
+            </div>
+          </div>
+          <div className="target-indicator" style={{ opacity: isAligned ? 1 : 0.5 }}>
+            Target Aligned!
           </div>
         </div>
 
         <IonGrid>
           <IonRow>
             <IonCol>
-              <IonItem>
-                <IonLabel position="stacked">Target Latitude</IonLabel>
-                <IonInput
-                  type="number"
-                  step="0.0001"
-                  onIonChange={(e) => handleCoordinateChange(e, 'lat')}
-                />
-              </IonItem>
-            </IonCol>
-            <IonCol>
-              <IonItem>
-                <IonLabel position="stacked">Target Longitude</IonLabel>
-                <IonInput
-                  type="number"
-                  step="0.0001"
-                  onIonChange={(e) => handleCoordinateChange(e, 'lng')}
-                />
-              </IonItem>
+              <p>
+                <strong>Target Coordinates:</strong> <br />
+                Latitude: {TARGET_COORDINATES.lat.toFixed(5)}, Longitude: {TARGET_COORDINATES.lng.toFixed(5)}
+              </p>
             </IonCol>
           </IonRow>
         </IonGrid>
-
-        <IonButton expand="block" onClick={calculateBearingToTarget}>
-          Calculate Bearing
-        </IonButton>
 
         <IonButton expand="block" onClick={requestOrientationPermission}>
           Enable Compass Access

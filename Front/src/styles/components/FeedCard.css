@@ -249,3 +249,65 @@
 .modal-photo-slider .swiper-pagination-bullet-active {
     opacity: 1;
 }
+
+/* src/styles/components/FeedCard.css */
+
+/* ... autres styles existants ... */
+
+/* Conteneur dédié pour le Compass et la distance */
+.compass-distance-container {
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+    /* Espace sous le titre */
+}
+
+/* Styles spécifiques pour mobile */
+.compass-mobile {
+    display: flex;
+    align-items: center;
+}
+
+.distance-text {
+    margin-left: 8px;
+    font-size: 0.9em;
+    color: #333;
+}
+
+/* Styles spécifiques pour desktop */
+.compass-desktop {
+    display: flex;
+    align-items: center;
+}
+
+.travel-icon {
+    font-size: 1.2em;
+    /* Ajustez la taille selon vos besoins */
+    margin-right: 4px;
+}
+
+@media screen and (max-width: 768px) {
+
+    /* Ajustez la taille du compas pour mobile */
+    .compass-icon-container {
+        width: 20px;
+        height: 20px;
+    }
+
+    .compass-mobile {
+        flex-direction: row;
+    }
+}
+
+@media screen and (min-width: 769px) {
+
+    /* Ajustez la taille du compas pour desktop si nécessaire */
+    .compass-icon-container {
+        width: 25px;
+        height: 25px;
+    }
+
+    .compass-desktop {
+        flex-direction: row;
+    }
+}

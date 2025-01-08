@@ -1,6 +1,6 @@
 // src/components/Compass.tsx
 
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { GeolocationContext } from '../context/geolocationContext';
 import '../styles/components/Compass.css';
 
@@ -14,19 +14,12 @@ interface CompassProps {
 }
 
 const Compass: React.FC<CompassProps> = ({ targetCoordinates }) => {
-    const {
-        geolocation,
-        error,
-        requestBrowserGeolocation,
-        disableBrowserGeolocation,
-    } = useContext(GeolocationContext);
+    const { geolocation, error } = useContext(GeolocationContext);
+    const compassNeedleRef = useRef<HTMLImageElement>(null);
 
-    const [heading, setHeading] = useState<number | null>(null);
-
-    const [orientationPermission, setOrientationPermission] = useState<boolean>(false);
-    const [orientationError, setOrientationError] = useState<string | null>(null);
-
-    const [bearing, setBearing] = useState<number | null>(null);
+    const orientationPermissionRef = useRef<boolean>(false);
+    const orientationErrorRef = useRef<string | null>(null);
+    const bearingRef = useRef<number | null>(null);
 
     const requestOrientationPermission = async () => {
         if (
@@ -37,60 +30,53 @@ const Compass: React.FC<CompassProps> = ({ targetCoordinates }) => {
             try {
                 const response = await (window as any).DeviceOrientationEvent.requestPermission();
                 if (response === 'granted') {
-                    setOrientationPermission(true);
-                    // requestBrowserGeolocation(); // Active la géolocalisation
+                    orientationPermissionRef.current = true;
+                    window.addEventListener('deviceorientation', handleDeviceOrientation, true);
                 } else {
-                    setOrientationError("Permission pour l'orientation refusée (iOS).");
+                    orientationErrorRef.current = "Permission pour l'orientation refusée (iOS).";
+                    console.error(orientationErrorRef.current);
                 }
             } catch (err) {
-                setOrientationError("Erreur lors de la demande de permission pour l'orientation (iOS).");
+                orientationErrorRef.current = "Erreur lors de la demande de permission pour l'orientation (iOS).";
+                console.error(orientationErrorRef.current);
             }
         } else {
             // Android ou navigateurs qui ne nécessitent pas de permission explicite
-            setOrientationPermission(true);
-            // requestBrowserGeolocation();
+            orientationPermissionRef.current = true;
+            window.addEventListener('deviceorientation', handleDeviceOrientation, true);
         }
     };
 
+    const handleDeviceOrientation = (event: DeviceOrientationEvent) => {
+        let deviceHeading = 0;
 
-    useEffect(() => {
-        function handleDeviceOrientation(event: DeviceOrientationEvent) {
-            let deviceHeading = 0;
-
-            // iOS: use webkitCompassHeading
-            const anyEvent = event as any;
-            if (typeof anyEvent.webkitCompassHeading === 'number') {
-                deviceHeading = anyEvent.webkitCompassHeading; // [0..360)
-            } else if (event.alpha != null) {
-                // Android/Chrome: alpha=0 quand le tél pointe vers l'Est
-                deviceHeading = (360 - event.alpha) % 360;
-            }
-
-            // Normalize [0..360)
-            deviceHeading = (deviceHeading + 360) % 360;
-            setHeading(deviceHeading);
+        // iOS: use webkitCompassHeading
+        const anyEvent = event as any;
+        if (typeof anyEvent.webkitCompassHeading === 'number') {
+            deviceHeading = anyEvent.webkitCompassHeading; // [0..360)
+        } else if (event.alpha != null) {
+            // Android/Chrome: alpha=0 quand le tél pointe vers l'Est
+            deviceHeading = (360 - event.alpha) % 360;
         }
 
-        window.addEventListener('deviceorientation', handleDeviceOrientation, true);
+        // Normalize [0..360)
+        deviceHeading = (deviceHeading + 360) % 360;
 
-        return () => {
-            window.removeEventListener('deviceorientation', handleDeviceOrientation, true);
-        };
-    }, []);
-
-    useEffect(() => {
-        if (geolocation && targetCoordinates) {
-            calculateBearingToTarget();
+        // Calculer la bearing si la géolocalisation est disponible
+        if (geolocation) {
+            calculateBearingToTarget(geolocation, targetCoordinates, deviceHeading);
         }
-    }, [geolocation, targetCoordinates, heading, bearing]);
+    };
 
-    const calculateBearingToTarget = () => {
-        if (!geolocation || !targetCoordinates) return;
-
+    const calculateBearingToTarget = (
+        geolocation: { lat: number; lng: number },
+        target: Coordinates,
+        deviceHeading: number
+    ) => {
         const lat1 = geolocation.lat * (Math.PI / 180);
         const lon1 = geolocation.lng * (Math.PI / 180);
-        const lat2 = targetCoordinates.lat * (Math.PI / 180);
-        const lon2 = targetCoordinates.lng * (Math.PI / 180);
+        const lat2 = 48.1159843 * (Math.PI / 180);
+        const lon2 = -1.729643 * (Math.PI / 180);
 
         const dLon = lon2 - lon1;
         const y = Math.sin(dLon) * Math.cos(lat2);
@@ -101,32 +87,45 @@ const Compass: React.FC<CompassProps> = ({ targetCoordinates }) => {
         let bearingDeg = Math.atan2(y, x) * (180 / Math.PI);
         bearingDeg = (bearingDeg + 360) % 360;
 
-        setBearing(bearingDeg);
+        bearingRef.current = bearingDeg;
+
+        // Calculer l'angle de rotation
+        const rotationAngle = (bearingDeg - deviceHeading + 360) % 360;
+        if (compassNeedleRef.current) {
+            compassNeedleRef.current.style.transform = `rotate(${rotationAngle}deg)`;
+        }
     };
-
-    const angleToTarget = (() => {
-        if (bearing === null || heading === null) return 0;
-        return (bearing - heading + 360) % 360;
-    })();
-
 
     useEffect(() => {
         requestOrientationPermission();
+
+        return () => {
+            window.removeEventListener('deviceorientation', handleDeviceOrientation, true);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    useEffect(() => {
+        // Recalculer la bearing si les coordonnées cibles changent
+        if (geolocation && targetCoordinates && orientationPermissionRef.current) {
+            // Vous pouvez forcer une recalcul en simulant un événement
+            window.dispatchEvent(new DeviceOrientationEvent('deviceorientation'));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [geolocation, targetCoordinates]);
 
     return (
-        <div className="compass-container">
-            {error && <p style={{ color: 'red' }}>Geo Error: {error}</p>}
-            {orientationError && <p style={{ color: 'red' }}>Orientation Error: {orientationError}</p>}
+        <div className="compass-icon-container">
+            {error && <p className="error-text">Geo Error: {error}</p>}
+            {orientationErrorRef.current && <p className="error-text">{orientationErrorRef.current}</p>}
             <img
                 src="/assets/img/compass.png"
                 alt="Compass Needle"
-                className="compass-needle"
-                style={{ transform: `rotate(${angleToTarget}deg)` }}
+                className="compass-needle-image"
+                ref={compassNeedleRef}
             />
-            {bearing !== null && (
-                <span>{Math.trunc(bearing)}</span>
+            {bearingRef.current !== null && (
+                <span className="bearing-text">{Math.trunc(bearingRef.current)}°</span>
             )}
         </div>
     );

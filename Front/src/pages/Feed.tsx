@@ -5,6 +5,7 @@ import React, {
     useState,
     useMemo,
     useRef,
+    useCallback,
     useLayoutEffect,
     useContext
 } from 'react';
@@ -24,9 +25,9 @@ import {
 import { FixedSizeGrid as Grid } from 'react-window';
 import { useIonRouter } from '@ionic/react';
 import { useParams } from 'react-router';
-import { chevronBackOutline, close as closeIcon, chevronForwardOutline } from 'ionicons/icons';
+import { chevronBackOutline, close as closeIcon } from 'ionicons/icons';
 import { useCity } from '../context/cityContext';
-// import SearchBar from './SearchBar';
+import SearchBar from '../components/SearchBar';
 import FeedCard from '../components/FeedCard';
 import '../styles/pages/Feed.css';
 import { Place } from '../types/PlacesInterfaces';
@@ -41,11 +42,12 @@ const Feed: React.FC = () => {
     const router = useIonRouter();
 
     const {
-        geolocation,
         nearestCitySlug,
+        geolocation,
         isGeolocationEnabled,
         loading: geoLoading,
         error: geoError,
+        requestIPGeolocation,
         requestBrowserGeolocation,
         disableBrowserGeolocation,
         calculateDistanceFromPlace,
@@ -60,7 +62,6 @@ const Feed: React.FC = () => {
     } = useCity();
 
     const { language } = useLanguage();
-    const languageCode = language.code; // Extracted language code
 
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [filteredPlaces, setFilteredPlaces] = useState<Place[]>([]);
@@ -82,7 +83,7 @@ const Feed: React.FC = () => {
         setFilteredPlaces(allPlaces);
     }, [allPlaces]);
 
-    // 1. Handle city selection based on URL slug or geolocation
+    // Handle city selection based on URL slug or geolocation
     useEffect(() => {
         if (slug && !city) {
             console.log("[Feed] Setting city based on URL slug:", slug);
@@ -90,7 +91,7 @@ const Feed: React.FC = () => {
         }
     }, [slug, city, setCityPreviewAndFetchData]);
 
-    // 2. If no slug is provided, use geolocation to determine the city
+    // If no slug is provided, use geolocation to determine the city
     useEffect(() => {
         if (!slug) {
             console.log("[Feed] No slug provided, determining city based on geolocation.");
@@ -111,7 +112,7 @@ const Feed: React.FC = () => {
         }
     }, [slug, geoLoading, geoError, nearestCitySlug, setCityPreviewAndFetchData, city]);
 
-    // 3. Once the city is defined, fetch all places if not already loaded
+    // Once the city is defined, fetch all places if not already loaded
     useEffect(() => {
         if (city && !isAllPlacesLoaded) {
             console.log("[Feed] Fetching all places for city:", city.slug);
@@ -131,7 +132,6 @@ const Feed: React.FC = () => {
 
         filtered = filtered.filter(place => (place.reviews_google_count || 0) >= 100);
 
-        // Remove distance-based sorting
         filtered.sort((a, b) => {
             if (b.reviews_google_rating !== a.reviews_google_rating) {
                 return b.reviews_google_rating - a.reviews_google_rating;
@@ -183,50 +183,51 @@ const Feed: React.FC = () => {
         allPlaces: allPlaces
     });
 
+    // ----- Detect if the device is mobile -----
+    const isMobile = useMemo(() => {
+        if (typeof navigator === 'undefined') return false;
+        const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+        return /android|iPad|iPhone|iPod/i.test(userAgent);
+    }, []);
+
     // ----- Layout with react-window -----
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const COLUMN_COUNT = isMobile ? 1 : 2;
-    const ITEM_HEIGHT = 450; // Fixed height for desktop cards
-    const MOBILE_ITEM_HEIGHT = 600; // Adjusted height for mobile cards
+    const ITEM_HEIGHT = 450;
     const HORIZONTAL_GAP_PERCENT = 2;
-    const VERTICAL_GAP_PERCENT = 2;
+    const VERTICAL_GAP_PERCENT = 120;
 
     const containerRef = useRef<HTMLDivElement>(null);
-    const [containerWidth, setContainerWidth] = useState<number>(window.innerWidth);
-    const [containerHeight, setContainerHeight] = useState<number>(window.innerHeight - 100); // Adjust as needed
+    const [containerWidth, setContainerWidth] = useState<number>(300);
+    const [containerHeight, setContainerHeight] = useState<number>(500);
 
     useLayoutEffect(() => {
-        const handleResize = () => {
-            if (containerRef.current) {
-                const { width, height, top } = containerRef.current.getBoundingClientRect();
+        if (!containerRef.current) return;
+
+        const resizeObserver = new ResizeObserver(entries => {
+            if (entries[0].contentRect) {
+                const { width, height, top } = entries[0].contentRect;
                 const newHeight = window.innerHeight - top - 20;
-                setContainerHeight(newHeight > 0 ? newHeight : window.innerHeight - 100);
+                setContainerHeight(newHeight > 0 ? newHeight : 500);
                 setContainerWidth(width);
             }
-        };
+        });
 
-        handleResize(); // Initial call
+        resizeObserver.observe(containerRef.current);
 
-        window.addEventListener('resize', handleResize);
         return () => {
-            window.removeEventListener('resize', handleResize);
+            resizeObserver.disconnect();
         };
     }, []);
 
     const horizontalGap = containerWidth * (HORIZONTAL_GAP_PERCENT / 100);
     const verticalGap = containerWidth * (VERTICAL_GAP_PERCENT / 100);
 
-    const ITEM_WIDTH = useMemo(() => {
-        return (containerWidth - (COLUMN_COUNT - 1) * horizontalGap) / COLUMN_COUNT;
-    }, [containerWidth, COLUMN_COUNT, horizontalGap]);
-
-    const rowCount = useMemo(() => {
-        return Math.ceil(sortedFilteredPlaces.length / COLUMN_COUNT);
-    }, [sortedFilteredPlaces.length, COLUMN_COUNT]);
-
+    const ITEM_WIDTH = (containerWidth - (COLUMN_COUNT - 1) * horizontalGap) / COLUMN_COUNT;
+    const rowHeight = ITEM_HEIGHT + verticalGap;
+    const rowCount = useMemo(() => Math.ceil(sortedFilteredPlaces.length / COLUMN_COUNT), [sortedFilteredPlaces.length, COLUMN_COUNT]);
     const LIST_HEIGHT = containerHeight;
 
-    const Cell = ({
+    const Cell = useCallback(({
         columnIndex,
         rowIndex,
         style
@@ -241,7 +242,7 @@ const Feed: React.FC = () => {
         }
         const place = sortedFilteredPlaces[index];
 
-        // Calculate distance if geolocation is available
+        // Calculer la distance
         const distance = geolocation
             ? calculateDistanceFromPlace(geolocation, { lat: place.lat, lng: place.lng })
             : undefined;
@@ -262,14 +263,14 @@ const Feed: React.FC = () => {
                     handleCategoryChange={handleCategoryChange}
                     handleAttributeChange={handleAttributeChange}
                     getTranslation={getTranslation}
-                    distance={distance} // Pass distance prop
+                    distance={distance}
                 />
             </div>
         );
-    };
+    }, [COLUMN_COUNT, sortedFilteredPlaces, geolocation, calculateDistanceFromPlace, selectedCategories, selectedAttributes, handleCategoryChange, handleAttributeChange, getTranslation, horizontalGap, verticalGap]);
 
     // Helper to get city name with translation if available
-    const getCityName = (): string => {
+    const getCityName = useCallback((): string => {
         if (city && 'translation' in city && city.translation?.name) {
             console.log("récup city name");
             return city.translation.name;
@@ -277,31 +278,82 @@ const Feed: React.FC = () => {
             return city.name;
         }
         return '';
-    };
+    }, [city]);
 
     // Using useMemo instead of useEffect and state for cityName
     const cityName = useMemo(() => {
         const name = getCityName();
         console.log('Computed cityName:', name);
         return name;
-    }, [city]);
+    }, [getCityName]);
 
     // Handlers for Geolocation Buttons
-    const handleEnableGeolocation = () => {
+    const handleEnableGeolocation = useCallback(() => {
         requestBrowserGeolocation();
-    };
+    }, [requestBrowserGeolocation]);
 
-    const handleDisableGeolocation = () => {
+    const handleDisableGeolocation = useCallback(() => {
         disableBrowserGeolocation();
-    };
+    }, [disableBrowserGeolocation]);
 
     return (
         <IonPage>
-
+            <IonHeader>
+                <IonToolbar>
+                    <IonButtons slot="start">
+                        <IonButton onClick={() => router.goBack()}>
+                            <IonIcon icon={chevronBackOutline} />
+                        </IonButton>
+                    </IonButtons>
+                    <IonTitle>Feed</IonTitle>
+                </IonToolbar>
+            </IonHeader>
 
             <IonContent fullscreen className="ion-no-padding">
+                {/* Display loading indicator if determining location */}
+                {geoLoading && (
+                    <div className="loading-geolocation">
+                        <IonSpinner name="crescent" />
+                        <p>Détermination de votre localisation...</p>
+                    </div>
+                )}
+
+                {/* Handle geolocation error */}
+                {geoError && (
+                    <div className="geolocation-error">
+                        <p>Impossible de déterminer votre localisation. Veuillez réessayer.</p>
+                        <IonButton onClick={requestIPGeolocation} disabled={geoLoading}>
+                            Réessayer la géolocalisation par IP
+                        </IonButton>
+                    </div>
+                )}
+
+                {/* Informational Text and Geolocation Buttons */}
+                {!slug && city && (
+                    <div className="info-geolocation">
+                        <p>Découvertes à {cityName}</p>
+                        {!isGeolocationEnabled ? (
+                            <IonButton
+                                onClick={handleEnableGeolocation}
+                                disabled={geoLoading}
+                                className="geolocation-button"
+                            >
+                                {geoLoading ? <IonSpinner name="crescent" /> : "Pour vous aiguiller plus précisément, pensez à activer la géolocalisation !"}
+                            </IonButton>
+                        ) : (
+                            <IonButton
+                                onClick={handleDisableGeolocation}
+                                disabled={geoLoading}
+                                className="geolocation-button"
+                                color="danger"
+                            >
+                                {geoLoading ? <IonSpinner name="crescent" /> : "Désactiver la géolocalisation"}
+                            </IonButton>
+                        )}
+                    </div>
+                )}
+
                 <div className="feed-layout">
-                    {/* Render filter panel only on non-mobile devices */}
                     {!isMobile && (
                         <div className="filter-panel">
                             <FilterPlaces
@@ -318,60 +370,12 @@ const Feed: React.FC = () => {
                     )}
 
                     <div className="main-content" ref={containerRef}>
-                        {/* <div className="search-bar-container">
+                        <div className="search-bar-container">
                             <SearchBar
                                 onSearch={setSearchQuery}
                                 placeholder="Rechercher un lieu"
                             />
-                        </div> */}
-                        {/* Display loading indicator if determining location */}
-                        {/* {geoLoading && (
-                            <div className="loading-geolocation">
-                                <IonSpinner name="crescent" />
-                                <p>Détermination de votre localisation...</p>
-                            </div>
-                        )} */}
-
-                        {/* ----- Geolocation Information Section ----- */}
-                        {/* {!slug && city && (
-                            <div className="info-geolocation">
-                                <p>
-                                    Géolocalisation proposée :{' '}
-                                    <IonButton
-                                        routerLink={`/${languageCode}/city/${city.slug}`}
-                                        fill="clear"
-                                        className="city-link-button"
-                                    >
-                                        {cityName} <IonIcon icon={chevronForwardOutline} />
-                                    </IonButton>
-                                </p>
-                                <IonButton
-                                    routerLink={`/${languageCode}/city`}
-                                    className="see-all-destinations-button"
-                                >
-                                    Voir les autres destinations
-                                </IonButton>
-                                {!isGeolocationEnabled ? (
-                                    <IonButton
-                                        onClick={handleEnableGeolocation}
-                                        disabled={geoLoading}
-                                        className="geolocation-button"
-                                    >
-                                        {geoLoading ? <IonSpinner name="crescent" /> : "Pour vous aiguiller plus précisément, pensez à activer la géolocalisation !"}
-                                    </IonButton>
-                                ) : (
-                                    <IonButton
-                                        onClick={handleDisableGeolocation}
-                                        disabled={geoLoading}
-                                        className="geolocation-button"
-                                        color="danger"
-                                    >
-                                        {geoLoading ? <IonSpinner name="crescent" /> : "Désactiver la géolocalisation"}
-                                    </IonButton>
-                                )}
-                            </div>
-                        )} */}
-                        {/* ----- End of Geolocation Information Section ----- */}
+                        </div>
 
                         {/* Section des filtres sélectionnés */}
                         {(selectedCategories.length > 0 || selectedAttributes.length > 0) && (
@@ -415,7 +419,7 @@ const Feed: React.FC = () => {
                                     columnWidth={ITEM_WIDTH}
                                     height={LIST_HEIGHT}
                                     rowCount={rowCount}
-                                    rowHeight={isMobile ? MOBILE_ITEM_HEIGHT : ITEM_HEIGHT + verticalGap}
+                                    rowHeight={rowHeight}
                                     width={containerWidth}
                                 >
                                     {Cell}

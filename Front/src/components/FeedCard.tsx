@@ -1,6 +1,6 @@
 // src/components/FeedCard.tsx
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import {
     IonCard,
     IonCardTitle,
@@ -23,7 +23,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInstagram, faGoogle } from '@fortawesome/free-brands-svg-icons';
 import { faGlobe } from '@fortawesome/free-solid-svg-icons';
 
-// Import du composant Compass
 import Compass from './Compass';
 
 interface FeedCardProps {
@@ -33,13 +32,13 @@ interface FeedCardProps {
     handleCategoryChange: (categoryId: number) => void;
     handleAttributeChange: (attributeId: number) => void;
     getTranslation: (slug: string, type: 'attributes' | 'categories') => string;
-    distance?: number; // New optional prop
+    distance?: number;
 }
 
 const MAX_VISIBLE_HASHTAGS = 4;
-const MAX_DESCRIPTION_LENGTH = 150; // Define maximum description length initially displayed
+const MAX_DESCRIPTION_LENGTH = 150;
 
-const FeedCard: React.FC<FeedCardProps> = ({
+const FeedCard: React.FC<FeedCardProps> = React.memo(({
     place,
     selectedCategories,
     selectedAttributes,
@@ -52,8 +51,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
     const [hashtagsExpanded, setHashtagsExpanded] = useState(false);
     const [descriptionExpanded, setDescriptionExpanded] = useState(false);
 
-    // Détecte si on est sur un device mobile (simple regex user-agent)
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const isMobile = useMemo(() => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent), []);
 
     const handleImageClick = (index: number) => {
         if (swiperRef.current) {
@@ -61,8 +59,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
         }
     };
 
-    // Combine attributes et categories en un tableau commun
-    const hashtags = [
+    const hashtags = useMemo(() => [
         ...place.attributes.map(attr => ({
             type: 'attribute' as const,
             id: attr.id,
@@ -75,7 +72,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
             slug: cat.slug,
             label: `#${getTranslation(cat.slug, 'categories')}`
         }))
-    ];
+    ], [place.attributes, place.categories, getTranslation]);
 
     const visibleHashtags = hashtagsExpanded ? hashtags : hashtags.slice(0, MAX_VISIBLE_HASHTAGS);
     const hasMoreHashtags = hashtags.length > MAX_VISIBLE_HASHTAGS;
@@ -84,7 +81,6 @@ const FeedCard: React.FC<FeedCardProps> = ({
         setHashtagsExpanded(prev => !prev);
     };
 
-    // Vérifie si un hashtag est actif
     const isHashtagActive = (hashtag: typeof hashtags[0]): boolean => {
         if (hashtag.type === 'category') {
             return selectedCategories.includes(hashtag.id);
@@ -93,7 +89,6 @@ const FeedCard: React.FC<FeedCardProps> = ({
         }
     };
 
-    // Gestion du clic sur un hashtag
     const handleHashtagClick = (hashtag: typeof hashtags[0]) => {
         if (hashtag.type === 'category') {
             handleCategoryChange(hashtag.id);
@@ -102,12 +97,14 @@ const FeedCard: React.FC<FeedCardProps> = ({
         }
     };
 
-    // Gestion de la description
     const description = place.description_scrapio ?? '';
     const isDescriptionLong = description.length > MAX_DESCRIPTION_LENGTH;
-    const visibleDescription = descriptionExpanded
-        ? description
-        : description.slice(0, MAX_DESCRIPTION_LENGTH) + (isDescriptionLong ? '...' : '');
+    const visibleDescription = useMemo(() =>
+        descriptionExpanded
+            ? description
+            : description.slice(0, MAX_DESCRIPTION_LENGTH) + (isDescriptionLong ? '...' : ''),
+        [description, descriptionExpanded, isDescriptionLong]
+    );
 
     const toggleDescription = () => {
         setDescriptionExpanded(prev => !prev);
@@ -147,36 +144,6 @@ const FeedCard: React.FC<FeedCardProps> = ({
                     <div>
                         <IonCardTitle>
                             {place.translation?.name}
-
-                            {/* Condition : si distance est défini */}
-                            {distance !== undefined && (
-                                <>
-                                    {/* Sur mobile => on affiche le compas */}
-                                    {isMobile ? (
-                                        // Mini conteneur pour le compas
-                                        <span className="distance-mobile">
-                                            <Compass
-                                                targetCoordinates={{
-                                                    lat: 47.731914,
-                                                    lng: -2.8555392,
-                                                }}
-                                            />
-                                            <span className="distance-text">
-                                                {distance.toFixed(2)} km
-                                            </span>
-                                        </span>
-
-                                    ) : (
-                                        // Sur desktop => icône + distance
-                                        <span className="distance-container">
-                                            <IonIcon icon={navigateOutline} className="travel-icon" />
-                                            <span className="distance-text">
-                                                {distance.toFixed(2)} km
-                                            </span>
-                                        </span>
-                                    )}
-                                </>
-                            )}
                         </IonCardTitle>
 
                         <IonCardSubtitle>
@@ -185,9 +152,35 @@ const FeedCard: React.FC<FeedCardProps> = ({
                     </div>
                 </IonItem>
 
+                {/* Section dédiée pour le Compass et la distance */}
+                {distance !== undefined && (
+                    <div className="compass-distance-container">
+                        {isMobile ? (
+                            <div className="compass-mobile">
+                                <Compass
+                                    targetCoordinates={{
+                                        lat: place.lat,
+                                        lng: place.lng,
+                                    }}
+                                />
+                                <span className="distance-text">
+                                    {distance?.toFixed(2)} km
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="compass-desktop">
+                                <IonIcon icon={navigateOutline} className="travel-icon" />
+                                <span className="distance-text">
+                                    {distance?.toFixed(2)} km
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 <IonCardContent>
                     <div className="hashtags">
-                        {visibleHashtags.map((hashtag, index) => (
+                        {visibleHashtags.map((hashtag) => (
                             <IonChip
                                 key={`${hashtag.type}-${hashtag.id}`}
                                 color={
@@ -294,8 +287,7 @@ const FeedCard: React.FC<FeedCardProps> = ({
                 </IonCardContent>
             </div>
         </IonCard>
-    );
-
-};
+    )
+});
 
 export default FeedCard;
