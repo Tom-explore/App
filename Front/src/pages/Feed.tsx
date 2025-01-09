@@ -18,7 +18,6 @@ import {
     IonButtons,
     IonButton,
     IonIcon,
-    IonSpinner,
     IonChip,
     IonLabel
 } from '@ionic/react';
@@ -45,9 +44,7 @@ const Feed: React.FC = () => {
         nearestCitySlug,
         geolocation,
         isGeolocationEnabled,
-        loading: geoLoading,
         error: geoError,
-        requestIPGeolocation,
         requestBrowserGeolocation,
         disableBrowserGeolocation,
         calculateDistanceFromPlace,
@@ -91,28 +88,17 @@ const Feed: React.FC = () => {
         }
     }, [slug, city, setCityPreviewAndFetchData]);
 
-    // If no slug is provided, use geolocation to determine the city
+    // Définir la ville basée sur la géolocalisation si activée
     useEffect(() => {
-        if (!slug) {
-            console.log("[Feed] No slug provided, determining city based on geolocation.");
-            if (geoLoading) {
-                console.log("[Feed] Geolocation is still loading.");
-                return;
-            }
-            if (geoError) {
-                console.error('[Feed] Geolocation error:', geoError);
-                return;
-            }
-            if (nearestCitySlug && !city) {
-                console.log("[Feed] Setting city based on geolocation:", nearestCitySlug);
+        if (!slug && isGeolocationEnabled && geolocation && !city) {
+            console.log("[Feed] Setting city based on geolocation:", nearestCitySlug);
+            if (nearestCitySlug) {
                 setCityPreviewAndFetchData(nearestCitySlug);
-            } else if (!nearestCitySlug && !geoLoading && !geoError) {
-                console.warn('[Feed] Nearest city slug is not available.');
             }
         }
-    }, [slug, geoLoading, geoError, nearestCitySlug, setCityPreviewAndFetchData, city]);
+    }, [slug, isGeolocationEnabled, geolocation, nearestCitySlug, city, setCityPreviewAndFetchData]);
 
-    // Once the city is defined, fetch all places if not already loaded
+    // Une fois la ville définie, fetch les lieux si ce n'est pas déjà fait
     useEffect(() => {
         if (city && !isAllPlacesLoaded) {
             console.log("[Feed] Fetching all places for city:", city.slug);
@@ -142,7 +128,7 @@ const Feed: React.FC = () => {
         return filtered;
     }, [filteredPlaces, searchQuery, allPlaces]);
 
-    // ----- Extract categories & attributes -----
+    // ----- Extraction des catégories & attributs -----
     const uniqueCategories = useMemo(() => {
         const categoriesMap = new Map<number, Category>();
         allPlaces.forEach(place => {
@@ -167,7 +153,7 @@ const Feed: React.FC = () => {
         return Array.from(attributesMap.values());
     }, [allPlaces]);
 
-    // ----- Use the custom useFilterPlaces hook -----
+    // ----- Utilisation du hook personnalisé useFilterPlaces -----
     const {
         selectedCategories,
         selectedAttributes,
@@ -183,14 +169,14 @@ const Feed: React.FC = () => {
         allPlaces: allPlaces
     });
 
-    // ----- Detect if the device is mobile -----
+    // ----- Détection du dispositif mobile -----
     const isMobile = useMemo(() => {
         if (typeof navigator === 'undefined') return false;
         const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
         return /android|iPad|iPhone|iPod/i.test(userAgent);
     }, []);
 
-    // ----- Layout with react-window -----
+    // ----- Layout avec react-window -----
     const COLUMN_COUNT = isMobile ? 1 : 2;
     const ITEM_HEIGHT = 450;
     const HORIZONTAL_GAP_PERCENT = 2;
@@ -219,14 +205,32 @@ const Feed: React.FC = () => {
         };
     }, []);
 
-    const horizontalGap = containerWidth * (HORIZONTAL_GAP_PERCENT / 100);
-    const verticalGap = containerWidth * (VERTICAL_GAP_PERCENT / 100);
+    const horizontalGap = useMemo(() => containerWidth * (HORIZONTAL_GAP_PERCENT / 100), [containerWidth]);
+    const verticalGap = useMemo(() => containerWidth * (VERTICAL_GAP_PERCENT / 100), [containerWidth]);
 
-    const ITEM_WIDTH = (containerWidth - (COLUMN_COUNT - 1) * horizontalGap) / COLUMN_COUNT;
-    const rowHeight = ITEM_HEIGHT + verticalGap;
+    const ITEM_WIDTH = useMemo(() => (containerWidth - (COLUMN_COUNT - 1) * horizontalGap) / COLUMN_COUNT, [containerWidth, COLUMN_COUNT, horizontalGap]);
+    const rowHeight = useMemo(() => ITEM_HEIGHT + verticalGap, [ITEM_HEIGHT, verticalGap]);
     const rowCount = useMemo(() => Math.ceil(sortedFilteredPlaces.length / COLUMN_COUNT), [sortedFilteredPlaces.length, COLUMN_COUNT]);
-    const LIST_HEIGHT = containerHeight;
+    const LIST_HEIGHT = useMemo(() => containerHeight, [containerHeight]);
 
+    // Mémoïsation des fonctions de changement de filtre
+    const memoizedHandleCategoryChange = useCallback((categoryId: number) => {
+        handleCategoryChange(categoryId);
+    }, [handleCategoryChange]);
+
+    const memoizedHandleAttributeChange = useCallback((attributeId: number) => {
+        handleAttributeChange(attributeId);
+    }, [handleAttributeChange]);
+
+    const memoizedGetTranslation = useCallback((slug: string, type: 'attributes' | 'categories') => {
+        return getTranslation(slug, type);
+    }, [getTranslation]);
+
+    // Mémoïsation des filtres sélectionnés pour les passer en props
+    const memoizedSelectedCategories = useMemo(() => selectedCategories, [selectedCategories]);
+    const memoizedSelectedAttributes = useMemo(() => selectedAttributes, [selectedAttributes]);
+
+    // Mémoïsation de la fonction Cell pour react-window
     const Cell = useCallback(({
         columnIndex,
         rowIndex,
@@ -243,9 +247,11 @@ const Feed: React.FC = () => {
         const place = sortedFilteredPlaces[index];
 
         // Calculer la distance
-        const distance = geolocation
-            ? calculateDistanceFromPlace(geolocation, { lat: place.lat, lng: place.lng })
-            : undefined;
+        const distance = useMemo(() => (
+            geolocation
+                ? calculateDistanceFromPlace(geolocation, { lat: place.lat, lng: place.lng })
+                : undefined
+        ), [geolocation, place.lat, place.lng, calculateDistanceFromPlace]);
 
         return (
             <div
@@ -258,18 +264,30 @@ const Feed: React.FC = () => {
             >
                 <FeedCard
                     place={place}
-                    selectedCategories={selectedCategories}
-                    selectedAttributes={selectedAttributes}
-                    handleCategoryChange={handleCategoryChange}
-                    handleAttributeChange={handleAttributeChange}
-                    getTranslation={getTranslation}
+                    selectedCategories={memoizedSelectedCategories}
+                    selectedAttributes={memoizedSelectedAttributes}
+                    handleCategoryChange={memoizedHandleCategoryChange}
+                    handleAttributeChange={memoizedHandleAttributeChange}
+                    getTranslation={memoizedGetTranslation}
                     distance={distance}
                 />
             </div>
         );
-    }, [COLUMN_COUNT, sortedFilteredPlaces, geolocation, calculateDistanceFromPlace, selectedCategories, selectedAttributes, handleCategoryChange, handleAttributeChange, getTranslation, horizontalGap, verticalGap]);
+    }, [
+        COLUMN_COUNT,
+        sortedFilteredPlaces,
+        geolocation,
+        calculateDistanceFromPlace,
+        memoizedSelectedCategories,
+        memoizedSelectedAttributes,
+        memoizedHandleCategoryChange,
+        memoizedHandleAttributeChange,
+        memoizedGetTranslation,
+        horizontalGap,
+        verticalGap
+    ]);
 
-    // Helper to get city name with translation if available
+    // Helper pour obtenir le nom de la ville avec traduction si disponible
     const getCityName = useCallback((): string => {
         if (city && 'translation' in city && city.translation?.name) {
             console.log("récup city name");
@@ -280,20 +298,21 @@ const Feed: React.FC = () => {
         return '';
     }, [city]);
 
-    // Using useMemo instead of useEffect and state for cityName
+    // Utilisation de useMemo au lieu de useEffect et state pour cityName
     const cityName = useMemo(() => {
         const name = getCityName();
         console.log('Computed cityName:', name);
         return name;
     }, [getCityName]);
 
-    // Handlers for Geolocation Buttons
+    // Handlers pour les boutons de géolocalisation
     const handleEnableGeolocation = useCallback(() => {
         requestBrowserGeolocation();
     }, [requestBrowserGeolocation]);
 
     const handleDisableGeolocation = useCallback(() => {
         disableBrowserGeolocation();
+        // Optionnel : réinitialiser les filtres ou la ville si nécessaire
     }, [disableBrowserGeolocation]);
 
     return (
@@ -310,45 +329,48 @@ const Feed: React.FC = () => {
             </IonHeader>
 
             <IonContent fullscreen className="ion-no-padding">
-                {/* Display loading indicator if determining location */}
-                {geoLoading && (
-                    <div className="loading-geolocation">
-                        <IonSpinner name="crescent" />
-                        <p>Détermination de votre localisation...</p>
-                    </div>
-                )}
-
-                {/* Handle geolocation error */}
-                {geoError && (
-                    <div className="geolocation-error">
-                        <p>Impossible de déterminer votre localisation. Veuillez réessayer.</p>
-                        <IonButton onClick={requestIPGeolocation} disabled={geoLoading}>
-                            Réessayer la géolocalisation par IP
-                        </IonButton>
-                    </div>
-                )}
-
-                {/* Informational Text and Geolocation Buttons */}
+                {/* Texte informatif et bouton de géolocalisation */}
                 {!slug && city && (
                     <div className="info-geolocation">
                         <p>Découvertes à {cityName}</p>
                         {!isGeolocationEnabled ? (
                             <IonButton
                                 onClick={handleEnableGeolocation}
-                                disabled={geoLoading}
                                 className="geolocation-button"
                             >
-                                {geoLoading ? <IonSpinner name="crescent" /> : "Pour vous aiguiller plus précisément, pensez à activer la géolocalisation !"}
+                                Activer la géolocalisation
                             </IonButton>
                         ) : (
                             <IonButton
                                 onClick={handleDisableGeolocation}
-                                disabled={geoLoading}
                                 className="geolocation-button"
                                 color="danger"
                             >
-                                {geoLoading ? <IonSpinner name="crescent" /> : "Désactiver la géolocalisation"}
+                                Désactiver la géolocalisation
                             </IonButton>
+                        )}
+                        {geoError && (
+                            <div className="geolocation-error">
+                                <p>{geoError}</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Afficher un bouton pour activer la géolocalisation si aucune ville n'est définie */}
+                {!slug && !city && (
+                    <div className="info-geolocation">
+                        <p>Découvrez des lieux près de vous.</p>
+                        <IonButton
+                            onClick={handleEnableGeolocation}
+                            className="geolocation-button"
+                        >
+                            Activer la géolocalisation
+                        </IonButton>
+                        {geoError && (
+                            <div className="geolocation-error">
+                                <p>{geoError}</p>
+                            </div>
                         )}
                     </div>
                 )}
@@ -361,9 +383,9 @@ const Feed: React.FC = () => {
                                 attributes={uniqueAttributes}
                                 selectedCategories={selectedCategories}
                                 selectedAttributes={selectedAttributes}
-                                handleCategoryChange={handleCategoryChange}
-                                handleAttributeChange={handleAttributeChange}
-                                getTranslation={getTranslation}
+                                handleCategoryChange={memoizedHandleCategoryChange}
+                                handleAttributeChange={memoizedHandleAttributeChange}
+                                getTranslation={memoizedGetTranslation}
                                 onUserInteractionChange={setIsInteracting}
                             />
                         </div>
@@ -432,11 +454,7 @@ const Feed: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                {isInteracting && (
-                    <div className="loading-overlay">
-                        <IonSpinner name="crescent" />
-                    </div>
-                )}
+
             </IonContent>
         </IonPage>
     );

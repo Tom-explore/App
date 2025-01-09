@@ -1,4 +1,4 @@
-// src/context/geolocationProvider.tsx
+// src/context/geolocationContext.tsx
 
 import React, {
     createContext,
@@ -7,6 +7,7 @@ import React, {
     ReactNode,
     useCallback,
     useRef,
+    useMemo,
 } from 'react';
 import citiesData from '../data/cities.json';
 
@@ -23,24 +24,25 @@ interface GeolocationContextProps {
     isGeolocationEnabled: boolean;
     loading: boolean;
     error: string | null;
-    heading: number | null; // Ajout du heading
-    listenerAdded: boolean; // Ajout de listenerAdded
-    requestIPGeolocation: () => void;
+    orientationPermission: boolean;
+    orientationError: string | null;
+    deviceHeading: number | null; // Nouvelle propriété
     requestBrowserGeolocation: () => void;
     disableBrowserGeolocation: () => void;
     calculateDistanceFromPlace: (coord1: Coordinates, coord2: Coordinates) => number;
     refreshGeolocation: () => void;
 }
 
+// Création du contexte avec des valeurs par défaut
 export const GeolocationContext = createContext<GeolocationContextProps>({
     nearestCitySlug: null,
     geolocation: null,
     isGeolocationEnabled: false,
     loading: true,
     error: null,
-    heading: null,
-    listenerAdded: false, // Initial value
-    requestIPGeolocation: () => { },
+    orientationPermission: false,
+    orientationError: null,
+    deviceHeading: null, // Nouvelle propriété initialisée à null
     requestBrowserGeolocation: () => { },
     disableBrowserGeolocation: () => { },
     calculateDistanceFromPlace: () => 0,
@@ -57,16 +59,16 @@ const GeolocationProvider: React.FC<GeolocationProviderProps> = ({ children }) =
     const [isGeolocationEnabled, setIsGeolocationEnabled] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [heading, setHeading] = useState<number | null>(null); // État pour le heading
-    const [listenerAdded, setListenerAdded] = useState<boolean>(false); // Nouvel état
+    const [orientationPermission, setOrientationPermission] = useState<boolean>(false);
+    const [orientationError, setOrientationError] = useState<string | null>(null);
+    const [deviceHeading, setDeviceHeading] = useState<number | null>(null); // Nouveau état
 
-    const watchIdRef = useRef<number | null>(null); // Pour la surveillance de la géolocalisation réelle
-    const stopHeadingRef = useRef<(() => void) | null>(null);
+    const watchIdRef = useRef<number | null>(null);
 
     // Fonctions utilitaires pour le calcul des distances
-    const deg2rad = (deg: number): number => deg * (Math.PI / 180);
+    const deg2rad = useCallback((deg: number): number => deg * (Math.PI / 180), []);
 
-    const getDistanceFromLatLonInKm = (
+    const getDistanceFromLatLonInKm = useCallback((
         lat1: number,
         lon1: number,
         lat2: number,
@@ -84,12 +86,12 @@ const GeolocationProvider: React.FC<GeolocationProviderProps> = ({ children }) =
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         const d = R * c; // Distance en km
         return d;
-    };
+    }, [deg2rad]);
 
     // Calculer la distance entre deux coordonnées
     const calculateDistanceFromPlace = useCallback((coord1: Coordinates, coord2: Coordinates): number => {
         return getDistanceFromLatLonInKm(coord1.lat, coord1.lng, coord2.lat, coord2.lng);
-    }, []);
+    }, [getDistanceFromLatLonInKm]);
 
     // Fonction pour trouver la ville la plus proche basée sur les coordonnées
     const findNearestCity = useCallback((userLat: number, userLng: number): string | null => {
@@ -107,74 +109,51 @@ const GeolocationProvider: React.FC<GeolocationProviderProps> = ({ children }) =
         }
 
         return nearestCity.slug;
-    }, []);
+    }, [getDistanceFromLatLonInKm]);
 
-    // Géolocalisation basée sur l'IP
-    const getLocationFromIP = async (): Promise<Coordinates> => {
-        try {
-            const response = await fetch('https://ipapi.co/json/');
-            if (!response.ok) {
-                throw new Error('Erreur lors de la récupération de la localisation via IP');
-            }
-            const data = await response.json();
-            return { lat: data.latitude, lng: data.longitude };
-        } catch (err) {
-            throw new Error('Impossible de déterminer la localisation via IP');
-        }
-    };
-
-    const requestIPGeolocation = useCallback(() => {
-        setLoading(true);
-        setError(null);
-        getLocationFromIP()
-            .then(({ lat, lng }) => {
-                setGeolocation({ lat, lng });
-                const nearestSlug = findNearestCity(lat, lng);
-                setNearestCitySlug(nearestSlug);
-            })
-            .catch((ipError: any) => {
-                console.error(ipError);
-                setError(ipError.message);
-            })
-            .finally(() => setLoading(false));
-    }, [findNearestCity]);
-
-    // Fonction pour commencer la surveillance de l'orientation via l'API Web
-    const startWatchingHeading = useCallback(() => {
-        if (typeof window === 'undefined' || !window.DeviceOrientationEvent) {
-            console.warn('DeviceOrientationEvent n\'est pas supporté sur cet appareil.');
-            setError('Orientation du dispositif non supportée.');
-            return;
-        }
-
-        try {
-            const handleOrientation = (event: DeviceOrientationEvent) => {
-                if (event.alpha !== null) {
-                    setHeading(event.alpha);
+    // Fonction pour demander la permission d'orientation
+    const requestOrientationPermission = useCallback(async () => {
+        if (
+            typeof window !== 'undefined' &&
+            typeof (window as any).DeviceOrientationEvent?.requestPermission === 'function'
+        ) {
+            try {
+                const response = await (window as any).DeviceOrientationEvent.requestPermission();
+                if (response === 'granted') {
+                    setOrientationPermission(true);
+                } else {
+                    setOrientationError("Permission refusée pour l'orientation (iOS).");
                 }
-            };
-
-            window.addEventListener('deviceorientation', handleOrientation, true);
-            setListenerAdded(true); // Mettre à jour l'état de l'écouteur
-
-            // Retourner une fonction de nettoyage pour retirer l'écouteur
-            const stopWatching = () => {
-                window.removeEventListener('deviceorientation', handleOrientation, true);
-                setListenerAdded(false); // Mettre à jour l'état de l'écouteur
-            };
-
-            return stopWatching;
-        } catch (error) {
-            console.error('Erreur lors de l\'ajout de l\'écouteur d\'orientation:', error);
-            setError('Erreur lors de l\'ajout de l\'écouteur d\'orientation.');
-            return;
+            } catch (err) {
+                setOrientationError("Erreur lors de la demande de permission (iOS).");
+            }
+        } else {
+            setOrientationPermission(true);
         }
     }, []);
 
-    // Géolocalisation réelle via l'API Web Geolocation
+    // Fonction pour gérer les événements d'orientation
+    const handleDeviceOrientation = useCallback((event: DeviceOrientationEvent) => {
+        let heading = 0;
+
+        // iOS: use webkitCompassHeading
+        const anyEvent = event as any;
+        if (typeof anyEvent.webkitCompassHeading === 'number') {
+            heading = anyEvent.webkitCompassHeading; // [0..360)
+        } else if (event.alpha != null) {
+            // Android/Chrome: alpha=0 quand le téléphone pointe vers le Nord
+            heading = (360 - event.alpha) % 360;
+        }
+
+        // Normaliser [0..360)
+        heading = (heading + 360) % 360;
+
+        setDeviceHeading(heading);
+    }, []);
+
+    // Fonction pour demander la géolocalisation et l'orientation
     const requestBrowserGeolocation = useCallback(() => {
         if (isGeolocationEnabled) {
-            // Déjà activé, pas besoin de demander à nouveau
             return;
         }
 
@@ -189,8 +168,20 @@ const GeolocationProvider: React.FC<GeolocationProviderProps> = ({ children }) =
             return;
         }
 
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
+        const getCurrentPositionPromise = (): Promise<GeolocationPosition> => {
+            return new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0,
+                });
+            });
+        };
+
+        const orientationPromise = requestOrientationPermission();
+
+        Promise.all([getCurrentPositionPromise(), orientationPromise])
+            .then(([position]) => {
                 const { latitude, longitude } = position.coords;
                 setGeolocation({ lat: latitude, lng: longitude });
                 const nearestSlug = findNearestCity(latitude, longitude);
@@ -198,27 +189,20 @@ const GeolocationProvider: React.FC<GeolocationProviderProps> = ({ children }) =
                 setError(null);
                 setLoading(false);
                 startWatchingRealGeolocation();
-                const stopWatchingHeading = startWatchingHeading(); // Démarrer la surveillance du heading
-                if (stopWatchingHeading) {
-                    (stopHeadingRef.current as React.MutableRefObject<() => void | null>['current']) = stopWatchingHeading;
-                }
-            },
-            async (geoError) => {
-                console.warn('La géolocalisation réelle a échoué ou a été refusée. Utilisation de la géolocalisation IP.', geoError);
-                setIsGeolocationEnabled(false);
-                setError('La géolocalisation réelle a échoué. Utilisation de la localisation IP.');
-                await requestIPGeolocation();
-                setLoading(false);
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0,
-            }
-        );
-    }, [isGeolocationEnabled, findNearestCity, requestIPGeolocation, startWatchingHeading]);
 
-    // Fonction pour commencer la surveillance de la géolocalisation réelle
+                if (orientationPermission) {
+                    // Ajouter l'écouteur d'événements si la permission est déjà accordée
+                    window.addEventListener('deviceorientation', handleDeviceOrientation, true);
+                }
+            })
+            .catch((geoError: any) => {
+                setIsGeolocationEnabled(false);
+                setError('La géolocalisation a échoué.');
+                setLoading(false);
+            });
+    }, [isGeolocationEnabled, findNearestCity, requestOrientationPermission, handleDeviceOrientation, orientationPermission]);
+
+    // Fonction pour commencer la surveillance de la géolocalisation
     const startWatchingRealGeolocation = useCallback(() => {
         if (watchIdRef.current !== null) {
             return;
@@ -249,72 +233,79 @@ const GeolocationProvider: React.FC<GeolocationProviderProps> = ({ children }) =
         watchIdRef.current = watchId;
     }, [findNearestCity]);
 
-    // Fonction pour désactiver la géolocalisation réelle
+    // Fonction pour désactiver la géolocalisation
     const disableBrowserGeolocation = useCallback(() => {
         setIsGeolocationEnabled(false);
         setError(null);
-        // Arrêter la surveillance de la géolocalisation réelle
+        setOrientationPermission(false);
+        setOrientationError(null);
+        setDeviceHeading(null);
+        setGeolocation(null);
+        setNearestCitySlug(null);
         if (watchIdRef.current !== null) {
             navigator.geolocation.clearWatch(watchIdRef.current);
             watchIdRef.current = null;
         }
-        // Arrêter la surveillance du heading via l'API Web
-        if (stopHeadingRef.current) {
-            stopHeadingRef.current(); // Appeler la fonction pour nettoyer
-            stopHeadingRef.current = null; // Assigner null
-        }
-        // Retour à la géolocalisation IP
-        requestIPGeolocation();
-    }, [requestIPGeolocation]);
+        // Nettoyer l'écouteur d'événements d'orientation
+        window.removeEventListener('deviceorientation', handleDeviceOrientation, true);
+    }, [handleDeviceOrientation]);
 
-
-    // Fonction pour rafraîchir la géolocalisation actuelle
+    // Fonction pour rafraîchir la géolocalisation
     const refreshGeolocation = useCallback(() => {
-        if (isGeolocationEnabled) {
-            requestBrowserGeolocation();
-        } else {
-            requestIPGeolocation();
-        }
-    }, [isGeolocationEnabled, requestBrowserGeolocation, requestIPGeolocation]);
+        requestBrowserGeolocation();
+    }, [requestBrowserGeolocation]);
 
-    // Nettoyage lors du démontage du composant
+    // Ajouter l'écouteur d'événements d'orientation lorsque les permissions sont accordées
+    useEffect(() => {
+        if (orientationPermission) {
+            window.addEventListener('deviceorientation', handleDeviceOrientation, true);
+        }
+
+        return () => {
+            window.removeEventListener('deviceorientation', handleDeviceOrientation, true);
+        };
+    }, [orientationPermission, handleDeviceOrientation]);
+
+    // Nettoyage lors du démontage du contexte
     useEffect(() => {
         return () => {
-            // Arrêter la surveillance de la géolocalisation réelle
             if (watchIdRef.current !== null) {
                 navigator.geolocation.clearWatch(watchIdRef.current);
             }
-            // Arrêter la surveillance du heading via l'API Web
-            if (stopHeadingRef.current) {
-                stopHeadingRef.current();
-            }
+            window.removeEventListener('deviceorientation', handleDeviceOrientation, true);
         };
-    }, []);
+    }, [handleDeviceOrientation]);
 
-    // Fetch initial géolocalisation (IP-based) si la géolocalisation réelle n'est pas activée
-    useEffect(() => {
-        if (!isGeolocationEnabled) {
-            requestIPGeolocation();
-        }
-    }, [isGeolocationEnabled, requestIPGeolocation]);
+    const contextValue = useMemo(() => ({
+        nearestCitySlug,
+        geolocation,
+        isGeolocationEnabled,
+        loading,
+        error,
+        orientationPermission,
+        orientationError,
+        deviceHeading, // Fournir deviceHeading dans le contexte
+        requestBrowserGeolocation,
+        disableBrowserGeolocation,
+        calculateDistanceFromPlace,
+        refreshGeolocation,
+    }), [
+        nearestCitySlug,
+        geolocation,
+        isGeolocationEnabled,
+        loading,
+        error,
+        orientationPermission,
+        orientationError,
+        deviceHeading,
+        requestBrowserGeolocation,
+        disableBrowserGeolocation,
+        calculateDistanceFromPlace,
+        refreshGeolocation,
+    ]);
 
     return (
-        <GeolocationContext.Provider
-            value={{
-                nearestCitySlug,
-                geolocation,
-                isGeolocationEnabled,
-                loading,
-                error,
-                heading, // Exposition du heading
-                listenerAdded, // Exposition de listenerAdded
-                requestIPGeolocation,
-                requestBrowserGeolocation,
-                disableBrowserGeolocation,
-                calculateDistanceFromPlace,
-                refreshGeolocation,
-            }}
-        >
+        <GeolocationContext.Provider value={contextValue}>
             {children}
         </GeolocationContext.Provider>
     );
