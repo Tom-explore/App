@@ -1,5 +1,3 @@
-// src/context/geolocationContext.tsx
-
 import React, {
     createContext,
     useState,

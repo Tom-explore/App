@@ -1,0 +1,170 @@
+/* src/styles/components/PlaceMarker.css */
+
+/* Styles généraux pour les icônes de cluster */
+.custom-cluster {
+    background: transparent;
+    border: none;
+    position: relative;
+}
+
+/* Styles dynamiques pour l'icône de cluster */
+.custom-cluster-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #3388ff;
+    /* Couleur de fond par défaut */
+    border: 3px solid white;
+    /* Bordure plus épaisse */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    /* Ombre plus prononcée */
+    transition: width 0.3s ease, height 0.3s ease;
+}
+
+/* Image à l'intérieur du cluster */
+.custom-cluster-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.8;
+    /* Opacité ajustée pour une meilleure lisibilité */
+}
+
+/* Nombre de markers dans le cluster */
+.custom-cluster-icon span {
+    position: absolute;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    /* Taille de police augmentée */
+    text-shadow: 0 0 3px black;
+    pointer-events: none;
+}
+
+/* Styles pour les icônes de markers individuels */
+.custom-marker-icon {
+    border-radius: 50%;
+    border: 3px solid white;
+    /* Bordure plus épaisse */
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+    /* Ombre plus prononcée */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Effet au survol des marqueurs individuels */
+.custom-marker-icon:hover {
+    transform: scale(1.3);
+    /* Augmentation de l'échelle au survol */
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.6);
+    /* Ombre plus forte */
+}
+
+/* Styles pour le contenu des popups */
+.popup-content {
+    text-align: center;
+    max-width: 300px;
+    /* Augmenté pour contenir plus d'informations */
+    padding: 20px;
+    /* Augmenté pour plus d'espace intérieur */
+    font-family: Arial, sans-serif;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    /* Rayon de bordure augmenté */
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    /* Ombre plus prononcée */
+    background-color: white;
+}
+
+.popup-image {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    /* Rayon de bordure ajusté */
+    margin-bottom: 15px;
+    /* Espace augmenté */
+}
+
+.popup-title {
+    font-size: 20px;
+    /* Taille de police augmentée */
+    font-weight: bold;
+    margin: 8px 0;
+    color: #333;
+}
+
+.popup-description {
+    font-size: 16px;
+    /* Taille de police augmentée */
+    color: #555;
+    margin-bottom: 15px;
+}
+
+.visit-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    /* Rayon de bordure ajusté */
+    padding: 10px 16px;
+    /* Padding augmenté */
+    cursor: pointer;
+    font-size: 16px;
+    /* Taille de police augmentée */
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.visit-button:hover {
+    background-color: #0056b3;
+}
+
+/* Styles spécifiques pour les appareils mobiles */
+@media (max-width: 768px) {
+    .custom-cluster-icon span {
+        font-size: 16px;
+        /* Taille de police réduite pour mobile */
+    }
+
+    .custom-marker-icon {
+        /* Maintenir les ajustements précédents */
+    }
+
+    .popup-content {
+        max-width: 250px;
+        /* Ajustement de la largeur pour mobile */
+        padding: 15px;
+        /* Ajustement de l'espace intérieur */
+    }
+
+    .popup-title {
+        font-size: 18px;
+        /* Ajustement de la taille du texte pour mobile */
+    }
+
+    .popup-description {
+        font-size: 14px;
+        /* Ajustement de la description pour mobile */
+    }
+
+    .popup-image {
+        border-radius: 8px;
+        /* Ajustement du rayon des coins de l'image */
+        margin-bottom: 12px;
+        /* Ajustement de l'espace */
+    }
+
+    .visit-button {
+        padding: 8px 14px;
+        /* Ajustement du padding */
+        font-size: 14px;
+        /* Ajustement de la taille de police */
+    }
+
+    .custom-cluster-icon span {
+        font-size: 16px;
+    }
+}

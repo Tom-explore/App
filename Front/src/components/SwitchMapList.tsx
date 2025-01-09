@@ -1,14 +1,14 @@
 import React from 'react';
 import { IonButton, IonIcon } from '@ionic/react';
 import { listOutline, mapOutline } from 'ionicons/icons';
-import '../styles/components/SwitchCityMapList.css'
+import '../styles/components/SwitchMapList.css'
 
-interface SwitchMapListCityProps {
+interface SwitchMapListProps {
     currentMode: 'list' | 'map';
     onSwitch: (mode: 'list' | 'map') => void;
 }
 
-const SwitchMapListCity: React.FC<SwitchMapListCityProps> = ({ currentMode, onSwitch }) => {
+const SwitchMapList: React.FC<SwitchMapListProps> = ({ currentMode, onSwitch }) => {
     const isMapMode = currentMode === 'map';
 
     const handleClick = () => {
@@ -28,4 +28,4 @@ const SwitchMapListCity: React.FC<SwitchMapListCityProps> = ({ currentMode, onSw
     );
 };
 
-export default SwitchMapListCity;
+export default SwitchMapList;

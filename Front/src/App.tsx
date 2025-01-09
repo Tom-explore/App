@@ -14,7 +14,6 @@ import { Route, Redirect, useLocation, useHistory } from 'react-router-dom';
 import { useLanguage } from './context/languageContext';
 import { airplaneSharp, personSharp, locationSharp, homeSharp } from 'ionicons/icons';
 import Tab1 from './pages/Tab1';
-import MapDisplay from './pages/MapCityDisplay';
 import CitiesDisplay from './pages/CitiesDisplay';
 import languages from './data/languages.json';
 import City from './pages/City';

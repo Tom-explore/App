@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { IonContent, IonPage } from '@ionic/react';
-import Map from '../components/Map';
-import CityMarkers from '../components/CityMarkers';
+import Map from './Map';
+import CityMarkers from './CityMarkers';
 
 interface MapCityDisplayProps {
   cities: any[]; // Liste des villes filtrées

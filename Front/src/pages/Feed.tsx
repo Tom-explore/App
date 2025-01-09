@@ -35,6 +35,8 @@ import FilterPlaces from '../components/FilterPlaces';
 import { Category, Attribute } from '../types/CategoriesAttributesInterfaces';
 import useFilterPlaces from '../util/useFilterPlaces';
 import { GeolocationContext } from '../context/geolocationContext';
+import SwitchMapList from '../components/SwitchMapList';
+import MapPlacesDisplay from '../components/MapPlaceDisplay';
 
 const Feed: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -63,6 +65,7 @@ const Feed: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [filteredPlaces, setFilteredPlaces] = useState<Place[]>([]);
     const [isInteracting, setIsInteracting] = useState<boolean>(false);
+    const [viewMode, setViewMode] = useState<'list' | 'map'>('list'); // New state for view mode
 
     const allPlaces = useMemo(() => {
         return [
@@ -108,6 +111,8 @@ const Feed: React.FC = () => {
 
     const sortedFilteredPlaces = useMemo(() => {
         let filtered = filteredPlaces.length > 0 ? filteredPlaces : allPlaces;
+
+        // Filtrage par requête de recherche
         if (searchQuery.trim() !== '') {
             const query = searchQuery.trim().toLowerCase();
             filtered = filtered.filter(place =>
@@ -116,14 +121,11 @@ const Feed: React.FC = () => {
             );
         }
 
+        // Filtrage par nombre minimum de reviews
         filtered = filtered.filter(place => (place.reviews_google_count || 0) >= 100);
 
-        filtered.sort((a, b) => {
-            if (b.reviews_google_rating !== a.reviews_google_rating) {
-                return b.reviews_google_rating - a.reviews_google_rating;
-            }
-            return (b.reviews_google_count || 0) - (a.reviews_google_count || 0);
-        });
+        // Tri par nombre de reviews_count en ordre décroissant
+        filtered.sort((a, b) => (b.reviews_google_count || 0) - (a.reviews_google_count || 0));
 
         return filtered;
     }, [filteredPlaces, searchQuery, allPlaces]);
@@ -325,6 +327,9 @@ const Feed: React.FC = () => {
                         </IonButton>
                     </IonButtons>
                     <IonTitle>Feed</IonTitle>
+                    <IonButtons slot="end">
+                        <SwitchMapList currentMode={viewMode} onSwitch={setViewMode} />
+                    </IonButtons>
                 </IonToolbar>
             </IonHeader>
 
@@ -433,23 +438,27 @@ const Feed: React.FC = () => {
                             </div>
                         )}
 
-                        <div className="grid-container">
-                            {sortedFilteredPlaces.length > 0 ? (
-                                <Grid
-                                    className="no-scrollbar"
-                                    columnCount={COLUMN_COUNT}
-                                    columnWidth={ITEM_WIDTH}
-                                    height={LIST_HEIGHT}
-                                    rowCount={rowCount}
-                                    rowHeight={rowHeight}
-                                    width={containerWidth}
-                                >
-                                    {Cell}
-                                </Grid>
+                        <div className="view-mode-container">
+                            {viewMode === 'list' ? (
+                                sortedFilteredPlaces.length > 0 ? (
+                                    <Grid
+                                        className="no-scrollbar"
+                                        columnCount={COLUMN_COUNT}
+                                        columnWidth={ITEM_WIDTH}
+                                        height={LIST_HEIGHT}
+                                        rowCount={rowCount}
+                                        rowHeight={rowHeight}
+                                        width={containerWidth}
+                                    >
+                                        {Cell}
+                                    </Grid>
+                                ) : (
+                                    <div className="no-results">
+                                        <p>Oops, aucun résultat ne correspond ! 😕</p>
+                                    </div>
+                                )
                             ) : (
-                                <div className="no-results">
-                                    <p>Oops, aucun résultat ne correspond ! 😕</p>
-                                </div>
+                                <MapPlacesDisplay places={sortedFilteredPlaces} />
                             )}
                         </div>
                     </div>
@@ -458,7 +467,5 @@ const Feed: React.FC = () => {
             </IonContent>
         </IonPage>
     );
-
 };
-
 export default Feed;

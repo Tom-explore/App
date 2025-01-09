@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { IonHeader, IonToolbar, IonContent, IonPage } from '@ionic/react';
-import SwitchMapListCity from '../components/SwitchCityMapList';
+import SwitchMapList from '../components/SwitchMapList';
 import SearchBar from '../components/SearchBar';
 import CityList from './CityList';
-import MapCityDisplay from './MapCityDisplay';
+import MapCityDisplay from '../components/MapCityDisplay';
 import citiesData from '../data/cities.json';
 import { useLanguage } from '../context/languageContext';
 import '../styles/pages/CitiesDisplay.css'
@@ -65,7 +65,7 @@ const CitiesDisplay: React.FC = () => {
                 <IonToolbar className="transparent-toolbar"> {/* Ajout de la classe */}
                     <div className="cities-display-header">
                         <div className="header-left">
-                            <SwitchMapListCity currentMode={viewMode} onSwitch={handleSwitch} />
+                            <SwitchMapList currentMode={viewMode} onSwitch={handleSwitch} />
                         </div>
                         <div className="header-right">
                             <SearchBar onSearch={handleSearch} placeholder='Rechercher une ville' />
