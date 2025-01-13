@@ -99,7 +99,8 @@ const City: React.FC = () => {
             ...places.restaurantsBars.flatMap(p => p.categories),
             ...places.touristAttractions.flatMap(p => p.categories),
         ];
-        return Array.from(new Map(combinedCats.map(cat => [cat.id, cat])).values());
+        const resCat = Array.from(new Map(combinedCats.map(cat => [cat.id, cat])).values());
+        return resCat;
     }, [places]);
 
     const uniqueAttributes: Attribute[] = useMemo(() => {
@@ -107,7 +108,8 @@ const City: React.FC = () => {
             ...places.restaurantsBars.flatMap(p => p.attributes),
             ...places.touristAttractions.flatMap(p => p.attributes),
         ];
-        return Array.from(new Map(combinedAttrs.map(a => [a.id, a])).values());
+        const resAttr = Array.from(new Map(combinedAttrs.map(a => [a.id, a])).values());
+        return resAttr;
     }, [places]);
 
     /**
@@ -223,6 +225,7 @@ const City: React.FC = () => {
                         const category = uniqueCategories.find(
                             cat => cat.slug === config.categorySlug
                         );
+
                         if (!category) {
                             console.warn(
                                 `Category with slug "${config.categorySlug}" not found.`
@@ -248,7 +251,8 @@ const City: React.FC = () => {
                                         allPlaces={allPlaces}
                                         isPreview={true}
                                         isMobile={isMobile}
-                                        category={category}
+                                        categories={[category]}
+                                        attributes={[]}
                                     />
                                 </div>
                             );

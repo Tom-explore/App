@@ -151,15 +151,22 @@ const GeolocationProvider: React.FC<GeolocationProviderProps> = ({ children }) =
 
     // Fonction pour demander la géolocalisation et l'orientation
     const requestBrowserGeolocation = useCallback(() => {
+        console.log('requestBrowserGeolocation appelé');
+        console.log('isGeolocationEnabled:', isGeolocationEnabled);
+
         if (isGeolocationEnabled) {
+            console.log('La géolocalisation est déjà activée.');
             return;
         }
 
         setLoading(true);
+        console.log('Chargement démarré');
         setError(null);
         setIsGeolocationEnabled(true);
+        console.log('isGeolocationEnabled mis à true');
 
         if (!navigator.geolocation) {
+            console.log('navigator.geolocation non supporté');
             setError('La géolocalisation n\'est pas supportée par ce navigateur.');
             setLoading(false);
             setIsGeolocationEnabled(false);
@@ -167,6 +174,7 @@ const GeolocationProvider: React.FC<GeolocationProviderProps> = ({ children }) =
         }
 
         const getCurrentPositionPromise = (): Promise<GeolocationPosition> => {
+            console.log('Appel à navigator.geolocation.getCurrentPosition');
             return new Promise((resolve, reject) => {
                 navigator.geolocation.getCurrentPosition(resolve, reject, {
                     enableHighAccuracy: true,
@@ -176,29 +184,49 @@ const GeolocationProvider: React.FC<GeolocationProviderProps> = ({ children }) =
             });
         };
 
+        console.log('Demande de permission pour l\'orientation');
         const orientationPromise = requestOrientationPermission();
 
         Promise.all([getCurrentPositionPromise(), orientationPromise])
             .then(([position]) => {
+                console.log('Position géographique obtenue:', position);
                 const { latitude, longitude } = position.coords;
+                console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
                 setGeolocation({ lat: latitude, lng: longitude });
+
                 const nearestSlug = findNearestCity(latitude, longitude);
+                console.log('Ville la plus proche trouvée:', nearestSlug);
                 setNearestCitySlug(nearestSlug);
+
                 setError(null);
                 setLoading(false);
+                console.log('Chargement terminé et erreurs réinitialisées');
+
                 startWatchingRealGeolocation();
+                console.log('Début de la surveillance de la géolocalisation en temps réel');
 
                 if (orientationPermission) {
+                    console.log('Permission d\'orientation accordée, ajout de l\'écouteur d\'événements');
                     // Ajouter l'écouteur d'événements si la permission est déjà accordée
                     window.addEventListener('deviceorientation', handleDeviceOrientation, true);
+                } else {
+                    console.log('Permission d\'orientation non accordée');
                 }
             })
             .catch((geoError: any) => {
+                console.error('Erreur lors de la géolocalisation:', geoError);
                 setIsGeolocationEnabled(false);
                 setError('La géolocalisation a échoué.');
                 setLoading(false);
+                console.log('isGeolocationEnabled mis à false et chargement terminé après erreur');
             });
-    }, [isGeolocationEnabled, findNearestCity, requestOrientationPermission, handleDeviceOrientation, orientationPermission]);
+    }, [
+        isGeolocationEnabled,
+        findNearestCity,
+        requestOrientationPermission,
+        handleDeviceOrientation,
+        orientationPermission
+    ]);
 
     // Fonction pour commencer la surveillance de la géolocalisation
     const startWatchingRealGeolocation = useCallback(() => {

@@ -14,6 +14,14 @@
     --backdrop-bg: rgba(0, 0, 0, 0.5);
 }
 
+
+/* .place-card.feed-active {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transform: scale(2);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    z-index: 1001;
+} */
+
 /* Base styles for PlaceCard */
 .place-card {
     background: #fff;
@@ -36,54 +44,43 @@
 }
 
 /* Active state: fixed size without scaling */
-.place-card.active {
+/* .place-card.active {
     position: fixed;
-    /* Fixe la carte par rapport à la fenêtre */
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: var(--card-active-width);
     height: var(--card-active-height);
-    z-index: 1000;
-    /* Assure que la carte active est au-dessus */
+    z-index: 1002;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
     background: #fff;
-    /* Ajouter une légère animation pour l'agrandissement */
     animation: expandCard var(--transition-duration) var(--transition-ease);
     max-width: 90vw;
-    /* Assure que la carte ne dépasse pas la largeur de la fenêtre */
     max-height: 90vh;
-    /* Assure que la carte ne dépasse pas la hauteur de la fenêtre */
-    overflow: hidden;
-    /* Empêche le débordement du contenu */
-}
+    overflow: visible;
+} */
 
 /* Ajout d'une classe pour le rendu modal via Portal */
-.place-card.modal.modal-card {
+/* .place-card.modal.modal-card {
     position: fixed !important;
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
     width: calc(var(--card-active-width) * 1.1) !important;
-    /* Agrandir de 10% */
     height: calc(var(--card-active-height) * 1.1) !important;
-    /* Agrandir de 10% */
     max-width: 95vw !important;
-    /* Ajuster pour permettre plus de place */
     max-height: 95vh !important;
-    /* Ajuster pour permettre plus de place */
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3) !important;
     overflow-y: auto !important;
     z-index: 1000 !important;
     display: flex;
     flex-direction: column;
     border-radius: 12px;
-    /* Augmenter légèrement le rayon des coins */
     background: #fff;
-}
+} */
 
 /* Animation pour l'agrandissement */
-@keyframes expandCard {
+/* @keyframes expandCard {
     from {
         opacity: 0;
         transform: translate(-50%, -60%) scale(0.9);
@@ -93,7 +90,7 @@
         opacity: 1;
         transform: translate(-50%, -50%) scale(1);
     }
-}
+} */
 
 /* Image styling */
 .place-image {

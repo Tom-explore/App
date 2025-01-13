@@ -1,0 +1,36 @@
+/* src/styles/components/MapPlacesDisplay.css */
+
+.map-container {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+}
+
+.leaflet-container {
+    height: 100%;
+    width: 100%;
+}
+
+.carousel-wrapper {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    max-width: 100%;
+    z-index: 1000;
+    overflow: visible;
+    overflow-x: auto;
+}
+
+/* Panneau de filtres fixe à gauche */
+.filter-panel {
+    width: 300px;
+    /* Largeur fixe du panneau de filtres */
+    background-color: #f8f8f8;
+    /* Couleur de fond */
+    border-right: 1px solid #ddd;
+    /* Bordure droite pour séparation */
+    overflow-y: auto;
+    /* Défilement vertical si contenu déborde */
+    padding: 16px;
+    /* Espacement interne */
+}

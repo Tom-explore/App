@@ -4,13 +4,12 @@ import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInstagram, faGoogle } from '@fortawesome/free-brands-svg-icons';
-import { faTimes, faGlobe, faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faArrowRight, faGlobe } from '@fortawesome/free-solid-svg-icons';
 import { Place, PlaceType } from '../types/PlacesInterfaces';
-import '../styles/components/PlaceCard.css'
+import '../styles/components/PlaceCard.css';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Scrollbar, A11y } from 'swiper/modules';
 import SwiperCore from 'swiper';
-
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -27,6 +26,7 @@ interface PlaceCardProps {
     onNext?: () => void;
     isFirst?: boolean;
     isLast?: boolean;
+    isFeed: boolean;
 }
 
 const PlaceCard: React.FC<PlaceCardProps> = ({
@@ -39,19 +39,60 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
     onNext,
     isFirst,
     isLast,
+    isFeed,
 }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [touchStartY, setTouchStartY] = useState<number | null>(null);
-    const navigate = useIonRouter(); // Initialisation correcte
-    const swiperRef = useRef<SwiperCore | null>(null); // Référence pour le Swiper
+    const navigate = useIonRouter();
+    const swiperRef = useRef<SwiperCore | null>(null);
+    const feedIsActive = isFeed && isActive;
 
+    const finalIsActive = !isFeed && isActive;
+
+    /**
+     * Variants pour Framer Motion
+     */
+    const variants = {
+        normal: {
+            opacity: 1,
+            scale: 1,
+        },
+        activeFeed: {
+            opacity: 1,
+            scale: 1.05,
+            transition: {
+                type: 'spring',
+                stiffness: 300,
+                damping: 30,
+            },
+        },
+        active: {
+            opacity: 1,
+            scale: 1,
+            transition: {
+                type: 'spring',
+                stiffness: 300,
+                damping: 30,
+            },
+        },
+    };
+
+    /**
+     * 2. Gérer le clic sur l’image dans le slider modal
+     */
     const handleImageClick = (index: number) => {
         if (swiperRef.current) {
-            swiperRef.current.slideTo(index); // Défilement au slide correspondant
+            swiperRef.current.slideTo(index);
         }
     };
 
+    /**
+     * 3. Gérer le clic sur la carte (mobile => expand, desktop => modal)
+     */
     const handleCardClick = (e: React.MouseEvent) => {
+        // Si on est en feed, on ne fait rien de spécial
+        if (isFeed) return;
+
         const target = e.target as HTMLElement;
         if (
             target.closest('.insta-link') ||
@@ -61,6 +102,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
             return;
         }
 
+        // Logique habituelle (hors feed)
         if (isMobile && !isModalView) {
             setIsExpanded((prev) => !prev);
         } else if (!isMobile && onDesktopClick && !isModalView) {
@@ -68,11 +110,16 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
         }
     };
 
+    /**
+     * 4. Swipes en mobile (uniquement hors feed)
+     */
     const handleTouchStart = (e: React.TouchEvent) => {
+        if (isFeed) return; // Pas de swipe en feed
         setTouchStartY(e.touches[0].clientY);
     };
 
     const handleTouchEnd = (e: React.TouchEvent) => {
+        if (isFeed) return; // Pas de swipe en feed
         if (touchStartY !== null && isMobile && !isModalView) {
             const touchEndY = e.changedTouches[0].clientY;
             const swipeDistance = touchStartY - touchEndY;
@@ -85,9 +132,14 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
         }
     };
 
-    // Helper functions pour formater les jours et les heures
+    /**
+     * 5. Données spécifiques si carte est "active" (et hors feed).
+     */
     const getDayName = (dayOfWeek: number): string => {
-        const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+        const days = [
+            'Dimanche', 'Lundi', 'Mardi',
+            'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'
+        ];
         return days[dayOfWeek];
     };
 
@@ -99,9 +151,9 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
         return `${formattedHour}:${minute.toString().padStart(2, '0')} ${ampm}`;
     };
 
-    // Extraction des données spécifiques en fonction du type de lieu
     let specificData: React.ReactNode = null;
-    if (isActive && !isMobile) {
+    // On ne montre ces blocs détaillés que si finalIsActive = true (et non isFeed)
+    if (finalIsActive && !isMobile) {
         switch (place.placeType) {
             case PlaceType.HOTEL:
                 specificData = (
@@ -109,47 +161,70 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                         <h4>Informations Hôtel</h4>
                         {place.booking_link && (
                             <p>
-                                Booking: <a href={place.booking_link} target="_blank" rel="noopener noreferrer">Lien</a>
+                                Booking :{' '}
+                                <a
+                                    href={place.booking_link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    Lien
+                                </a>
                             </p>
                         )}
                         {place.avg_price_per_night !== undefined && (
-                            <p>Prix/Nuit: {place.avg_price_per_night} €</p>
+                            <p>Prix/Nuit : {place.avg_price_per_night} €</p>
                         )}
                         {place.pets_authorized !== undefined && (
-                            <p>Animaux autorisés: {place.pets_authorized ? 'Oui' : 'Non'}</p>
+                            <p>Animaux autorisés : {place.pets_authorized ? 'Oui' : 'Non'}</p>
                         )}
                     </div>
                 );
                 break;
+
             case PlaceType.RESTAURANT_BAR:
                 specificData = (
                     <div className="type-specific">
                         <h4>Informations Restaurant/Bar</h4>
                         {place.menu && (
                             <p>
-                                <a href={place.menu} target="_blank" rel="noopener noreferrer">Voir le menu</a>
+                                <a
+                                    href={place.menu}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    Voir le menu
+                                </a>
                             </p>
                         )}
                         {place.price_min !== undefined && place.price_max !== undefined && (
-                            <p>Prix : {place.price_min}€ - {place.price_max}€</p>
+                            <p>
+                                Prix : {place.price_min}€ - {place.price_max}€
+                            </p>
                         )}
                     </div>
                 );
                 break;
+
             case PlaceType.TOURIST_ATTRACTION:
                 specificData = (
                     <div className="type-specific">
                         <h4>Informations Attraction Touristique</h4>
                         {place.wiki_link && (
                             <p>
-                                <a href={place.wiki_link} target="_blank" rel="noopener noreferrer">Wiki</a>
+                                <a
+                                    href={place.wiki_link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    Wiki
+                                </a>
                             </p>
                         )}
                         {place.price_regular !== undefined && (
-                            <p>Prix Adulte: {place.price_regular}€</p>
+                            <p>Prix Adulte : {place.price_regular}€</p>
                         )}
                         {place.price_children !== undefined && (
-                            <p>Prix Enfant: {place.price_children}€</p>
+                            <p>Prix Enfant : {place.price_children}€</p>
                         )}
                         {place.tickets_gyg && (
                             <p>Tickets disponibles sur GetYourGuide</p>
@@ -159,7 +234,11 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                         )}
                         {place.tickets_direct_site && (
                             <p>
-                                <a href={place.tickets_direct_site} target="_blank" rel="noopener noreferrer">
+                                <a
+                                    href={place.tickets_direct_site}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
                                     Acheter sur le site officiel
                                 </a>
                             </p>
@@ -167,17 +246,23 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                     </div>
                 );
                 break;
+
             default:
                 break;
         }
     }
 
+    /**
+     * 6. Logique pour maj d’URL (name=...) => ignorée si isFeed
+     */
     useEffect(() => {
+        if (isFeed) return; // On saute toute la logique param
         const currentUrl = new URL(window.location.href);
 
-        if (isActive) {
+        if (finalIsActive) {
+            // On set le param ?name=...
             const params = new URLSearchParams({
-                name: `${place.id}-${place.translation?.slug}` || '',
+                name: `${place.id}-${place.translation?.slug}` || ''
             });
 
             let needsUpdate = false;
@@ -189,11 +274,18 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
             }
 
             if (needsUpdate) {
-                navigate.push(`${currentUrl.pathname}?${currentUrl.searchParams.toString()}`);
+                navigate.push(
+                    `${currentUrl.pathname}?${currentUrl.searchParams.toString()}`
+                );
             }
         } else {
+            // Suppression param
             let needsUpdate = false;
-            if (currentUrl.searchParams.has('type') || currentUrl.searchParams.has('category') || currentUrl.searchParams.has('name')) {
+            if (
+                currentUrl.searchParams.has('type') ||
+                currentUrl.searchParams.has('category') ||
+                currentUrl.searchParams.has('name')
+            ) {
                 needsUpdate = true;
                 currentUrl.searchParams.delete('type');
                 currentUrl.searchParams.delete('category');
@@ -201,35 +293,48 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
             }
 
             if (needsUpdate) {
-                navigate.push(`${currentUrl.pathname}${currentUrl.searchParams.toString() ? `?${currentUrl.searchParams.toString()}` : ''}`);
+                navigate.push(
+                    `${currentUrl.pathname}${currentUrl.searchParams.toString()
+                        ? `?${currentUrl.searchParams.toString()}`
+                        : ''
+                    }`
+                );
             }
         }
-    }, [isActive, place, navigate]);
+    }, [finalIsActive, place, navigate, isFeed]);
 
+    /**
+     * Rendu principal
+     */
     return (
         <div className="place-card-wrapper">
             <AnimatePresence>
                 <motion.div
-                    className={`place-card ${isActive && !isMobile ? 'active' : ''} ${isModalView ? 'modal modal-card' : ''}`}
+                    // Appliquer 2 classes principales :
+                    // - 'active' => modal/zoom hors feed
+                    // - 'modal modal-card' => mode modal
+                    className={`place-card ${finalIsActive && !isMobile ? 'active' : ''
+                        } ${isModalView ? 'modal modal-card' : ''}`}
                     onClick={handleCardClick}
                     onTouchStart={handleTouchStart}
                     onTouchEnd={handleTouchEnd}
                     layout
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    variants={variants}
+                    initial="normal"
+                    animate={feedIsActive ? 'activeFeed' : finalIsActive ? 'active' : 'normal'}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 >
-                    {/* Photo Slider pour le Mode Modal */}
+                    {/* Slider (modalView) */}
                     {isModalView && (
                         <Suspense fallback={<div>Chargement...</div>}>
                             <Swiper
                                 modules={[Navigation, Pagination, Scrollbar, A11y]}
-                                spaceBetween={5} // Espace entre les slides
-                                slidesPerView={1.2} // Afficher une partie de l'image suivante
+                                spaceBetween={5}
+                                slidesPerView={1.2}
                                 pagination={{ clickable: true }}
                                 className="modal-photo-slider"
-                                onSwiper={(swiper) => (swiperRef.current = swiper)} // Stocke l'instance Swiper
+                                onSwiper={(swiper) => (swiperRef.current = swiper)}
                             >
                                 {place.images.map((img, index) => (
                                     <SwiperSlide key={img.id} className="image-slide">
@@ -238,7 +343,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                                             src={`https://lh3.googleusercontent.com/p/${img.slug}`}
                                             alt={`${place.translation?.name} - ${img.id}`}
                                             className="modal-photo"
-                                            onClick={() => handleImageClick(index)} // Défilement au clic
+                                            onClick={() => handleImageClick(index)}
                                         />
                                     </SwiperSlide>
                                 ))}
@@ -246,6 +351,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                         </Suspense>
                     )}
 
+                    {/* Photo statique si pas en modal */}
                     {!isModalView && (
                         <img
                             loading="lazy"
@@ -255,12 +361,16 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                         />
                     )}
 
+                    {/* Infos principales */}
                     <div className="place-info">
                         <h3>{place.translation?.name || 'No Name'}</h3>
-                        <p className="address">{place.address || 'No address available'}</p>
+                        <p className="address">
+                            {place.address || 'No address available'}
+                        </p>
                         <div className="rating">
                             <span>
-                                {place.reviews_google_rating}⭐ ({place.reviews_google_count} reviews)
+                                {place.reviews_google_rating}⭐ (
+                                {place.reviews_google_count} reviews)
                             </span>
                         </div>
                         <div className="place-links">
@@ -302,65 +412,64 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                             )}
                         </div>
                     </div>
-                    {(isExpanded && isMobile && !isModalView) || (isActive && !isMobile) ? (
-                        <div className="expanded-content">
-                            {specificData}
 
-                            {/* Afficher les heures d'ouverture */}
-                            {place.openingHours && place.openingHours.length > 0 && (
-                                <div className="opening-hours">
-                                    <h4>Heures d'ouverture</h4>
-                                    <ul>
-                                        {place.openingHours.map((oh, index) => (
-                                            <li key={index}>
-                                                {getDayName(oh.day_of_week)}: {formatTime(oh.start_time_1)} -{' '}
-                                                {formatTime(oh.stop_time_1)}
-                                                {oh.start_time_2 && oh.stop_time_2
-                                                    ? `, ${formatTime(oh.start_time_2)} - ${formatTime(
-                                                        oh.stop_time_2
-                                                    )}`
-                                                    : ''}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
+                    {/* Contenu étendu => finalIsActive & !isMobile ou isExpanded en mobile */}
+                    {((isExpanded && isMobile && !isModalView) ||
+                        (finalIsActive && !isMobile)) && (
+                            <div className="expanded-content">
+                                {specificData}
 
-                            {/* Afficher les niveaux de fréquentation */}
-                            {place.crowdLevels && place.crowdLevels.length > 0 && (
-                                <div className="crowd-levels">
-                                    <h4>Niveaux de fréquentation</h4>
-                                    <ul>
-                                        {place.crowdLevels.map((cl, index) => (
-                                            <li key={index}>
-                                                {getDayName(cl.day_of_week)} à {formatTime(cl.hour)}: {cl.status}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-                        </div>
-                    ) : null}
+                                {place.openingHours && place.openingHours.length > 0 && (
+                                    <div className="opening-hours">
+                                        <h4>Heures d'ouverture</h4>
+                                        <ul>
+                                            {place.openingHours.map((oh, idx) => (
+                                                <li key={idx}>
+                                                    {getDayName(oh.day_of_week)} : {formatTime(oh.start_time_1)} - {formatTime(oh.stop_time_1)}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {place.crowdLevels && place.crowdLevels.length > 0 && (
+                                    <div className="crowd-levels">
+                                        <h4>Niveaux de fréquentation</h4>
+                                        <ul>
+                                            {place.crowdLevels.map((cl, idx) => (
+                                                <li key={idx}>
+                                                    {getDayName(cl.day_of_week)} à {cl.hour} : {cl.status}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                 </motion.div>
             </AnimatePresence>
 
-            {/* Flèches de navigation placées en dehors de la carte */}
+            {/* Flèches (uniquement mode modal) */}
             {isModalView && (
                 <>
-                    {/* Flèche gauche */}
                     <button
                         className="nav-arrow left-arrow"
-                        onClick={(e) => { e.stopPropagation(); onPrevious && onPrevious(); }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onPrevious && onPrevious();
+                        }}
                         disabled={isFirst}
                         aria-label="Carte précédente"
                     >
                         <FontAwesomeIcon icon={faArrowLeft} />
                     </button>
 
-                    {/* Flèche droite */}
                     <button
                         className="nav-arrow right-arrow"
-                        onClick={(e) => { e.stopPropagation(); onNext && onNext(); }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onNext && onNext();
+                        }}
                         disabled={isLast}
                         aria-label="Carte suivante"
                     >
@@ -370,8 +479,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
             )}
         </div>
     );
-
 };
-
 
 export default React.memo(PlaceCard);

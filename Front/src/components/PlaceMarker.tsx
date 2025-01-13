@@ -1,14 +1,23 @@
 // src/components/PlacesMarkers.tsx
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, {
+    useEffect,
+    useRef,
+    useCallback,
+    useMemo
+} from 'react';
 import { Marker, Popup } from 'react-leaflet';
 import L, { Icon } from 'leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { Place } from '../types/PlacesInterfaces';
+import { Category, Attribute } from '../types/CategoriesAttributesInterfaces';
 import '../styles/components/PlaceMarker.css';
 
 interface PlacesMarkersProps {
     places: Place[];
     zoomLevel: number;
+    onClickPlace: (place: Place) => void;
+    categories: Category[];   // maintenant requis
+    attributes: Attribute[];  // maintenant requis
 }
 
 // Définir une interface pour Marker avec Place
@@ -21,137 +30,228 @@ interface MarkerWithPlaceComponentProps {
     place: Place;
     position: [number, number];
     icon: Icon;
+    onClickPlace: (place: Place) => void;
     children?: React.ReactNode;
 }
 
-const PlacesMarkers: React.FC<PlacesMarkersProps> = React.memo(({ places, zoomLevel }) => {
-    const calculateMarkerSize = useCallback((zoom: number): [number, number] => {
-        const baseSize = 30; // Taille de base pour les marqueurs individuels
-        const scaleFactor = 2;
-        const size = baseSize + (zoom - 6) * scaleFactor;
-        return [Math.max(size, 20), Math.max(size, 20)];
-    }, []);
+const PlacesMarkers: React.FC<PlacesMarkersProps> = React.memo(
+    ({ places, zoomLevel, onClickPlace, categories, attributes }) => {
 
-    // Fonction pour créer l'icône du cluster avec taille proportionnelle et z-index
-    const createClusterIcon = useCallback((cluster: any) => {
-        const markers = cluster.getAllChildMarkers() as MarkerWithPlace[];
+        /**
+         * 1) Filtrer par catégories et attributs 
+         */
+        const filteredByCategoryAndAttribute = useMemo(() => {
+            // Si aucun filtre n’est actif, on renvoie tout
+            if (categories.length === 0 && attributes.length === 0) {
+                return places;
+            }
 
-        if (markers.length === 0) {
-            // Fallback si aucun marker n'est trouvé
-            return L.divIcon({
-                html: `<div class="custom-cluster-icon">0</div>`,
-                className: 'custom-cluster',
-                iconSize: L.point(60, 60, true), // Taille minimale des clusters
+            return places.filter((place) => {
+                const matchesCategory =
+                    categories.length === 0 ||
+                    place.categories.some((cat) =>
+                        categories.some((selectedCat) => selectedCat.id === cat.id)
+                    );
+
+                const matchesAttribute =
+                    attributes.length === 0 ||
+                    place.attributes.some((attr) =>
+                        attributes.some((selectedAttr) => selectedAttr.id === attr.id)
+                    );
+
+                return matchesCategory && matchesAttribute;
             });
-        }
+        }, [places, categories, attributes]);
 
-        // Trouver la place avec le plus grand nombre de critiques
-        const bestPlace = markers
-            .map(marker => marker.place)
-            .filter(place => place.reviews_google_count !== undefined && place.reviews_google_count !== null)
-            .sort((a, b) => (b.reviews_google_count || 0) - (a.reviews_google_count || 0))[0];
+        /**
+         * 2) Exclure les lieux <100 reviews + trier par nb de reviews (logique PlaceCarousel)
+         */
+        const sortedPlaces = useMemo(() => {
+            const above100 = filteredByCategoryAndAttribute.filter(
+                (p) => (p.reviews_google_count || 0) >= 100
+            );
+            above100.sort(
+                (a, b) => (b.reviews_google_count || 0) - (a.reviews_google_count || 0)
+            );
+            return above100;
+        }, [filteredByCategoryAndAttribute]);
 
-        // Déterminer l'URL de l'image
-        const imageUrl = bestPlace && bestPlace.images && bestPlace.images.length > 0 && bestPlace.images[0].slug
-            ? `https://lh3.googleusercontent.com/p/${bestPlace.images[0].slug}`
-            : '/assets/img/compass.png';
+        /**
+         * 3) Calcul de la taille de l'icône en fonction du zoom
+         */
+        const calculateMarkerSize = useCallback((zoom: number): [number, number] => {
+            const baseSize = 30;
+            const scaleFactor = 2;
+            const size = baseSize + (zoom - 6) * scaleFactor;
+            return [Math.max(size, 20), Math.max(size, 20)];
+        }, []);
 
-        // Calculer la taille de l'icône en fonction du nombre de markers
-        const count = cluster.getChildCount();
-        const baseClusterSize = 60; // Taille minimale des clusters
-        const maxClusterSize = 120; // Taille maximale des clusters
-        const size = Math.min(baseClusterSize + Math.log(count) * 20, maxClusterSize); // Formule logarithmique
+        /**
+         * 4) Création de l’icône cluster
+         */
+        const createClusterIcon = useCallback((cluster: any) => {
+            const markers = cluster.getAllChildMarkers() as MarkerWithPlace[];
 
-        // Calculer un z-index basé sur reviews_google_count
-        const zIndex = (bestPlace.reviews_google_count || 0) + count; // Plus de critiques signifie un z-index plus élevé
-
-        return L.divIcon({
-            html: `
-                <div class="custom-cluster-icon" style="width: ${size}px; height: ${size}px; z-index: ${zIndex};">
-                    <img src="${imageUrl}" alt="${bestPlace.name_original || bestPlace.slug}" />
-                    <span>${count}</span>
-                </div>
-            `,
-            className: 'custom-cluster',
-            iconSize: L.point(size, size, true),
-        });
-    }, []);
-
-    return (
-        <MarkerClusterGroup
-            chunkedLoading
-            iconCreateFunction={createClusterIcon}
-        >
-            {places.map((place) => {
-                if (!place.lat || !place.lng) {
-                    console.error('Invalid coordinates for place:', place);
-                    return null;
-                }
-
-                const [iconWidth, iconHeight] = calculateMarkerSize(zoomLevel);
-
-                const imageUrl =
-                    place.images && place.images.length > 0 && place.images[0].slug
-                        ? `https://lh3.googleusercontent.com/p/${place.images[0].slug}`
-                        : '/assets/img/compass.png';
-
-                const icon = L.icon({
-                    iconUrl: imageUrl,
-                    iconSize: [iconWidth, iconHeight],
-                    iconAnchor: [iconWidth / 2, iconHeight],
-                    popupAnchor: [0, -iconHeight],
-                    className: 'custom-marker-icon',
+            if (markers.length === 0) {
+                return L.divIcon({
+                    html: `<div class="custom-cluster-icon">0</div>`,
+                    className: 'custom-cluster',
+                    iconSize: L.point(60, 60, true),
+                    iconAnchor: [30, 30], // Centrer l’icône
                 });
+            }
 
-                return (
-                    <MarkerWithPlaceComponent
-                        key={place.id}
-                        position={[place.lat, place.lng]}
-                        icon={icon}
-                        place={place}
-                    >
-                        <Popup>
-                            <div className="popup-content">
-                                {place.images && place.images.length > 0 && place.images[0].source && (
-                                    <img
-                                        src={place.images[0].source}
-                                        alt={place.description}
-                                        className="popup-image"
-                                        loading="lazy" /* Lazy loading */
-                                    />
-                                )}
-                                <h3 className="popup-title">{place.name_original || place.slug}</h3>
-                                <p className="popup-description">{place.description}</p>
-                                <p>
-                                    <strong>Address:</strong> {place.address}
-                                </p>
-                                {/* Vos autres champs : link_website, link_maps, etc. */}
-                                {place.link_website && (
-                                    <a href={place.link_website} target="_blank" rel="noopener noreferrer" className="visit-button">
-                                        Visit Website
-                                    </a>
-                                )}
-                            </div>
-                        </Popup>
-                    </MarkerWithPlaceComponent>
-                );
-            })}
-        </MarkerClusterGroup>
-    );
-});
+            const bestPlace = markers
+                .map(marker => marker.place)
+                .filter(p =>
+                    p.reviews_google_count !== undefined && p.reviews_google_count !== null
+                )
+                .sort(
+                    (a, b) =>
+                        (b.reviews_google_count || 0) - (a.reviews_google_count || 0)
+                )[0];
 
-// Composant pour attacher les données de la place au marker
-const MarkerWithPlaceComponent: React.FC<MarkerWithPlaceComponentProps> = React.memo(({ place, ...props }) => {
-    const markerRef = useRef<L.Marker>(null);
+            // Logging pour debug
+            console.log('Cluster position:', cluster.getLatLng());
+            if (bestPlace) {
+                console.log('Best place position:', bestPlace.lat, bestPlace.lng);
+            }
 
-    // Attacher la place au marker pour y accéder dans iconCreateFunction
-    useEffect(() => {
-        if (markerRef.current) {
-            (markerRef.current as MarkerWithPlace).place = place;
-        }
-    }, [place]);
+            const imageUrl =
+                bestPlace && bestPlace.images && bestPlace.images.length > 0 && bestPlace.images[0].slug
+                    ? `https://lh3.googleusercontent.com/p/${bestPlace.images[0].slug}`
+                    : '/assets/img/compass.png';
 
-    return <Marker ref={markerRef} {...props}>{props.children}</Marker>;
-});
+            const count = cluster.getChildCount();
+            const baseClusterSize = 60;
+            const maxClusterSize = 120;
+            const size = Math.min(
+                baseClusterSize + Math.log(count) * 20,
+                maxClusterSize
+            );
+            const zIndex = (bestPlace?.reviews_google_count || 0) + count;
+
+            return L.divIcon({
+                html: `
+          <div
+            class="custom-cluster-icon"
+            style="width: ${size}px; height: ${size}px; z-index: ${zIndex};"
+          >
+            <img
+              src="${imageUrl}"
+              alt="${bestPlace?.name_original || bestPlace?.slug}"
+            />
+            <span>${count}</span>
+          </div>
+        `,
+                className: 'custom-cluster',
+                iconSize: L.point(size, size, true),
+                iconAnchor: [size / 2, size / 2], // Centrer l’icône
+            });
+        }, []);
+
+        /**
+         * 5) Rendu final des markers (filtered + sorted)
+         */
+        return (
+            <MarkerClusterGroup
+                chunkedLoading
+                iconCreateFunction={createClusterIcon}
+            >
+                {sortedPlaces.map((place) => {
+                    if (!place.lat || !place.lng) {
+                        console.error('Invalid coordinates for place:', place);
+                        return null;
+                    }
+
+                    const [iconWidth, iconHeight] = calculateMarkerSize(zoomLevel);
+
+                    const imageUrl =
+                        place.images && place.images.length > 0 && place.images[0].slug
+                            ? `https://lh3.googleusercontent.com/p/${place.images[0].slug}`
+                            : '/assets/img/compass.png';
+
+                    const icon = L.icon({
+                        iconUrl: imageUrl,
+                        iconSize: [iconWidth, iconHeight],
+                        iconAnchor: [iconWidth / 2, iconHeight / 2], // Centrer l'ancre
+                        popupAnchor: [0, -iconHeight / 2], // Ajuster le popup
+                        className: 'custom-marker-icon',
+                    });
+
+                    return (
+                        <MarkerWithPlaceComponent
+                            key={place.id}
+                            position={[place.lat, place.lng]}
+                            icon={icon}
+                            place={place}
+                            onClickPlace={onClickPlace}
+                        >
+                            <Popup>
+                                <div className="popup-content">
+                                    {place.images &&
+                                        place.images.length > 0 &&
+                                        place.images[0].source && (
+                                            <img
+                                                src={place.images[0].source}
+                                                alt={place.description}
+                                                className="popup-image"
+                                                loading="lazy"
+                                            />
+                                        )}
+                                    <h3 className="popup-title">
+                                        {place.name_original || place.slug}
+                                    </h3>
+                                    <p className="popup-description">{place.description}</p>
+                                    <p>
+                                        <strong>Address:</strong> {place.address}
+                                    </p>
+                                    {place.link_website && (
+                                        <a
+                                            href={place.link_website}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="visit-button"
+                                        >
+                                            Visit Website
+                                        </a>
+                                    )}
+                                </div>
+                            </Popup>
+                        </MarkerWithPlaceComponent>
+                    );
+                })}
+            </MarkerClusterGroup>
+        );
+    }
+);
+
+// Composant pour attacher la donnée `place` au marker
+const MarkerWithPlaceComponent: React.FC<MarkerWithPlaceComponentProps> = React.memo(
+    ({ place, onClickPlace, ...props }) => {
+        const markerRef = useRef<L.Marker>(null);
+
+        // Attacher la place au marker pour y accéder dans iconCreateFunction
+        useEffect(() => {
+            if (markerRef.current) {
+                (markerRef.current as MarkerWithPlace).place = place;
+            }
+        }, [place]);
+
+        return (
+            <Marker
+                ref={markerRef}
+                {...props}
+                eventHandlers={{
+                    click: () => {
+                        onClickPlace(place);
+                    },
+                }}
+            >
+                {props.children}
+            </Marker>
+        );
+    }
+);
 
 export default PlacesMarkers;

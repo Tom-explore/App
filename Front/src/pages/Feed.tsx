@@ -458,7 +458,7 @@ const Feed: React.FC = () => {
                                     </div>
                                 )
                             ) : (
-                                <MapPlacesDisplay places={sortedFilteredPlaces} />
+                                <MapPlacesDisplay places={sortedFilteredPlaces} categories={uniqueCategories} attributes={[]} />
                             )}
                         </div>
                     </div>
