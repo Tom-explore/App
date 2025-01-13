@@ -48,27 +48,25 @@ setPersistence(auth, browserLocalPersistence)
     console.error('Erreur lors de la configuration de la persistance Firebase Auth:', error);
   });
 
-// // Fonction pour détecter si l'on est sur mobile
-// function isMobileDevice() {
-//   var result = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-//   alert(result);
-//   return result;
-// }
+// Fonction pour détecter si l'on est sur mobile
+function isMobileDevice() {
+  var result = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  return result;
+}
 
-// // Si on est en développement, connecter les émulateurs
-// if (process.env.REACT_APP_IS_DEV === 'true') {
-//   let emulatorHost = 'localhost';
-//   let emulatorPort = 8080;
+// Si on est en développement, connecter les émulateurs
+if (process.env.REACT_APP_IS_DEV === 'true') {
+  let emulatorHost = 'localhost';
+  let emulatorPort = 8080;
 
-//   if (isMobileDevice()) {
-//     // Utiliser window.location.hostname pour extraire l'hôte
-//     const currentHostname = window.location.hostname;
-//     emulatorHost = currentHostname;
-//   }
+  if (isMobileDevice()) {
+    // Utiliser window.location.hostname pour extraire l'hôte
+    const currentHostname = window.location.hostname;
+    emulatorHost = currentHostname;
+  }
 
-//   alert(`Connexion à l'émulateur Firestore à ${emulatorHost}:${emulatorPort}`);
-//   connectFirestoreEmulator(firestore, emulatorHost, emulatorPort);
-// }
+  connectFirestoreEmulator(firestore, emulatorHost, emulatorPort);
+}
 
 export default app;
 export { firestore, auth };
