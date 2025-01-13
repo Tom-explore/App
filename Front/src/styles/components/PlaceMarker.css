@@ -1,4 +1,4 @@
-/* src/styles/components/PlaceMarker.css */
+src/styles/components/PlaceMarker.css
 
 /* Styles généraux pour les icônes de cluster */
 .custom-cluster {
@@ -16,11 +16,8 @@
     border-radius: 50%;
     overflow: hidden;
     background-color: #3388ff;
-    /* Couleur de fond par défaut */
     border: 3px solid white;
-    /* Bordure plus épaisse */
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
-    /* Ombre plus prononcée */
     transition: width 0.3s ease, height 0.3s ease;
 }
 

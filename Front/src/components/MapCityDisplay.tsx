@@ -47,6 +47,7 @@ const MapCityDisplay: React.FC<MapCityDisplayProps> = ({ cities }) => {
           center={center || undefined}
           zoom={zoom}
           isMobile={isMobile}
+          isFeed={false}
         >
           <CityMarkers cities={cities} zoomLevel={zoom} />
         </Map>
