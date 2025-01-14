@@ -1,16 +1,16 @@
 // src/components/MapPlacesDisplay.tsx
 
-import React, { useState, useEffect } from 'react';
-import { IonContent, IonPage, IonButton } from '@ionic/react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { IonContent, IonPage } from '@ionic/react';
 import Map from './Map';
 import PlaceCarousel from './PlaceCarousel';
 import { Place } from '../types/PlacesInterfaces';
 import { Category, Attribute } from '../types/CategoriesAttributesInterfaces';
 import '../styles/components/MapPlaceDisplay.css';
-import PlacesMarkers from './PlaceMarker';
+import PlacesMarkers from './PlaceMarker'; // Assurez-vous du bon import
 import { useCity } from '../context/cityContext';
 
-// --- AJOUTS ---
+// --- IMPORTS ADDITIONNELS ---
 import FilterPlaces from './FilterPlaces';
 import useFilterPlaces from '../util/useFilterPlaces';
 import { useLanguage } from '../context/languageContext';
@@ -28,7 +28,7 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
 }) => {
     const [center, setCenter] = useState<[number, number] | null>(null);
     const [zoom, setZoom] = useState<number>(3.5);
-    const [activePlace, setActivePlace] = useState<Place | null>(null); // lieu cliqué
+    const [activePlace, setActivePlace] = useState<Place | null>(null); // État de l'endroit actif
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const city = useCity();
     const initialZoom = isMobile ? 3.5 : 5;
@@ -36,10 +36,8 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
         ? [38.134, 11.5799]
         : [48.134, 11.5799];
 
-    // ----------------------------------------------------------------
-    // 1) Hook de filtrage : on part de la liste "places" passée en props
-    // ----------------------------------------------------------------
-    const { language } = useLanguage(); // si vous avez besoin de l'ID de langue
+    // Hook de filtrage : commence par la liste "places" passée en props
+    const { language } = useLanguage(); // Si vous avez besoin de l'ID de la langue
     const [filteredPlaces, setFilteredPlaces] = useState<Place[]>(places);
 
     const {
@@ -54,12 +52,14 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
         attributes,
         allPlaces: places,
         onFilterChange: setFilteredPlaces,
-        languageID: language.id, // ou language.id si dispo
+        languageID: language.id, // ou language.id si disponible
     });
 
-    // ----------------------------------------------------------------
-    // 2) Limites éventuelles de la map en fonction de la ville
-    // ----------------------------------------------------------------
+    // Mémorisation des catégories et attributs pour éviter les re-renders inutiles
+    const memoizedCategories = useMemo(() => categories, [categories]);
+    const memoizedAttributes = useMemo(() => attributes, [attributes]);
+
+    // Limites possibles de la carte en fonction de la ville
     const getBoundaries = (): [[number, number], [number, number]] | undefined => {
         if (city?.city) {
             const buffer = 0.5;
@@ -71,18 +71,11 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
         }
         return undefined;
     };
-    const boundaries = getBoundaries();
+    const boundaries = useMemo(getBoundaries, [city]);
 
-    // ----------------------------------------------------------------
-    // 3) useEffect : recadrer/zoom la carte au premier chargement 
-    //    ou quand les places changent, tant qu'aucune place n'est active
-    // ----------------------------------------------------------------
+    // useEffect : recentrer/zoomer la carte au premier chargement ou lorsque les places changent,
+    // tant qu'aucun endroit n'est actif
     useEffect(() => {
-        // Si on a déjà un lieu actif, on n'essaie plus de recentrer/zoomer la map
-        if (activePlace) {
-            return;
-        }
-
         if (places.length === 0) {
             setCenter(null);
             setZoom(initialZoom);
@@ -96,10 +89,10 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
                 setCenter([adjustedLat, lng]);
                 setZoom(9);
             } else {
-                console.warn('City coordinates are missing.');
+                console.warn('Les coordonnées de la ville sont manquantes.');
             }
         } else {
-            // On calcule un centrage moyen sur toutes les places
+            // Calculer un centre moyen pour toutes les places
             const latitudes = places
                 .map((p) => p.lat)
                 .filter((lat) => lat !== undefined) as number[];
@@ -116,40 +109,43 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
                 setCenter(isMobile ? [avgLat - 10, avgLng] : [avgLat, avgLng]);
                 setZoom(isMobile ? 3 : 6);
             } else {
-                console.warn('No valid coordinates found in places.');
+                console.warn('Aucune coordonnée valide trouvée dans les places.');
             }
         }
-    }, [places, activePlace, isMobile, initialZoom, city]);
+    }, [places, isMobile, initialZoom, city]); // Retiré 'activePlace' des dépendances
 
-    // ----------------------------------------------------------------
-    // 4) Si pas de center défini => rien à afficher (ou un loader)
-    // ----------------------------------------------------------------
+    // Mémoriser les places filtrées et triées
+    const sortedPlaces = useMemo(() => {
+        return filteredPlaces
+            .filter((p) => (p.reviews_google_count || 0) >= 100)
+            .sort((a, b) => (b.reviews_google_count || 0) - (a.reviews_google_count || 0));
+    }, [filteredPlaces]);
+
+    // Si aucun centre défini => rien à afficher (ou un loader)
     if (!center) {
-        return null;
+        return null; // Envisagez d'ajouter un loader pour une meilleure UX
     }
 
-    // ----------------------------------------------------------------
-    // 5) Rendu principal
-    // ----------------------------------------------------------------
+    // JSX Render
     return (
         <IonPage>
             <IonContent fullscreen>
                 <div className="map-container">
-                    {/* 5a. Panneau de filtres (à positionner comme vous le voulez) */}
+                    {/* Panneau des filtres */}
                     <div className="filters-panel">
                         <FilterPlaces
-                            categories={categories}
-                            attributes={attributes}
+                            categories={memoizedCategories}
+                            attributes={memoizedAttributes}
                             selectedCategories={selectedCategories}
                             selectedAttributes={selectedAttributes}
                             handleCategoryChange={handleCategoryChange}
                             handleAttributeChange={handleAttributeChange}
                             getTranslation={getTranslation}
-                            onUserInteractionChange={() => { /* si besoin */ }}
+                            onUserInteractionChange={() => { /* si nécessaire */ }}
                         />
                     </div>
 
-                    {/* 5b. La map */}
+                    {/* Carte */}
                     <Map
                         initialZoom={initialZoom}
                         initialPosition={position}
@@ -159,26 +155,26 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
                         boundaries={boundaries}
                         isMobile={isMobile}
                         isFeed={true}
+                        onZoomChange={setZoom} // Passez setZoom pour gérer les changements de zoom
                     >
-                        {/* On passe 'filteredPlaces' au lieu de 'places' */}
+                        {/* Passez activePlace à PlacesMarkers */}
                         <PlacesMarkers
-                            places={filteredPlaces}
-                            zoomLevel={zoom}
+                            places={sortedPlaces}
                             onClickPlace={setActivePlace}
-                            categories={categories}
-                            attributes={attributes}
+                            activePlace={activePlace} // Passez activePlace
                         />
                     </Map>
 
-                    {/* 5c. Le carousel (lui aussi avec la liste filtrée) */}
+                    {/* Carousel */}
                     <div className="carousel-wrapper">
                         <PlaceCarousel
                             allPlaces={filteredPlaces}
                             isPreview={false}
                             isMobile={isMobile}
-                            categories={categories}
-                            attributes={attributes}
+                            categories={memoizedCategories}
+                            attributes={memoizedAttributes}
                             activePlace={activePlace}
+                            setActivePlace={setActivePlace} // Passez setActivePlace
                         />
                     </div>
                 </div>
@@ -187,4 +183,4 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
     );
 };
 
-export default MapPlacesDisplay;
+export default React.memo(MapPlacesDisplay);

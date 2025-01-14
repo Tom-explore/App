@@ -1,4 +1,5 @@
 // src/components/Map.tsx
+
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { MapContainer, TileLayer, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -18,6 +19,7 @@ interface MapProps {
   isMobile?: boolean;
   children?: React.ReactNode;
   isFeed: boolean;
+  onZoomChange?: (zoom: number) => void; // Ajout du prop
 }
 
 const Map = React.forwardRef<any, MapProps>(
@@ -31,22 +33,28 @@ const Map = React.forwardRef<any, MapProps>(
       boundaries,
       isMobile,
       children,
-      isFeed
+      isFeed,
+      onZoomChange, // Déstructure le nouveau prop
     },
     ref
   ) => {
     const [zoomLevel, setZoomLevel] = useState<number>(initialZoom);
     const mapRef = useRef<any>(null);
 
-    // États pour gérer l'affichage des messages de zoom
+    // État pour gérer les messages de zoom
     const [isMinZoomReached, setIsMinZoomReached] = useState<boolean>(false);
 
-    // Gestionnaire de zoom - désactive animations mobile
+    // Gestionnaire de zoom avec callback vers le parent
     const MapZoomHandler = () => {
       useMapEvents({
         zoom: () => {
           if (mapRef.current) {
-            setZoomLevel(mapRef.current.getZoom());
+            const currentZoom = mapRef.current.getZoom();
+            setZoomLevel(currentZoom);
+            if (onZoomChange) {
+              onZoomChange(currentZoom); // Notifie le parent du changement de zoom
+              console.log(`Zoom actuel : ${currentZoom}`); // Log pour débogage
+            }
           }
         },
         zoomstart: () => {
@@ -68,6 +76,10 @@ const Map = React.forwardRef<any, MapProps>(
             if (currentZoom < minZoom) {
               setIsMinZoomReached(true);
               mapRef.current.setZoom(minZoom);
+              if (onZoomChange) {
+                onZoomChange(minZoom); // Notifie le parent du zoom forcé
+                console.log(`Zoom forcé au minimum : ${minZoom}`); // Log pour débogage
+              }
             } else {
               setIsMinZoomReached(false);
             }
@@ -86,12 +98,12 @@ const Map = React.forwardRef<any, MapProps>(
       return null;
     };
 
-    // Expose la référence de la carte via le ref
+    // Expose la référence de la carte via ref
     useImperativeHandle(ref, () => ({
       getMap: () => mapRef.current,
     }));
 
-    // Nécessaire pour l'affichage correct du DOM dans Ionic
+    // Nécessaire pour un rendu correct dans Ionic
     useIonViewDidEnter(() => {
       if (mapRef.current) {
         setTimeout(() => {
@@ -100,7 +112,7 @@ const Map = React.forwardRef<any, MapProps>(
       }
     });
 
-    // Recherche ville et zoom dessus
+    // Recentrer et zoomer la carte au chargement initial ou lorsque les places changent
     useEffect(() => {
       if (mapRef.current && !isFeed) {
         if (center) {
@@ -109,7 +121,7 @@ const Map = React.forwardRef<any, MapProps>(
           mapRef.current.setView(initialPosition, initialZoom, { animate: true });
         }
       }
-    }, [center, zoom, initialZoom, initialPosition]);
+    }, [center, zoom, initialZoom, initialPosition, isFeed]);
 
     // Définir les limites si fournies
     const maxBounds: LatLngBounds | undefined = boundaries
@@ -125,16 +137,17 @@ const Map = React.forwardRef<any, MapProps>(
           zoomControl={false}
           ref={mapRef}
           className="leaflet-container"
-          minZoom={minZoom} // Définition du minZoom
-          maxBounds={maxBounds} // Définition des limites
-          maxBoundsViscosity={1.0} // Empêche de sortir des limites
+          minZoom={minZoom}
+          maxBounds={maxBounds}
+          maxBoundsViscosity={1.0}
         >
           <TileLayer
-            url={`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}${L.Browser.retina ? '@2x.png' : '.png'}`}
+            url={`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}${L.Browser.retina ? '@2x.png' : '.png'
+              }`}
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
             maxZoom={19}
             minZoom={minZoom}
-            noWrap={true} // Empêche le wrapping des tuiles
+            noWrap={true}
           />
           <MapZoomHandler />
           {children}

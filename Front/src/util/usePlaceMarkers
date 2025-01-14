@@ -1,0 +1,232 @@
+// src/hooks/usePlaceMarkers.ts
+import { useMemo, useCallback } from 'react';
+import L, { Icon, DivIcon, IconOptions } from 'leaflet';
+import ReactDOMServer from 'react-dom/server';
+import IconFinder from './IconFinder'; // Assurez-vous du chemin correct
+import { Place, PlaceType } from '../types/PlacesInterfaces';
+
+interface UsePlaceMarkersProps {
+    places: Place[];
+    zoomLevel: number;
+}
+
+interface UsePlaceMarkersReturn {
+    sortedPlaces: Place[];
+    createClusterIcon: (cluster: any) => L.DivIcon;
+    createMarkerIcon: (place: Place, iconWidth: number, iconHeight: number) => L.Icon<IconOptions> | L.DivIcon;
+    calculateMarkerSize: (zoom: number) => [number, number];
+}
+
+// Interface pour MarkerWithPlace
+interface MarkerWithPlace extends L.Marker {
+    place: Place;
+}
+
+const usePlaceMarkers = ({ places, zoomLevel }: UsePlaceMarkersProps): UsePlaceMarkersReturn => {
+    /**
+     * 1) Sort the places by their placeType
+     */
+    const sortedPlaces = useMemo(() => {
+        const placeTypeOrder: PlaceType[] = [
+            PlaceType.TOURIST_ATTRACTION,
+            PlaceType.HOTEL,
+            PlaceType.RESTAURANT_BAR
+        ];
+        return [...places].sort((a, b) => {
+            return placeTypeOrder.indexOf(a.placeType) - placeTypeOrder.indexOf(b.placeType);
+        });
+    }, [places]);
+
+    /**
+     * 2) Calculate icon size based on zoom
+     */
+    const calculateMarkerSize = useCallback((zoom: number): [number, number] => {
+        const baseSize = 30;
+        const scaleFactor = 2;
+        const size = baseSize + (zoom - 6) * scaleFactor;
+        return [Math.max(size, 20), Math.max(size, 20)];
+    }, []);
+
+    /**
+     * 3) Create cluster icon
+     */
+    const createClusterIcon = useCallback((cluster: any): L.DivIcon => {
+        const markers = cluster.getAllChildMarkers() as MarkerWithPlace[];
+
+        if (markers.length === 0) {
+            return L.divIcon({
+                html: `<div class="custom-cluster-icon">0</div>`,
+                className: 'custom-cluster',
+                iconSize: L.point(60, 60, true),
+                iconAnchor: [30, 30],
+            });
+        }
+
+        // Déterminer la bestPlace en utilisant la logique existante
+        const bestPlace = markers
+            .map(marker => marker.place)
+            .filter(p =>
+                p.reviews_google_count !== undefined && p.reviews_google_count !== null
+            )
+            .sort(
+                (a, b) =>
+                    (b.reviews_google_count || 0) - (a.reviews_google_count || 0)
+            )[0];
+
+        if (!bestPlace) {
+            // Fallback si aucune bestPlace n'est trouvée
+            return L.divIcon({
+                html: `<div class="custom-cluster-icon">0</div>`,
+                className: 'custom-cluster',
+                iconSize: L.point(60, 60, true),
+                iconAnchor: [30, 30],
+            });
+        }
+
+        const count = cluster.getChildCount();
+        const baseClusterSize = 60;
+        const maxClusterSize = 120;
+        const size = Math.min(
+            baseClusterSize + Math.log(count) * 20,
+            maxClusterSize
+        );
+        const zIndex = (bestPlace?.reviews_google_count || 0) + count;
+
+        if (bestPlace.placeType === PlaceType.RESTAURANT_BAR) {
+            // Utiliser IconFinder pour obtenir l'émoji
+            const iconFinderElement = ReactDOMServer.renderToString(
+                <IconFinder categories={ bestPlace.categories } attributes = { bestPlace.attributes } />
+            );
+
+            return L.divIcon({
+                html: `
+                  <div
+                    class="custom-cluster-icon"
+                    style="
+                      width: ${size}px;
+                      height: ${size}px;
+                      z-index: ${zIndex};
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      position: relative;
+                      font-size: 1.5rem;
+                    "
+                  >
+                    ${iconFinderElement}
+                    <span style="
+                      position: absolute;
+                      bottom: 5px;
+                      right: 5px;
+                      background: rgba(255,255,255,0.8);
+                      border-radius: 50%;
+                      padding: 2px 5px;
+                      font-size: 0.8rem;
+                    ">${count}</span>
+                  </div>
+                `,
+                className: 'custom-cluster',
+                iconSize: L.point(size, size, true),
+                iconAnchor: [size / 2, size / 2],
+            });
+        } else {
+            // Si la bestPlace est une TOURIST_ATTRACTION, utiliser l'image
+            const imageUrl =
+                bestPlace.images && bestPlace.images.length > 0 && bestPlace.images[0].slug
+                    ? `https://lh3.googleusercontent.com/p/${bestPlace.images[0].slug}`
+                    : '/assets/img/compass.png';
+
+            return L.divIcon({
+                html: `
+                  <div
+                    class="custom-cluster-icon"
+                    style="
+                      width: ${size}px;
+                      height: ${size}px;
+                      z-index: ${zIndex};
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      position: relative;
+                    "
+                  >
+                    <img
+                      src="${imageUrl}"
+                      alt="${bestPlace?.name_original || bestPlace?.slug}"
+                      style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
+                    />
+                    <span style="
+                      position: absolute;
+                      bottom: 5px;
+                      right: 5px;
+                      background: rgba(255,255,255,0.8);
+                      border-radius: 50%;
+                      padding: 2px 5px;
+                      font-size: 0.8rem;
+                    ">${count}</span>
+                  </div>
+                `,
+                className: 'custom-cluster',
+                iconSize: L.point(size, size, true),
+                iconAnchor: [size / 2, size / 2],
+            });
+        }
+    }, []);
+
+    /**
+     * 4) Create individual marker icon
+     */
+    const createMarkerIcon = useCallback((place: Place, iconWidth: number, iconHeight: number): L.Icon<IconOptions> | L.DivIcon => {
+        if (place.placeType === PlaceType.RESTAURANT_BAR) {
+            // Rendre IconFinder en string HTML
+            const iconFinderElement = ReactDOMServer.renderToString(
+                <IconFinder categories={ place.categories } attributes = { place.attributes } />
+            );
+
+            return L.divIcon({
+                html: `
+                  <div
+                    class="custom-marker-icon"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      width: ${iconWidth}px;
+                      height: ${iconHeight}px;
+                      font-size: 1.5rem;
+                    "
+                  >
+                    ${iconFinderElement}
+                  </div>
+                `,
+                className: 'custom-marker-icon',
+                iconSize: L.point(iconWidth, iconHeight, true),
+                iconAnchor: [iconWidth / 2, iconHeight / 2],
+                popupAnchor: [0, -iconHeight / 2],
+            });
+        } else {
+            // Pour les autres types, utiliser l'image
+            const imageUrl =
+                place.images && place.images.length > 0 && place.images[0].slug
+                    ? `https://lh3.googleusercontent.com/p/${place.images[0].slug}`
+                    : '/assets/img/compass.png';
+
+            return L.icon({
+                iconUrl: imageUrl,
+                iconSize: [iconWidth, iconHeight],
+                iconAnchor: [iconWidth / 2, iconHeight / 2],
+                popupAnchor: [0, -iconHeight / 2],
+                className: 'custom-marker-icon',
+            });
+        }
+    }, []);
+
+    return {
+        sortedPlaces,
+        createClusterIcon,
+        createMarkerIcon,
+        calculateMarkerSize,
+    };
+};
+
+export default usePlaceMarkers;

@@ -13,9 +13,10 @@ src/styles/components/PlaceMarker.css
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: #ffffff;
+
     border-radius: 50%;
     overflow: hidden;
-    background-color: #3388ff;
     border: 3px solid white;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
     transition: width 0.3s ease, height 0.3s ease;
@@ -26,8 +27,6 @@ src/styles/components/PlaceMarker.css
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0.8;
-    /* Opacité ajustée pour une meilleure lisibilité */
 }
 
 /* Nombre de markers dans le cluster */
@@ -41,19 +40,37 @@ src/styles/components/PlaceMarker.css
     pointer-events: none;
 }
 
+.leaflet-marker-icon.custom-cluster {
+    position: absolute !important;
+    /* ou relative; l'important est que ça crée un stacking context pour le z-index */
+    z-index: 9999 !important;
+}
+
+.leaflet-marker-icon.custom-marker-icon.leaflet-zoom-animated.leaflet-interactive {
+    position: absolute !important;
+    /* ou relative; l'important est que ça crée un stacking context pour le z-index */
+    z-index: 0 !important;
+}
+
+/* Annule le background et la bordure par défaut des icônes Leaflet */
+.leaflet-marker-icon,
+.leaflet-div-icon {
+    background: transparent !important;
+    border: none !important;
+}
+
 /* Styles pour les icônes de markers individuels */
 .custom-marker-icon {
     border-radius: 50%;
     border: 3px solid white;
-    /* Bordure plus épaisse */
+    background-color: #ffffff;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
-    /* Ombre plus prononcée */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Effet au survol des marqueurs individuels */
 .custom-marker-icon:hover {
-    transform: scale(1.3);
+    transform: scale(1.05);
     /* Augmentation de l'échelle au survol */
     box-shadow: 0 0 16px rgba(0, 0, 0, 0.6);
     /* Ombre plus forte */
