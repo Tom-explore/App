@@ -1,49 +1,7 @@
-.switch-map-list-city {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid #007bff;
-  /* Bordure autour du switch */
-  border-radius: 25px;
-  /* Coins arrondis */
-  background: #ffffff;
-  /* Fond blanc */
-  padding: 10px 15px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  flex-shrink: 0;
-  /* Empêche le bouton de rétrécir */
-  width: 120px;
-  /* Ajustez la largeur selon vos besoins */
-}
-
-.switch-map-list-city:hover {
-  background-color: #f1f1f1;
-  /* Fond gris clair au survol */
-}
-
 .switch-button {
-  font-size: 14px;
-  color: #007bff;
-  /* Couleur du texte */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.switch-icon {
-  font-size: 20px;
-  /* Taille des icônes */
-}
-
-.switch-button.active {
-  background-color: #007bff;
-  /* Couleur de l'option active */
-  color: white;
-}
-
-.switch-button:not(.active):hover {
-  background-color: #e9e9e9;
-  /* Couleur au survol pour les boutons inactifs */
+.switch-button ion-icon {
+  padding: 3px;
 }
