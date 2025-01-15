@@ -14,7 +14,11 @@ interface PlacesMarkersProps {
     places: Place[];
     onClickPlace: (place: Place) => void;
     activePlace?: Place | null;
+    selectedCategories: number[];
+    selectedAttributes: number[];
+    getTranslation: (slug: string, type: 'attributes' | 'categories') => string;
 }
+
 
 interface MarkerWithPlaceComponentProps {
     place: Place;
@@ -27,7 +31,7 @@ interface MarkerWithPlaceComponentProps {
 }
 
 const PlacesMarkers: React.FC<PlacesMarkersProps> = React.memo(
-    ({ places, onClickPlace, activePlace }) => {
+    ({ places, onClickPlace, activePlace, selectedCategories, selectedAttributes, getTranslation }) => {
         const map = useMap();
         const [currentZoom, setCurrentZoom] = React.useState<number>(map.getZoom());
 
@@ -50,11 +54,8 @@ const PlacesMarkers: React.FC<PlacesMarkersProps> = React.memo(
             createClusterIcon,
         } = usePlacesMarkers(places);
         // Au début du composant PlacesMarkers
-        console.log("[PlaceMarkers] Received places:", places);
 
 
-
-        // Utilisation d'un prédicat de type dans le filtre
         const markersData = useMemo(() => {
             return sortedPlaces
                 .filter((place): place is Place & { lat: number; lng: number } =>
@@ -74,68 +75,65 @@ const PlacesMarkers: React.FC<PlacesMarkersProps> = React.memo(
                         ? getEmoji(place.categories, place.attributes)
                         : null;
 
-                    // Créer l'icône sans utiliser de hook
+                    const selectedHashtags = [
+                        ...place.categories.filter(cat => selectedCategories.includes(cat.id)).map(cat => ({
+                            ...cat,
+                            translatedName: getTranslation(cat.slug, 'categories'),
+                        })),
+                        ...place.attributes.filter(attr => selectedAttributes.includes(attr.id)).map(attr => ({
+                            ...attr,
+                            translatedName: getTranslation(attr.slug, 'attributes'),
+                        })),
+                    ];
                     const icon = L.divIcon({
-                        html: place.placeType === PlaceType.RESTAURANT_BAR ? `
-                            <div class="custom-marker-icon" style="
-                                width: ${iconWidth}px;
-                                height: ${iconHeight}px;
-                                font-size: 1.5rem;
-                                z-index: ${zIndex};
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                            ">
-                                <span class="icon-finder">${emoji}</span>
-                            </div>
-                            <span style="
-                                margin-top: 5px;
-                                font-size: 0.8rem;
-                                color: #333;
-                                background: rgba(255, 255, 255, 0.8);
-                                border-radius: 5px;
-                                padding: 2px 6px;
-                                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                                display: block;
-                                text-align: center;
-                            ">
-                                ${place.translation?.name || ''}
-                            </span>
-                        ` : `
-                            <div class="custom-marker-icon" style="
-                                width: ${iconWidth}px;
-                                height: ${iconHeight}px;
-                                font-size: 1.5rem;
-                                z-index: ${zIndex};
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                            ">
-                                <img 
-                                    src="${imageUrl}" 
-                                    alt="marker-icon" 
-                                    style="
-                                        width: 100%;
-                                        height: 100%;
-                                        border-radius: 50%;
-                                        object-fit: cover;
-                                    "
-                                />
-                            </div>
-                            <span style="
-                                margin-top: 5px;
-                                font-size: 1.2rem;
-                                color: #333;
-                                background: rgba(255, 255, 255, 0.8);
-                                border-radius: 5px;
-                                padding: 2px 6px;
-                                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                                display: block;
-                                text-align: center;
-                            ">
-                                ${place.translation?.name || ''}
-                            </span>
-                        `,
+                        html: `
+                    <div class="custom-marker-icon" style="
+                        width: ${iconWidth}px;
+                        height: ${iconHeight}px;
+                        font-size: 1.5rem;
+                        z-index: ${zIndex};
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    ">
+                        <span class="icon-finder">${emoji}</span>
+                    </div>
+                    <span style="
+                        margin-top: 5px;
+                        font-size: 1.2rem;
+                        color: #333;
+                        background: rgba(255, 255, 255, 0.8);
+                        border-radius: 5px;
+                        padding: 2px 6px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        display: block;
+                        text-align: center;
+                    ">
+                        ${place.translation?.name || ''}
+                        <div style="
+                            margin-top: 5px;
+                            font-size: 0.8rem;
+                            color: #555;
+                            display: flex;
+                            flex-wrap: wrap;
+                            justify-content: center;
+                            gap: 5px;
+                        ">
+                            ${selectedHashtags.map(tag => `
+                                <span style="
+                                    background-color: #ff9800;
+                                    color: white;
+                                    padding: 2px 5px;
+                                    border-radius: 5px;
+                                    font-size: 0.75rem;
+                                    margin: 1px;
+                                ">
+                                    #${tag.translatedName || tag.slug}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </span>
+                `,
                         className: 'custom-marker-icon',
                         iconSize: L.point(iconWidth, iconHeight, true),
                         iconAnchor: [iconWidth / 2, iconHeight / 2],
@@ -144,12 +142,14 @@ const PlacesMarkers: React.FC<PlacesMarkersProps> = React.memo(
 
                     return {
                         place,
-                        position: [place.lat, place.lng] as [number, number], // Assertion de type
+                        position: [place.lat, place.lng] as [number, number],
                         icon,
                         zIndex,
                     };
                 });
-        }, [sortedPlaces, getScaleLevel, calculateSize]);
+        }, [sortedPlaces, getScaleLevel, calculateSize, selectedCategories, selectedAttributes, getTranslation]);
+
+
 
         return (
             <MarkerClusterGroup

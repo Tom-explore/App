@@ -59,20 +59,34 @@ const FeedCard: React.FC<FeedCardProps> = React.memo(({
         }
     };
 
-    const hashtags = useMemo(() => [
-        ...place.attributes.map(attr => ({
-            type: 'attribute' as const,
-            id: attr.id,
-            slug: attr.slug,
-            label: `#${getTranslation(attr.slug, 'attributes')}`
-        })),
-        ...place.categories.map(cat => ({
-            type: 'category' as const,
-            id: cat.id,
-            slug: cat.slug,
-            label: `#${getTranslation(cat.slug, 'categories')}`
-        }))
-    ], [place.attributes, place.categories, getTranslation]);
+    const hashtags = useMemo(() => {
+        const allHashtags = [
+            ...place.attributes.map(attr => ({
+                type: 'attribute' as const,
+                id: attr.id,
+                slug: attr.slug,
+                label: `#${getTranslation(attr.slug, 'attributes')}`
+            })),
+            ...place.categories.map(cat => ({
+                type: 'category' as const,
+                id: cat.id,
+                slug: cat.slug,
+                label: `#${getTranslation(cat.slug, 'categories')}`
+            }))
+        ];
+
+        // Trier les hashtags : sélectionnés en premier
+        return allHashtags.sort((a, b) => {
+            const isAActive = (a.type === 'category' && selectedCategories.includes(a.id)) ||
+                (a.type === 'attribute' && selectedAttributes.includes(a.id));
+            const isBActive = (b.type === 'category' && selectedCategories.includes(b.id)) ||
+                (b.type === 'attribute' && selectedAttributes.includes(b.id));
+            // Convert booleans to numbers for sorting
+            return Number(isBActive) - Number(isAActive); // Actifs en premier
+        });
+    }, [place.attributes, place.categories, getTranslation, selectedCategories, selectedAttributes]);
+
+
 
     const visibleHashtags = hashtagsExpanded ? hashtags : hashtags.slice(0, MAX_VISIBLE_HASHTAGS);
     const hasMoreHashtags = hashtags.length > MAX_VISIBLE_HASHTAGS;
@@ -183,18 +197,13 @@ const FeedCard: React.FC<FeedCardProps> = React.memo(({
                         {visibleHashtags.map((hashtag) => (
                             <IonChip
                                 key={`${hashtag.type}-${hashtag.id}`}
-                                color={
-                                    isHashtagActive(hashtag)
-                                        ? hashtag.type === 'attribute'
-                                            ? 'primary'
-                                            : 'secondary'
-                                        : 'light'
-                                }
+                                color={isHashtagActive(hashtag) ? 'primary' : 'light'} // Mise en surbrillance
                                 onClick={() => handleHashtagClick(hashtag)}
-                                className={isHashtagActive(hashtag) ? 'active-chip' : ''}
+                                className={isHashtagActive(hashtag) ? 'active-chip' : ''} // Classe CSS pour le style
                             >
                                 <IonLabel>{hashtag.label}</IonLabel>
                             </IonChip>
+
                         ))}
                         {hasMoreHashtags && (
                             <IonChip

@@ -80,6 +80,16 @@
     margin-left: 4px;
 }
 
+.active-chip {
+    font-weight: bold;
+    background-color: #ffe4b5;
+    /* Exemple de couleur d'arrière-plan */
+    border: 2px solid #ff9800;
+    /* Bordure pour mise en évidence */
+    color: #ff9800;
+    /* Texte */
+}
+
 .travel-icon {
     font-size: 0.9em;
     margin-right: 3px;

@@ -62,7 +62,7 @@ export function usePlacesMarkers(places: Place[]) {
   const calculateSize = useCallback((scale: number): [number, number] => {
     // Définir les paramètres de taille de base
     const minSize = 60; // Taille minimale
-    const maxSize = 260; // Taille maximale
+    const maxSize = 220; // Taille maximale
 
     // Calculer la taille en fonction de l'échelle
     const size = minSize + ((scale - 1) / 19) * (maxSize - minSize);
@@ -78,10 +78,6 @@ export function usePlacesMarkers(places: Place[]) {
     (cluster: any) => {
       const markers = cluster.getAllChildMarkers() as L.Marker[];
 
-      console.log("[usePlacesMarkers] Cluster has markers:", markers.length);
-      markers.forEach((marker, index) => {
-        console.log(`[usePlacesMarkers] Marker ${index}:`, (marker as any).place);
-      });
 
       if (markers.length === 0) {
         const clusterIconHTML = `<div class="custom-cluster-icon">0</div>`;
@@ -105,7 +101,6 @@ export function usePlacesMarkers(places: Place[]) {
             (b.reviews_google_count || 0) - (a.reviews_google_count || 0)
         )[0];
 
-      console.log("[usePlacesMarkers] Best place for cluster:", bestPlace);
 
       if (!bestPlace) {
         const clusterIconHTML = `<div class="custom-cluster-icon">0</div>`;
@@ -119,7 +114,6 @@ export function usePlacesMarkers(places: Place[]) {
 
       // Vérifiez que bestPlace a bien reviews_google_count
       if (bestPlace.reviews_google_count === undefined || bestPlace.reviews_google_count === null) {
-        console.error(`[usePlacesMarkers] Best place (${bestPlace.id}) missing reviews_google_count`);
         return L.divIcon({
           html: `<div class="custom-cluster-icon">0</div>`,
           className: 'custom-cluster',
