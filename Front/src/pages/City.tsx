@@ -22,11 +22,7 @@ import PlaceCarousel from '../components/PlaceCarousel';
 import SearchBar from '../components/SearchBar';
 import placeCarouselConfig from '../util/PlacesCarouselConfig';
 import useFilterPlaces from '../util/useFilterPlaces';
-
-import { filterOutline } from 'ionicons/icons';
 import '../styles/pages/City.css';
-
-import { Place } from '../types/PlacesInterfaces';
 import { Category, Attribute } from '../types/CategoriesAttributesInterfaces';
 
 const City: React.FC = () => {
@@ -253,6 +249,8 @@ const City: React.FC = () => {
                                         isMobile={isMobile}
                                         categories={[category]}
                                         attributes={[]}
+                                        activePlace={null}
+                                        setActivePlace={() => { }}
                                     />
                                 </div>
                             );

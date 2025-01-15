@@ -46,10 +46,16 @@ src/styles/components/PlaceMarker.css
     z-index: 9999 !important;
 }
 
+.leaflet-marker-icon.custom-cluster.leaflet-zoom-animated.leaflet-interactive {
+    position: absolute !important;
+    /* ou relative; l'important est que ça crée un stacking context pour le z-index */
+    z-index: 9999 !important;
+}
+
 .leaflet-marker-icon.custom-marker-icon.leaflet-zoom-animated.leaflet-interactive {
     position: absolute !important;
     /* ou relative; l'important est que ça crée un stacking context pour le z-index */
-    z-index: 0 !important;
+    z-index: 9999 !important;
 }
 
 /* Annule le background et la bordure par défaut des icônes Leaflet */

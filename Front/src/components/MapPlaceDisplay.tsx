@@ -1,6 +1,6 @@
 // src/components/MapPlacesDisplay.tsx
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { IonContent, IonPage } from '@ionic/react';
 import Map from './Map';
 import PlaceCarousel from './PlaceCarousel';
@@ -9,22 +9,34 @@ import { Category, Attribute } from '../types/CategoriesAttributesInterfaces';
 import '../styles/components/MapPlaceDisplay.css';
 import PlacesMarkers from './PlaceMarker'; // Assurez-vous du bon import
 import { useCity } from '../context/cityContext';
-
-// --- IMPORTS ADDITIONNELS ---
-import FilterPlaces from './FilterPlaces';
-import useFilterPlaces from '../util/useFilterPlaces';
 import { useLanguage } from '../context/languageContext';
+import FilterPlaces from './FilterPlaces'; // Importez FilterPlaces
+
+interface Coordinates {
+    lat: number;
+    lng: number;
+}
 
 interface MapPlacesDisplayProps {
     places: Place[];
     categories: Category[];
     attributes: Attribute[];
+    selectedCategories: number[];
+    selectedAttributes: number[];
+    handleCategoryChange: (id: number) => void;
+    handleAttributeChange: (id: number) => void;
+    getTranslation: (slug: string, type: 'attributes' | 'categories') => string;
 }
 
 const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
     places,
     categories,
     attributes,
+    selectedCategories,
+    selectedAttributes,
+    handleCategoryChange,
+    handleAttributeChange,
+    getTranslation,
 }) => {
     const [center, setCenter] = useState<[number, number] | null>(null);
     const [zoom, setZoom] = useState<number>(3.5);
@@ -35,25 +47,6 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
     const position: [number, number] = isMobile
         ? [38.134, 11.5799]
         : [48.134, 11.5799];
-
-    // Hook de filtrage : commence par la liste "places" passée en props
-    const { language } = useLanguage(); // Si vous avez besoin de l'ID de la langue
-    const [filteredPlaces, setFilteredPlaces] = useState<Place[]>(places);
-
-    const {
-        selectedCategories,
-        selectedAttributes,
-        handleCategoryChange,
-        handleAttributeChange,
-        getTranslation,
-        isUserInteraction,
-    } = useFilterPlaces({
-        categories,
-        attributes,
-        allPlaces: places,
-        onFilterChange: setFilteredPlaces,
-        languageID: language.id, // ou language.id si disponible
-    });
 
     // Mémorisation des catégories et attributs pour éviter les re-renders inutiles
     const memoizedCategories = useMemo(() => categories, [categories]);
@@ -72,9 +65,6 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
         return undefined;
     };
     const boundaries = useMemo(getBoundaries, [city]);
-
-    // useEffect : recentrer/zoomer la carte au premier chargement ou lorsque les places changent,
-    // tant qu'aucun endroit n'est actif
     useEffect(() => {
         if (places.length === 0) {
             setCenter(null);
@@ -112,14 +102,16 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
                 console.warn('Aucune coordonnée valide trouvée dans les places.');
             }
         }
-    }, [places, isMobile, initialZoom, city]); // Retiré 'activePlace' des dépendances
+    }, [places, isMobile, initialZoom, city]);
 
-    // Mémoriser les places filtrées et triées
+    // Mémoriser les places triées
     const sortedPlaces = useMemo(() => {
-        return filteredPlaces
+        return places
             .filter((p) => (p.reviews_google_count || 0) >= 100)
             .sort((a, b) => (b.reviews_google_count || 0) - (a.reviews_google_count || 0));
-    }, [filteredPlaces]);
+    }, [places]);
+    // Après la définition de sortedPlaces
+    console.log("[MapPlacesDisplay] sortedPlaces:", sortedPlaces);
 
     // Si aucun centre défini => rien à afficher (ou un loader)
     if (!center) {
@@ -131,19 +123,21 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
         <IonPage>
             <IonContent fullscreen>
                 <div className="map-container">
-                    {/* Panneau des filtres */}
-                    <div className="filters-panel">
-                        <FilterPlaces
-                            categories={memoizedCategories}
-                            attributes={memoizedAttributes}
-                            selectedCategories={selectedCategories}
-                            selectedAttributes={selectedAttributes}
-                            handleCategoryChange={handleCategoryChange}
-                            handleAttributeChange={handleAttributeChange}
-                            getTranslation={getTranslation}
-                            onUserInteractionChange={() => { /* si nécessaire */ }}
-                        />
-                    </div>
+                    {/* Panneau de filtres spécifique à la vue carte */}
+                    {!isMobile && (
+                        <div className="filter-panel">
+                            <FilterPlaces
+                                categories={categories}
+                                attributes={attributes}
+                                selectedCategories={selectedCategories}
+                                selectedAttributes={selectedAttributes}
+                                handleCategoryChange={handleCategoryChange}
+                                handleAttributeChange={handleAttributeChange}
+                                getTranslation={getTranslation}
+                                onUserInteractionChange={() => { /* Optionnel : gestion des interactions */ }}
+                            />
+                        </div>
+                    )}
 
                     {/* Carte */}
                     <Map
@@ -168,7 +162,7 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
                     {/* Carousel */}
                     <div className="carousel-wrapper">
                         <PlaceCarousel
-                            allPlaces={filteredPlaces}
+                            allPlaces={sortedPlaces}
                             isPreview={false}
                             isMobile={isMobile}
                             categories={memoizedCategories}

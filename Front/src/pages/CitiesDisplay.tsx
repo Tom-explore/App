@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { IonHeader, IonToolbar, IonContent, IonPage } from '@ionic/react';
 import SwitchMapList from '../components/SwitchMapList';
 import SearchBar from '../components/SearchBar';
-import CityList from './CityList';
+import CityList from '../components/CityList';
 import MapCityDisplay from '../components/MapCityDisplay';
 import citiesData from '../data/cities.json';
 import { useLanguage } from '../context/languageContext';

@@ -1,12 +1,10 @@
-// src/components/Feed.tsx
+// src/pages/FeedMapDisplay.tsx
 
 import React, {
     useEffect,
     useState,
     useMemo,
-    useRef,
     useCallback,
-    useLayoutEffect,
     useContext
 } from 'react';
 import {
@@ -21,14 +19,12 @@ import {
     IonChip,
     IonLabel
 } from '@ionic/react';
-import { FixedSizeGrid as Grid } from 'react-window';
+import { chevronBackOutline, close as closeIcon } from 'ionicons/icons';
 import { useIonRouter } from '@ionic/react';
 import { useParams } from 'react-router';
-import { chevronBackOutline, close as closeIcon } from 'ionicons/icons';
 import { useCity } from '../context/cityContext';
 import SearchBar from '../components/SearchBar';
-import FeedCard from '../components/FeedCard';
-import '../styles/pages/Feed.css';
+import Feed from '../components/Feed';
 import { Place } from '../types/PlacesInterfaces';
 import { useLanguage } from '../context/languageContext';
 import FilterPlaces from '../components/FilterPlaces';
@@ -38,7 +34,7 @@ import { GeolocationContext } from '../context/geolocationContext';
 import SwitchMapList from '../components/SwitchMapList';
 import MapPlacesDisplay from '../components/MapPlaceDisplay';
 
-const Feed: React.FC = () => {
+const FeedMapDisplay: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
     const router = useIonRouter();
 
@@ -65,28 +61,39 @@ const Feed: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [filteredPlaces, setFilteredPlaces] = useState<Place[]>([]);
     const [isInteracting, setIsInteracting] = useState<boolean>(false);
-    const [viewMode, setViewMode] = useState<'list' | 'map'>('list'); // New state for view mode
+    const [viewMode, setViewMode] = useState<'list' | 'map'>('list'); // État pour le mode de vue
 
     const allPlaces = useMemo(() => {
-        return [
+        const combinedPlaces = [
             ...places.restaurantsBars,
-            // ...places.hotels,
+            // ...places.hotels, // Décommentez si vous gérez les hôtels
             ...places.touristAttractions
-        ];
+        ].filter(place =>
+            place != null &&
+            place.reviews_google_count !== undefined &&
+            place.reviews_google_count !== null &&
+            place.lat !== undefined &&
+            place.lng !== undefined
+        ); // Filtrage renforcé
+
+        console.log("[FeedMapDisplay] allPlaces after filtering:", combinedPlaces.length);
+        return combinedPlaces;
     }, [
         places.restaurantsBars,
         places.touristAttractions
-        // places.hotels, // if managing hotels
+        // places.hotels, // Décommentez si vous gérez les hôtels
     ]);
 
+    // Initialiser les places filtrées avec toutes les places
     useEffect(() => {
+        console.log("[FeedMapDisplay] Setting filteredPlaces with allPlaces:", allPlaces.length);
         setFilteredPlaces(allPlaces);
     }, [allPlaces]);
 
-    // Handle city selection based on URL slug or geolocation
+    // Gestion de la sélection de la ville basée sur le slug ou la géolocalisation
     useEffect(() => {
         if (slug && !city) {
-            console.log("[Feed] Setting city based on URL slug:", slug);
+            console.log("[FeedMapDisplay] Setting city based on URL slug:", slug);
             setCityPreviewAndFetchData(slug);
         }
     }, [slug, city, setCityPreviewAndFetchData]);
@@ -94,43 +101,22 @@ const Feed: React.FC = () => {
     // Définir la ville basée sur la géolocalisation si activée
     useEffect(() => {
         if (!slug && isGeolocationEnabled && geolocation && !city) {
-            console.log("[Feed] Setting city based on geolocation:", nearestCitySlug);
+            console.log("[FeedMapDisplay] Setting city based on geolocation:", nearestCitySlug);
             if (nearestCitySlug) {
                 setCityPreviewAndFetchData(nearestCitySlug);
             }
         }
     }, [slug, isGeolocationEnabled, geolocation, nearestCitySlug, city, setCityPreviewAndFetchData]);
 
-    // Une fois la ville définie, fetch les lieux si ce n'est pas déjà fait
+    // Fetch les lieux une fois la ville définie
     useEffect(() => {
         if (city && !isAllPlacesLoaded) {
-            console.log("[Feed] Fetching all places for city:", city.slug);
+            console.log("[FeedMapDisplay] Fetching all places for city:", city.slug);
             fetchAllPlaces();
         }
     }, [city, isAllPlacesLoaded, fetchAllPlaces]);
 
-    const sortedFilteredPlaces = useMemo(() => {
-        let filtered = filteredPlaces.length > 0 ? filteredPlaces : allPlaces;
-
-        // Filtrage par requête de recherche
-        if (searchQuery.trim() !== '') {
-            const query = searchQuery.trim().toLowerCase();
-            filtered = filtered.filter(place =>
-                place.translation?.name.toLowerCase().includes(query) ||
-                place.address.toLowerCase().includes(query)
-            );
-        }
-
-        // Filtrage par nombre minimum de reviews
-        filtered = filtered.filter(place => (place.reviews_google_count || 0) >= 100);
-
-        // Tri par nombre de reviews_count en ordre décroissant
-        filtered.sort((a, b) => (b.reviews_google_count || 0) - (a.reviews_google_count || 0));
-
-        return filtered;
-    }, [filteredPlaces, searchQuery, allPlaces]);
-
-    // ----- Extraction des catégories & attributs -----
+    // Extraction des catégories & attributs uniques
     const uniqueCategories = useMemo(() => {
         const categoriesMap = new Map<number, Category>();
         allPlaces.forEach(place => {
@@ -155,7 +141,7 @@ const Feed: React.FC = () => {
         return Array.from(attributesMap.values());
     }, [allPlaces]);
 
-    // ----- Utilisation du hook personnalisé useFilterPlaces -----
+    // Utilisation du hook personnalisé useFilterPlaces pour gérer les filtres
     const {
         selectedCategories,
         selectedAttributes,
@@ -171,123 +157,35 @@ const Feed: React.FC = () => {
         allPlaces: allPlaces
     });
 
-    // ----- Détection du dispositif mobile -----
+    // Détection du dispositif mobile
     const isMobile = useMemo(() => {
         if (typeof navigator === 'undefined') return false;
         const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
         return /android|iPad|iPhone|iPod/i.test(userAgent);
     }, []);
 
-    // ----- Layout avec react-window -----
-    const COLUMN_COUNT = isMobile ? 1 : 2;
-    const ITEM_HEIGHT = 450;
-    const HORIZONTAL_GAP_PERCENT = 2;
-    const VERTICAL_GAP_PERCENT = 120;
+    // Logique de recherche et de tri
+    const sortedFilteredPlaces = useMemo(() => {
+        let filtered = filteredPlaces.length > 0 ? filteredPlaces : allPlaces;
 
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [containerWidth, setContainerWidth] = useState<number>(300);
-    const [containerHeight, setContainerHeight] = useState<number>(500);
-
-    useLayoutEffect(() => {
-        if (!containerRef.current) return;
-
-        const resizeObserver = new ResizeObserver(entries => {
-            if (entries[0].contentRect) {
-                const { width, height, top } = entries[0].contentRect;
-                const newHeight = window.innerHeight - top - 20;
-                setContainerHeight(newHeight > 0 ? newHeight : 500);
-                setContainerWidth(width);
-            }
-        });
-
-        resizeObserver.observe(containerRef.current);
-
-        return () => {
-            resizeObserver.disconnect();
-        };
-    }, []);
-
-    const horizontalGap = useMemo(() => containerWidth * (HORIZONTAL_GAP_PERCENT / 100), [containerWidth]);
-    const verticalGap = useMemo(() => containerWidth * (VERTICAL_GAP_PERCENT / 100), [containerWidth]);
-
-    const ITEM_WIDTH = useMemo(() => (containerWidth - (COLUMN_COUNT - 1) * horizontalGap) / COLUMN_COUNT, [containerWidth, COLUMN_COUNT, horizontalGap]);
-    const rowHeight = useMemo(() => ITEM_HEIGHT + verticalGap, [ITEM_HEIGHT, verticalGap]);
-    const rowCount = useMemo(() => Math.ceil(sortedFilteredPlaces.length / COLUMN_COUNT), [sortedFilteredPlaces.length, COLUMN_COUNT]);
-    const LIST_HEIGHT = useMemo(() => containerHeight, [containerHeight]);
-
-    // Mémoïsation des fonctions de changement de filtre
-    const memoizedHandleCategoryChange = useCallback((categoryId: number) => {
-        handleCategoryChange(categoryId);
-    }, [handleCategoryChange]);
-
-    const memoizedHandleAttributeChange = useCallback((attributeId: number) => {
-        handleAttributeChange(attributeId);
-    }, [handleAttributeChange]);
-
-    const memoizedGetTranslation = useCallback((slug: string, type: 'attributes' | 'categories') => {
-        return getTranslation(slug, type);
-    }, [getTranslation]);
-
-    // Mémoïsation des filtres sélectionnés pour les passer en props
-    const memoizedSelectedCategories = useMemo(() => selectedCategories, [selectedCategories]);
-    const memoizedSelectedAttributes = useMemo(() => selectedAttributes, [selectedAttributes]);
-
-    // Mémoïsation de la fonction Cell pour react-window
-    const Cell = useCallback(({
-        columnIndex,
-        rowIndex,
-        style
-    }: {
-        columnIndex: number;
-        rowIndex: number;
-        style: React.CSSProperties;
-    }) => {
-        const index = rowIndex * COLUMN_COUNT + columnIndex;
-        if (index >= sortedFilteredPlaces.length) {
-            return null;
+        // Filtrage par requête de recherche
+        if (searchQuery.trim() !== '') {
+            const query = searchQuery.trim().toLowerCase();
+            filtered = filtered.filter(place =>
+                place.translation?.name.toLowerCase().includes(query) ||
+                place.address.toLowerCase().includes(query)
+            );
         }
-        const place = sortedFilteredPlaces[index];
 
-        // Calculer la distance
-        const distance = useMemo(() => (
-            geolocation
-                ? calculateDistanceFromPlace(geolocation, { lat: place.lat, lng: place.lng })
-                : undefined
-        ), [geolocation, place.lat, place.lng, calculateDistanceFromPlace]);
+        // Filtrage par nombre minimum de reviews
+        filtered = filtered.filter(place => (place.reviews_google_count || 0) >= 100);
 
-        return (
-            <div
-                style={{
-                    ...style,
-                    paddingRight: columnIndex < COLUMN_COUNT - 1 ? `${horizontalGap}px` : '0px',
-                    paddingBottom: `${verticalGap}px`,
-                    boxSizing: 'border-box'
-                }}
-            >
-                <FeedCard
-                    place={place}
-                    selectedCategories={memoizedSelectedCategories}
-                    selectedAttributes={memoizedSelectedAttributes}
-                    handleCategoryChange={memoizedHandleCategoryChange}
-                    handleAttributeChange={memoizedHandleAttributeChange}
-                    getTranslation={memoizedGetTranslation}
-                    distance={distance}
-                />
-            </div>
-        );
-    }, [
-        COLUMN_COUNT,
-        sortedFilteredPlaces,
-        geolocation,
-        calculateDistanceFromPlace,
-        memoizedSelectedCategories,
-        memoizedSelectedAttributes,
-        memoizedHandleCategoryChange,
-        memoizedHandleAttributeChange,
-        memoizedGetTranslation,
-        horizontalGap,
-        verticalGap
-    ]);
+        // Tri par nombre de reviews_count en ordre décroissant
+        filtered.sort((a, b) => (b.reviews_google_count || 0) - (a.reviews_google_count || 0));
+
+        console.log("[FeedMapDisplay] sortedFilteredPlaces:", filtered.length);
+        return filtered;
+    }, [filteredPlaces, searchQuery, allPlaces]);
 
     // Helper pour obtenir le nom de la ville avec traduction si disponible
     const getCityName = useCallback((): string => {
@@ -381,6 +279,7 @@ const Feed: React.FC = () => {
                 )}
 
                 <div className="feed-layout">
+                    {/* Panneau de filtres centralisé */}
                     {!isMobile && (
                         <div className="filter-panel">
                             <FilterPlaces
@@ -388,15 +287,15 @@ const Feed: React.FC = () => {
                                 attributes={uniqueAttributes}
                                 selectedCategories={selectedCategories}
                                 selectedAttributes={selectedAttributes}
-                                handleCategoryChange={memoizedHandleCategoryChange}
-                                handleAttributeChange={memoizedHandleAttributeChange}
-                                getTranslation={memoizedGetTranslation}
+                                handleCategoryChange={handleCategoryChange}
+                                handleAttributeChange={handleAttributeChange}
+                                getTranslation={getTranslation}
                                 onUserInteractionChange={setIsInteracting}
                             />
                         </div>
                     )}
 
-                    <div className="main-content" ref={containerRef}>
+                    <div className="main-content">
                         <div className="search-bar-container">
                             <SearchBar
                                 onSearch={setSearchQuery}
@@ -440,25 +339,31 @@ const Feed: React.FC = () => {
 
                         <div className="view-mode-container">
                             {viewMode === 'list' ? (
-                                sortedFilteredPlaces.length > 0 ? (
-                                    <Grid
-                                        className="no-scrollbar"
-                                        columnCount={COLUMN_COUNT}
-                                        columnWidth={ITEM_WIDTH}
-                                        height={LIST_HEIGHT}
-                                        rowCount={rowCount}
-                                        rowHeight={rowHeight}
-                                        width={containerWidth}
-                                    >
-                                        {Cell}
-                                    </Grid>
-                                ) : (
-                                    <div className="no-results">
-                                        <p>Oops, aucun résultat ne correspond ! 😕</p>
-                                    </div>
-                                )
+                                <Feed
+                                    places={sortedFilteredPlaces}
+                                    selectedCategories={selectedCategories}
+                                    selectedAttributes={selectedAttributes}
+                                    handleCategoryChange={handleCategoryChange}
+                                    handleAttributeChange={handleAttributeChange}
+                                    getTranslation={getTranslation}
+                                    calculateDistanceFromPlace={calculateDistanceFromPlace}
+                                    geolocation={geolocation}
+                                    uniqueCategories={uniqueCategories}
+                                    uniqueAttributes={uniqueAttributes}
+                                    isMobile={isMobile}
+                                />
                             ) : (
-                                <MapPlacesDisplay places={sortedFilteredPlaces} categories={uniqueCategories} attributes={[]} />
+                                <MapPlacesDisplay
+                                    places={sortedFilteredPlaces}
+                                    categories={uniqueCategories}
+                                    attributes={uniqueAttributes}
+                                    // Passer les mêmes props de filtre si nécessaire
+                                    selectedCategories={selectedCategories}
+                                    selectedAttributes={selectedAttributes}
+                                    handleCategoryChange={handleCategoryChange}
+                                    handleAttributeChange={handleAttributeChange}
+                                    getTranslation={getTranslation}
+                                />
                             )}
                         </div>
                     </div>
@@ -467,5 +372,7 @@ const Feed: React.FC = () => {
             </IonContent>
         </IonPage>
     );
+
 };
-export default Feed;
+
+export default React.memo(FeedMapDisplay);
