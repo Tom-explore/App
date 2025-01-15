@@ -1,6 +1,6 @@
 import React from "react";
 import { IonButton, IonIcon } from "@ionic/react";
-import { listOutline, mapOutline } from "ionicons/icons";
+import { list, listOutline, map, mapOutline } from "ionicons/icons";
 import "../styles/components/SwitchMapList.css";
 
 interface SwitchMapListProps {
@@ -28,7 +28,7 @@ const SwitchMapList: React.FC<SwitchMapListProps> = ({
       className={`switch-button ${isMapMode ? "map-mode" : "list-mode"}`}
     >
       <IonIcon
-        icon={isMapMode ? listOutline : mapOutline}
+        icon={isMapMode ? list : map}
         className="switch-icon"
       />
     </IonButton>

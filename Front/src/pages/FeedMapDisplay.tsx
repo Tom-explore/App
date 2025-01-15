@@ -8,23 +8,25 @@ import React, {
     useContext,
 } from "react";
 import {
-    IonContent,
-    IonPage,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonButtons,
-    IonButton,
-    IonIcon,
-    IonChip,
-    IonLabel,
-    IonMenu,
-    IonMenuButton,
-    IonGrid,
-    IonRow,
-    IonCol,
+
+  IonContent,
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonChip,
+  IonLabel,
+  IonMenu,
+  IonMenuButton,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonMenuToggle,
 } from "@ionic/react";
-import { chevronBackOutline, close as closeIcon } from "ionicons/icons";
+import { chevronBackOutline, close as closeIcon, filter } from "ionicons/icons";
 import { useIonRouter } from "@ionic/react";
 import { useParams } from "react-router";
 import { useCity } from "../context/cityContext";
@@ -184,99 +186,190 @@ const FeedMapDisplay: React.FC = () => {
                     place.address.toLowerCase().includes(query)
             );
         }
+    console.log("[FeedMapDisplay] sortedFilteredPlaces:", filtered.length);
+    return filtered;
+  }, [filteredPlaces, searchQuery, allPlaces]);
 
-        // Filtrage par nombre minimum de reviews
-        filtered = filtered.filter(
-            (place) => (place.reviews_google_count || 0) >= 100
-        );
+  // Helper pour obtenir le nom de la ville avec traduction si disponible
+  const getCityName = useCallback((): string => {
+    if (city && "translation" in city && city.translation?.name) {
+      console.log("récup city name");
+      return city.translation.name;
+    } else if (city && "name" in city) {
+      return city.name;
+    }
+    return "";
+  }, [city]);
 
-        // Tri par nombre de reviews_count en ordre décroissant
-        filtered.sort(
-            (a, b) => (b.reviews_google_count || 0) - (a.reviews_google_count || 0)
-        );
+  // Utilisation de useMemo au lieu de useEffect et state pour cityName
+  const cityName = useMemo(() => {
+    const name = getCityName();
+    console.log("Computed cityName:", name);
+    return name;
+  }, [getCityName]);
 
-        console.log("[FeedMapDisplay] sortedFilteredPlaces:", filtered.length);
-        return filtered;
-    }, [filteredPlaces, searchQuery, allPlaces]);
+  // Handlers pour les boutons de géolocalisation
+  const handleEnableGeolocation = useCallback(() => {
+    requestBrowserGeolocation();
+  }, [requestBrowserGeolocation]);
 
-    // Helper pour obtenir le nom de la ville avec traduction si disponible
-    const getCityName = useCallback((): string => {
-        if (city && "translation" in city && city.translation?.name) {
-            console.log("récup city name");
-            return city.translation.name;
-        } else if (city && "name" in city) {
-            return city.name;
-        }
-        return "";
-    }, [city]);
+  const handleDisableGeolocation = useCallback(() => {
+    disableBrowserGeolocation();
+    // Optionnel : réinitialiser les filtres ou la ville si nécessaire
+  }, [disableBrowserGeolocation]);
 
-    // Utilisation de useMemo au lieu de useEffect et state pour cityName
-    const cityName = useMemo(() => {
-        const name = getCityName();
-        console.log("Computed cityName:", name);
-        return name;
-    }, [getCityName]);
+  // Gestion de la taille de l'écran pour le menu latéral
+  const [isSmallScreen, setIsSmallScreen] = useState(
+    window.matchMedia("(max-width: 768px)").matches
+  );
 
-    // Handlers pour les boutons de géolocalisation
-    const handleEnableGeolocation = useCallback(() => {
-        requestBrowserGeolocation();
-    }, [requestBrowserGeolocation]);
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 768px)");
 
-    const handleDisableGeolocation = useCallback(() => {
-        disableBrowserGeolocation();
-        // Optionnel : réinitialiser les filtres ou la ville si nécessaire
-    }, [disableBrowserGeolocation]);
+    const handleResize = () => {
+      console.log("Small screen changed:", mediaQuery.matches);
+      setIsSmallScreen(mediaQuery.matches);
+    };
 
-    return (
-        <>
-            {/* Menu latéral spécifique à Tab1 */}
-            {(isMobile || !isMobile) && (
-                <IonMenu
-                    side="start"
-                    menuId="tab1-menu"
-                    contentId="tab1-page"
-                    type="overlay"
-                >
-                    <FilterPlaces
-                        categories={uniqueCategories}
-                        attributes={uniqueAttributes}
-                        selectedCategories={selectedCategories}
-                        selectedAttributes={selectedAttributes}
-                        handleCategoryChange={handleCategoryChange}
-                        handleAttributeChange={handleAttributeChange}
-                        getTranslation={getTranslation}
-                        onUserInteractionChange={setIsInteracting}
-                    />
-                </IonMenu>
-            )}
-            <IonPage id="tab1-page">
-                <IonHeader>
-                    <IonToolbar>
-                        <IonButtons slot="start" className="ion-hide-md-up">
-                            <IonMenuButton menu="tab1-menu" />
-                        </IonButtons>
-                        <IonTitle>Places</IonTitle>
-                        <IonButtons slot="end">
-                            <SwitchMapList currentMode={viewMode} onSwitch={setViewMode} />
-                        </IonButtons>
-                        <IonButtons slot="end">
-                            {/* <SearchBar
+    // Écoute des changements de taille
+    mediaQuery.addEventListener("change", handleResize);
+
+    // Nettoyage de l'écouteur
+    return () => {
+      mediaQuery.removeEventListener("change", handleResize);
+    };
+  }, []);
+
+  return (
+    <>
+      {/* Menu latéral spécifique à Tab1 */}
+      {isSmallScreen && (
+        <IonMenu
+          side="start"
+          menuId="tab1-menu"
+          contentId="tab1-page"
+          type="overlay"
+          className="display-none-md-up"
+        >
+          <FilterPlaces
+            categories={uniqueCategories}
+            attributes={uniqueAttributes}
+            selectedCategories={selectedCategories}
+            selectedAttributes={selectedAttributes}
+            handleCategoryChange={handleCategoryChange}
+            handleAttributeChange={handleAttributeChange}
+            getTranslation={getTranslation}
+            onUserInteractionChange={setIsInteracting}
+          />
+        </IonMenu>
+      )}
+      <IonPage id="tab1-page">
+        <IonHeader>
+          <IonToolbar>
+            <IonButtons slot="start" className="ion-hide-md-up">
+              <IonMenuToggle menu="tab1-menu">
+                <IonMenuButton>
+                  <IonIcon icon={filter} />
+                </IonMenuButton>
+              </IonMenuToggle>
+            </IonButtons>
+            <IonTitle>Places</IonTitle>
+            <IonButtons slot="end">
+              <SwitchMapList currentMode={viewMode} onSwitch={setViewMode} />
+            </IonButtons>
+            <IonButtons slot="end">
+              <SearchBar
               onSearch={setSearchQuery}
               placeholder="Rechercher un lieu"
-            /> */}
-                        </IonButtons>
-                    </IonToolbar>
-                </IonHeader>
+            />
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
 
-                <IonContent className="ion-no-padding">
-                    <IonGrid>
-                        <IonRow>
-                            {/* Colonne 1 : 2 colonnes sur desktop, cachée sur mobile */}
-                            <IonCol
-                                size="12"
-                                sizeXl="3"
-                                sizeMd="4"
-                                className="ion-hide-md-down"
+        <IonContent className="ion-no-padding">
+          <IonGrid>
+            <IonRow>
+              {/* Colonne 1 : 2 colonnes sur desktop, cachée sur mobile */}
+              <IonCol
+                size="12"
+                sizeXl="3"
+                sizeMd="4"
+                className="ion-hide-md-down"
+              >
+                <FilterPlaces
+                  categories={uniqueCategories}
+                  attributes={uniqueAttributes}
+                  selectedCategories={selectedCategories}
+                  selectedAttributes={selectedAttributes}
+                  handleCategoryChange={handleCategoryChange}
+                  handleAttributeChange={handleAttributeChange}
+                  getTranslation={getTranslation}
+                  onUserInteractionChange={setIsInteracting}
+                />
+              </IonCol>
+              <IonCol size="12" sizeXl="9" sizeMd="8">
+                {/* Texte informatif et bouton de géolocalisation */}
+                {!slug && city && (
+                  <div className="info-geolocation">
+                    <p>Découvertes à {cityName}</p>
+                    {!isGeolocationEnabled ? (
+                      <IonButton
+                        onClick={handleEnableGeolocation}
+                        className="geolocation-button"
+                      >
+                        Activer la géolocalisation
+                      </IonButton>
+                    ) : (
+                      <IonButton
+                        onClick={handleDisableGeolocation}
+                        className="geolocation-button"
+                        color="danger"
+                      >
+                        Désactiver la géolocalisation
+                      </IonButton>
+                    )}
+                    {geoError && (
+                      <div className="geolocation-error">
+                        <p>{geoError}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Afficher un bouton pour activer la géolocalisation si aucune ville n'est définie */}
+                {!slug && !city && (
+                  <div className="info-geolocation">
+                    <p>Découvrez des lieux près de vous.</p>
+                    <IonButton
+                      onClick={handleEnableGeolocation}
+                      className="geolocation-button"
+                    >
+                      Activer la géolocalisation
+                    </IonButton>
+                    {geoError && (
+                      <div className="geolocation-error">
+                        <p>{geoError}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="feed-layout">
+                  <div className="main-content">
+                    {/* Section des filtres sélectionnés */}
+                    {(selectedCategories.length > 0 ||
+                      selectedAttributes.length > 0) && (
+                      <div className="selected-filters">
+                        {selectedCategories.map((categoryId: number) => {
+                          const category = uniqueCategories.find(
+                            (cat) => cat.id === categoryId
+                          );
+                          return category ? (
+                            <IonChip
+                              key={`category-${category.id}`}
+                              color="secondary"
+                              onClick={() => handleCategoryChange(category.id)}
+                              className="selected-chip"
                             >
                                 <FilterPlaces
                                     categories={uniqueCategories}
