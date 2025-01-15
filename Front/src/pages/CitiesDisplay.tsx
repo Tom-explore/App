@@ -1,18 +1,13 @@
-import React, { useState, useEffect } from "react";
-import {
-  IonHeader,
-  IonToolbar,
-  IonContent,
-  IonPage,
-  IonButtons,
-} from "@ionic/react";
-import SwitchMapList from "../components/SwitchMapList";
-import SearchBar from "../components/SearchBar";
-import CityList from "./CityList";
-import MapCityDisplay from "../components/MapCityDisplay";
-import citiesData from "../data/cities.json";
-import { useLanguage } from "../context/languageContext";
-import "../styles/pages/CitiesDisplay.css";
+
+import React, { useState, useEffect } from 'react';
+import { IonHeader, IonToolbar, IonContent, IonPage, IonButtons } from '@ionic/react';
+import SwitchMapList from '../components/SwitchMapList';
+import SearchBar from '../components/SearchBar';
+import CityList from '../components/CityList';
+import MapCityDisplay from '../components/MapCityDisplay';
+import citiesData from '../data/cities.json';
+import { useLanguage } from '../context/languageContext';
+import '../styles/pages/CitiesDisplay.css'
 
 const CitiesDisplay: React.FC = () => {
   const [viewMode, setViewMode] = useState<"list" | "map">("list");

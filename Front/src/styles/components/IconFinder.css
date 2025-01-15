@@ -1,0 +1,7 @@
+/* src/styles/components/IconFinder.css */
+
+.icon-finder {
+    font-size: 1.5rem;
+    transition: transform 0.2s ease-out;
+    /* Pour des transformations fluides */
+}

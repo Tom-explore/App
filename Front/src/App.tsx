@@ -38,11 +38,10 @@ import "@ionic/react/css/display.css";
 
 import "@ionic/react/css/palettes/dark.system.css";
 import Trip from "./pages/Trip";
-import Feed from "./pages/Feed";
+import FeedMapDisplay from './pages/FeedMapDisplay';
 
 /* Theme variables */
 import "./theme/variables.css";
-
 setupIonicReact();
 
 const App: React.FC = () => {
@@ -77,8 +76,8 @@ const App: React.FC = () => {
           <IonRouterOutlet>
             <Route path="/trip" component={Trip} exact />
             <Route path="/:lang/city/:slug" component={City} exact />
-            <Route path="/:lang/feed" component={Feed} exact />
-            <Route path="/:lang/feed/city/:slug" component={Feed} exact />
+            <Route path="/:lang/feed" component={FeedMapDisplay} exact />
+            <Route path="/:lang/feed/city/:slug" component={FeedMapDisplay} exact />
 
             <Route path="/:lang/destinations" component={Tab3} exact />
             <Route path="/:lang/city" component={CitiesDisplay} exact />

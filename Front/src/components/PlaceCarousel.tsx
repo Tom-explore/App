@@ -1,12 +1,13 @@
 // src/components/PlaceCarousel.tsx
 
 import React, {
-    useState,
     useRef,
     useEffect,
     useCallback,
     useMemo,
-    useContext
+    useContext,
+    useState,
+    memo
 } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import {
@@ -42,6 +43,7 @@ interface PlaceCarouselProps {
     categories: Category[];
     attributes: Attribute[];
     activePlace?: Place | null;
+    setActivePlace: (place: Place | null) => void;
 }
 
 const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
@@ -51,8 +53,8 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
     categories,
     attributes,
     activePlace,
+    setActivePlace,
 }) => {
-    const [activePlaceState, setActivePlaceState] = useState<Place | null>(null);
     const swiperRef = useRef<any>(null);
     const [currentSlidesPerView, setCurrentSlidesPerView] = useState<number>(
         isMobile ? 1 : 6
@@ -68,7 +70,6 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
     const { slug } = useParams<{ slug: string }>();
     const location = useLocation();
 
-    // Déterminer si on est en page feed
     const isFeedPage = useMemo(
         () => location.pathname.includes('/feed'),
         [location.pathname]
@@ -79,8 +80,8 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
      ****************************************************************/
     const filteredByCategoryAndAttribute = useMemo(() => {
         if (
-            (categories.length === 0) &&
-            (attributes.length === 0)
+            categories.length === 0 &&
+            attributes.length === 0
         ) {
             return allPlaces;
         }
@@ -105,38 +106,33 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
     }, [allPlaces, categories, attributes]);
 
     /****************************************************************
-     * 2. Trier les lieux (ex. exclure <100 reviews + ordre décroissant)
+     * 2. Tri des places (exclure <100 avis + ordre décroissant)
      ****************************************************************/
     const sortedPlaces = useMemo(() => {
-        // Exclure <100 reviews
         const placesAbove100 = filteredByCategoryAndAttribute.filter(
             (p) => (p.reviews_google_count || 0) >= 100
         );
-        // Tri décroissant par reviews_google_count
-        placesAbove100.sort(
+        return placesAbove100.sort(
             (a, b) =>
                 (b.reviews_google_count || 0) -
                 (a.reviews_google_count || 0)
         );
-        return placesAbove100;
     }, [filteredByCategoryAndAttribute]);
 
     /****************************************************************
-     * 3. Exclure la place active du slider (uniquement si isFeedPage = false)
+     * 3. Exclure la place active du slider (si n'est pas sur la page feed)
      ****************************************************************/
     const placesToRender = useMemo(() => {
-        // Si on n’est PAS en feed, on retire la place active du slider et on l’affiche en modal
-        if (!isFeedPage && activePlaceState) {
+        if (!isFeedPage && activePlace) {
             return sortedPlaces.filter(
-                (place) => place.id !== activePlaceState.id
+                (place) => place.id !== activePlace.id
             );
         }
-        // Sinon (si isFeedPage = true), on la laisse dedans
         return sortedPlaces;
-    }, [sortedPlaces, activePlaceState, isFeedPage]);
+    }, [sortedPlaces, activePlace, isFeedPage]);
 
     /****************************************************************
-     * 4. Limiter l’affichage à 8 lieux si pas en page Feed
+     * 4. Limiter l'affichage à 8 places si pas sur la page Feed
      ****************************************************************/
     const displayPlaces = useMemo(() => {
         if (isFeedPage) {
@@ -149,17 +145,17 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
     }, [placesToRender, isFeedPage]);
 
     /****************************************************************
-     * 5. Bouton "voir plus" visible si on n’est PAS en feed
+     * 5. Visibilité du bouton "Voir plus" si pas sur la page feed
      ****************************************************************/
     const hasMore = useMemo(() => {
         if (isFeedPage) {
             return false;
         }
-        return placesToRender.length >= 1;
+        return placesToRender.length > 8;
     }, [placesToRender, isFeedPage]);
 
     /****************************************************************
-     * 6. Construction des slides Swiper
+     * 6. Construction des slides avec mémoïsation
      ****************************************************************/
     const slides = useMemo(() => {
         const slidesArray: Array<{
@@ -186,43 +182,42 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
     }, [displayPlaces, hasMore, isPreview, isFeedPage]);
 
     /****************************************************************
-     * 7. Fonctions pour naviguer "Previous"/"Next" dans la modal
-     *    (uniquement utiles quand isFeedPage = false)
+     * 7. Fonctions pour naviguer "Précédent"/"Suivant" dans le modal
      ****************************************************************/
     const goToPrevious = useCallback(() => {
-        if (!activePlaceState) return;
+        if (!activePlace) return;
         const currentIndex = sortedPlaces.findIndex(
-            (p) => p.id === activePlaceState.id
+            (p) => p.id === activePlace.id
         );
         if (currentIndex > 0) {
             const newPlace = sortedPlaces[currentIndex - 1];
-            setActivePlaceState(newPlace);
+            setActivePlace(newPlace);
             swiperRef.current?.swiper.slideTo(
                 currentIndex - 1 - Math.floor(currentSlidesPerView / 2)
             );
         }
-    }, [activePlaceState, sortedPlaces, currentSlidesPerView]);
+    }, [activePlace, sortedPlaces, currentSlidesPerView, setActivePlace]);
 
     const goToNext = useCallback(() => {
-        if (!activePlaceState) return;
+        if (!activePlace) return;
         const currentIndex = sortedPlaces.findIndex(
-            (p) => p.id === activePlaceState.id
+            (p) => p.id === activePlace.id
         );
         if (currentIndex < sortedPlaces.length - 1) {
             const newPlace = sortedPlaces[currentIndex + 1];
-            setActivePlaceState(newPlace);
+            setActivePlace(newPlace);
             swiperRef.current?.swiper.slideTo(
                 currentIndex + 1 - Math.floor(currentSlidesPerView / 2)
             );
         }
-    }, [activePlaceState, sortedPlaces, currentSlidesPerView]);
+    }, [activePlace, sortedPlaces, currentSlidesPerView, setActivePlace]);
 
     /****************************************************************
-     * 8. Navigation clavier (modale) si isFeedPage = false
+     * 8. Navigation au clavier (modal) si pas sur la page feed
      ****************************************************************/
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (!activePlaceState) return;
+            if (!activePlace) return;
             if (e.key === 'ArrowLeft') {
                 goToPrevious();
             } else if (e.key === 'ArrowRight') {
@@ -230,20 +225,16 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
             }
         };
 
-        // On n’active cette navigation que si isFeedPage = false
-        if (activePlaceState && !isFeedPage) {
+        if (activePlace && !isFeedPage) {
             window.addEventListener('keydown', handleKeyDown);
         }
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [activePlaceState, goToPrevious, goToNext, isFeedPage]);
+    }, [activePlace, goToPrevious, goToNext, isFeedPage]);
 
     /****************************************************************
      * 9. Clic sur une carte
-     *    - Si isFeedPage = true, on ne retire PAS la place du slider,
-     *      on scroll jusqu’à elle (centrage)
-     *    - Si isFeedPage = false, on conserve le comportement existant
      ****************************************************************/
     const handleCardClick = useCallback((place: Place) => {
         if (isMobile) return;
@@ -261,25 +252,26 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
             swiper.slideTo(
                 Math.max(0, clickedIndex - half)
             );
-            setActivePlaceState(place);
+            setActivePlace(place);
         } else {
             if (clickedIndex >= half && clickedIndex <= totalSlides - half - 1) {
                 swiper.slideTo(clickedIndex - half);
-                setActivePlaceState(place);
+                setActivePlace(place);
             } else {
                 if (clickedIndex < half) {
                     swiper.slideTo(0);
                 } else {
                     swiper.slideTo(totalSlides - currentSlidesPerView);
                 }
-                setActivePlaceState(place);
+                setActivePlace(place);
             }
         }
     }, [
         isMobile,
         isFeedPage,
         sortedPlaces,
-        currentSlidesPerView
+        currentSlidesPerView,
+        setActivePlace
     ]);
 
     /****************************************************************
@@ -304,7 +296,7 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
     }, [slug, categories, language, router]);
 
     /****************************************************************
-     * 11. Synchroniser le slider quand `activePlace` externe change
+     * 11. Synchronisation du slider lorsque `activePlace` externe change
      ****************************************************************/
     useEffect(() => {
         if (activePlace && swiperRef.current && swiperRef.current.swiper) {
@@ -316,13 +308,12 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
                 swiperRef.current.swiper.slideTo(
                     index - offset >= 0 ? index - offset : 0
                 );
-                setActivePlaceState(activePlace);
             }
         }
     }, [activePlace, sortedPlaces, currentSlidesPerView]);
 
     /****************************************************************
-     * 12. Rendu JSX
+     * 12. JSX Render Optimisé
      ****************************************************************/
     return (
         <div className="place-carousel">
@@ -342,10 +333,15 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
                     ref={swiperRef}
                     modules={[Navigation, Pagination, FreeMode, Virtual]}
                     spaceBetween={16}
-                    slidesPerView={isMobile ? 1 : 6}
-                    navigation={!activePlaceState}
+                    slidesPerView={isMobile ? 1 : currentSlidesPerView}
+                    navigation={!activePlace}
                     pagination={{ clickable: true, dynamicBullets: true }}
-                    virtual={{ enabled: true }}
+                    virtual={{
+                        enabled: true,
+                        slides: slides, // Passer les slides ici
+                        addSlidesBefore: 5,
+                        addSlidesAfter: 5,
+                    }}
                     slideToClickedSlide={false}
                     breakpoints={{
                         320: { slidesPerView: 2 },
@@ -355,14 +351,13 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
                         1200: { slidesPerView: 7 },
                     }}
                     loop={false}
-                    allowTouchMove={!activePlaceState}
+                    allowTouchMove={!activePlace}
                     speed={300}
                     observer={true}
                     observeParents={true}
                     onBreakpoint={(swiper) => {
-                        setCurrentSlidesPerView(
-                            swiper.params.slidesPerView as number
-                        );
+                        const slidesView = swiper.params.slidesPerView as number;
+                        setCurrentSlidesPerView(slidesView);
                     }}
                 >
                     {slides.map((slide, index) => (
@@ -379,11 +374,11 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
                                     className={` ${isFeedPage ? 'no-modal' : ''}`}
                                     onClick={() => handleCardClick(slide.content!)}
                                 >
-                                    <PlaceCard
+                                    <MemoizedPlaceCard
                                         place={slide.content}
                                         isMobile={isMobile}
                                         isActive={
-                                            activePlaceState?.id === slide.content.id
+                                            activePlace?.id === slide.content.id
                                         }
                                         isFeed={isFeedPage}
                                     />
@@ -405,19 +400,18 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
                 </Swiper>
             </div>
 
-
-            {/* MODAL : ne s’affiche que si isFeedPage = false */}
-            {activePlaceState && !isFeedPage && (
+            {/* MODAL : seulement si isFeedPage = false */}
+            {activePlace && !isFeedPage && (
                 <ModalPortal>
                     <div
                         className="backdrop"
-                        onClick={() => setActivePlaceState(null)}
+                        onClick={() => setActivePlace(null)}
                     ></div>
                     <PlaceCard
-                        place={activePlaceState}
+                        place={activePlace}
                         isMobile={isMobile}
                         isModalView={true}
-                        onDesktopClick={() => setActivePlaceState(null)}
+                        onDesktopClick={() => setActivePlace(null)}
                         isActive={true}
                         onPrevious={goToPrevious}
                         onNext={goToNext}
@@ -430,5 +424,18 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
         </div>
     );
 };
+
+/**
+ * Optimisation du composant PlaceCard avec React.memo
+ * Assurez-vous que PlaceCard accepte bien les props et ne re-render que si nécessaire
+ */
+const MemoizedPlaceCard = memo(PlaceCard, (prevProps, nextProps) => {
+    return (
+        prevProps.place.id === nextProps.place.id &&
+        prevProps.isMobile === nextProps.isMobile &&
+        prevProps.isActive === nextProps.isActive &&
+        prevProps.isFeed === nextProps.isFeed
+    );
+});
 
 export default PlaceCarousel;
