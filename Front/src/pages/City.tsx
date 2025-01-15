@@ -202,9 +202,6 @@ const City: React.FC = () => {
                 />
 
                 <div className="city-buttons">
-                    <div className="search-bar-container">
-                        <SearchBar onSearch={setSearchQuery} placeholder="Rechercher un lieu" />
-                    </div>
 
                     <IonButton onClick={() => setIsTripModalOpen(true)}>
                         ✈️ Je crée mon voyage !

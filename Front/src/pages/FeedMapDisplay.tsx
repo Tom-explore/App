@@ -23,8 +23,9 @@ import {
   IonGrid,
   IonRow,
   IonCol,
+  IonMenuToggle,
 } from "@ionic/react";
-import { chevronBackOutline, close as closeIcon } from "ionicons/icons";
+import { chevronBackOutline, close as closeIcon, filter } from "ionicons/icons";
 import { useIonRouter } from "@ionic/react";
 import { useParams } from "react-router";
 import { useCity } from "../context/cityContext";
@@ -243,15 +244,38 @@ const FeedMapDisplay: React.FC = () => {
     // Optionnel : réinitialiser les filtres ou la ville si nécessaire
   }, [disableBrowserGeolocation]);
 
+  // Gestion de la taille de l'écran pour le menu latéral
+  const [isSmallScreen, setIsSmallScreen] = useState(
+    window.matchMedia("(max-width: 768px)").matches
+  );
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 768px)");
+
+    const handleResize = () => {
+      console.log("Small screen changed:", mediaQuery.matches);
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    // Écoute des changements de taille
+    mediaQuery.addEventListener("change", handleResize);
+
+    // Nettoyage de l'écouteur
+    return () => {
+      mediaQuery.removeEventListener("change", handleResize);
+    };
+  }, []);
+
   return (
     <>
       {/* Menu latéral spécifique à Tab1 */}
-      {(isMobile || !isMobile) && (
+      {isSmallScreen && (
         <IonMenu
           side="start"
           menuId="tab1-menu"
           contentId="tab1-page"
           type="overlay"
+          className="display-none-md-up"
         >
           <FilterPlaces
             categories={uniqueCategories}
@@ -269,17 +293,21 @@ const FeedMapDisplay: React.FC = () => {
         <IonHeader>
           <IonToolbar>
             <IonButtons slot="start" className="ion-hide-md-up">
-              <IonMenuButton menu="tab1-menu" />
+              <IonMenuToggle menu="tab1-menu">
+                <IonMenuButton>
+                  <IonIcon icon={filter} />
+                </IonMenuButton>
+              </IonMenuToggle>
             </IonButtons>
             <IonTitle>Places</IonTitle>
             <IonButtons slot="end">
               <SwitchMapList currentMode={viewMode} onSwitch={setViewMode} />
             </IonButtons>
             <IonButtons slot="end">
-              {/* <SearchBar
+              <SearchBar
               onSearch={setSearchQuery}
               placeholder="Rechercher un lieu"
-            /> */}
+            />
             </IonButtons>
           </IonToolbar>
         </IonHeader>
@@ -353,15 +381,7 @@ const FeedMapDisplay: React.FC = () => {
                 )}
 
                 <div className="feed-layout">
-
                   <div className="main-content">
-                    <div className="search-bar-container">
-                      <SearchBar
-                        onSearch={setSearchQuery}
-                        placeholder="Rechercher un lieu"
-                      />
-                    </div>
-
                     {/* Section des filtres sélectionnés */}
                     {(selectedCategories.length > 0 ||
                       selectedAttributes.length > 0) && (

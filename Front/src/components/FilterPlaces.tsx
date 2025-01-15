@@ -61,7 +61,7 @@ const FilterPlaces: React.FC<FilterPlacesProps> = ({
             <IonIcon icon={filter} size="large" />
           </IonButtons>
           <IonTitle>Filtres</IonTitle>
-          <IonButtons slot="end">
+          <IonButtons slot="end" className="ion-hide-md-up">
             <IonMenuToggle>
               <IonButton size="large" shape="round">
                 <IonIcon icon={close} />
