@@ -64,7 +64,6 @@ if (process.env.REACT_APP_IS_DEV === 'true') {
     const currentHostname = window.location.hostname;
     emulatorHost = currentHostname;
   }
-
   connectFirestoreEmulator(firestore, emulatorHost, emulatorPort);
 }
 

@@ -16,22 +16,6 @@
     /* Pour compenser l'en-tête fixe */
 }
 
-/* Header of the mobile filter panel */
-.filter-header-mobile {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background-color: var(--secondary-color);
-    padding: 16px;
-    border-bottom: 1px solid #ddd;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    z-index: 2100;
-    /* Plus élevé que le container pour être au-dessus */
-}
-
 /* Style the toggle switches */
 .filter-panel-mobile ion-toggle {
     --handle-background: var(--ion-color-primary);
@@ -50,10 +34,6 @@
         padding: 12px;
     }
 
-    .filter-header-mobile {
-        padding: 12px;
-    }
-
     .filter-panel-mobile ion-toggle {
         --handle-background: var(--ion-color-primary-shade);
         --background-checked: var(--ion-color-primary-tint);
@@ -62,11 +42,6 @@
 
 @media screen and (max-width: 480px) {
     .filter-panel-mobile {
-        padding: 10px;
-    }
-
-    .filter-header-mobile {
-        font-size: 14px;
         padding: 10px;
     }
 

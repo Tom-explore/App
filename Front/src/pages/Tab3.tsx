@@ -13,9 +13,11 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonCardContent,
+  IonButtons,
+  IonIcon,
 } from '@ionic/react';
 import { GeolocationContext } from '../context/geolocationContext';
-import './Compass.css';
+import { addOutline, menuOutline } from 'ionicons/icons';
 
 const TARGET_COORDINATES = { lat: 48.1159843, lng: -1.729643 };
 
@@ -105,10 +107,25 @@ const CompassOrientationDisplay: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
-          <IonTitle>Compass Orientation</IonTitle>
-        </IonToolbar>
-      </IonHeader>
+    <IonToolbar>
+      {/* Bouton à gauche */}
+      <IonButtons slot="start">
+        <IonButton aria-label="Menu">
+          <IonIcon icon={menuOutline} />
+        </IonButton>
+      </IonButtons>
+
+      {/* Titre de la barre d'outils */}
+      <IonTitle>Compass Orientation</IonTitle>
+
+      {/* Bouton à droite */}
+      <IonButtons slot="end">
+        <IonButton aria-label="Ajouter">
+          <IonIcon icon={addOutline} />
+        </IonButton>
+      </IonButtons>
+    </IonToolbar>
+  </IonHeader>
       <IonContent className="ion-padding">
         <IonCard>
           <IonCardHeader>

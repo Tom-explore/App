@@ -1,47 +1,24 @@
-.search-bar-container {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
-  width: 80%;
-  max-width: 600px;
-  margin-bottom: 20px;
+#tab1-page ion-searchbar.tex {
+  transition: all 0.3s ease-in-out; /* Transition pour une animation fluide */
 }
 
-.search-bar {
-  width: 100%;
-  padding: 10px 15px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 25px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  outline: none;
-  transition: all 0.3s ease;
-  padding-right: 40px;
-  /* Espace pour la croix */
-}
-
-.search-bar:focus {
-  border-color: #007aff;
-  box-shadow: 0 4px 8px rgba(0, 122, 255, 0.2);
-}
-
-.clear-button {
-  position: absolute;
-  right: 20px;
-  /* Position par rapport au bord droit du champ */
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  font-size: 16px;
-  color: #aaa;
-  cursor: pointer;
+#tab1-page ion-searchbar.tex.hidden {
+  margin-left: -2px;
   padding: 0;
-  outline: none;
 }
 
-.clear-button:hover {
-  color: #007aff;
+#tab1-page ion-searchbar.tex.hidden .searchbar-input {
+  opacity: 0; /* Caché initialement */
+  width: 10px; /* Rétréci initialement */
+  padding: 4px 22px !important;
+  border-color: transparent !important;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out; /* Animation sur changement d'état */
+}
+
+#tab1-page ion-searchbar.tex .searchbar-input {
+  opacity: 1; /* Visible quand ouvert */
+  width: 100%; /* Largeur complète */
+  cursor: text;
+  transition: all 0.3s ease-in-out; /* Animation fluide */
 }

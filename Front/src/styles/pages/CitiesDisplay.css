@@ -1,39 +1,3 @@
-/* Conteneur principal pour le header (switch + recherche) */
-.cities-display-header {
-    padding: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    /* Aligne les éléments horizontalement */
-    z-index: 999;
-    position: relative;
-    background-color: transparent;
-    /* Rendre le background transparent */
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    /* Ombre pour séparation, peut être ajustée ou supprimée */
-    top: 0;
-    gap: 15px;
-    /* Espacement entre les éléments */
-    flex-wrap: nowrap;
-    /* Empêche le wrapping des éléments */
-}
-
-/* Conteneur pour la partie gauche du header (bouton switch) */
-.header-left {
-    flex: 0 0 auto;
-    /* Taille automatique */
-}
-
-/* Conteneur pour la partie droite du header (barre de recherche) */
-.header-right {
-    flex: 1 1 auto;
-    /* Prend tout l’espace restant */
-    display: flex;
-    align-items: center;
-    min-width: 0;
-    /* Important pour permettre à la barre de recherche de s'étendre et de se réduire */
-}
-
 /* Conteneur pour la barre de recherche */
 .search-bar-container {
     width: 100%;
@@ -92,93 +56,8 @@
     color: var(--ion-color-primary, #007bff);
 }
 
-/* Ajustement du Switch */
-.switch-map-list-city {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--ion-color-primary, #007bff);
-    /* Bordure autour du switch avec la couleur primaire d'Ionic */
-    border-radius: 15px;
-    /* Coins légèrement arrondis pour un aspect minimaliste */
-    background: transparent;
-    /* Fond transparent pour s'adapter aux thèmes */
-    padding: 5px 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    flex-shrink: 0;
-    /* Empêche le bouton de rétrécir */
-    width: 60px;
-    /* Largeur réduite pour un aspect minimaliste */
-    height: 30px;
-    /* Hauteur fixe */
-}
-
-.switch-map-list-city:hover {
-    background-color: var(--ion-color-step-50, #f1f1f1);
-    /* Fond gris clair au survol, adapté aux thèmes */
-}
-
-.switch-button {
-    font-size: 14px;
-    color: var(--ion-color-primary, #007bff);
-    /* Couleur du texte avec la couleur primaire d'Ionic */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    /* Suppression du padding pour un aspect plus compact */
-    flex: 1;
-    /* Permet aux boutons de s'étendre également */
-    height: 100%;
-    /* Hauteur complète du conteneur */
-    border-radius: 15px;
-    /* Coins arrondis pour chaque bouton */
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.switch-icon {
-    font-size: 18px;
-    /* Taille des icônes légèrement réduite */
-    color: inherit;
-    /* Inherit color from parent */
-}
-
-.switch-button.active {
-    background-color: var(--ion-color-primary, #007bff);
-    /* Couleur de l'option active avec la couleur primaire d'Ionic */
-    color: var(--ion-background-color, #ffffff);
-}
-
-.switch-button:not(.active):hover {
-    background-color: var(--ion-color-step-50, #e9e9e9);
-    /* Couleur au survol pour les boutons inactifs, adaptée aux thèmes */
-}
-
 /* Responsive (Mobile) */
 @media (max-width: 767px) {
-    .cities-display-header {
-        padding: 10px;
-        box-shadow: none;
-        /* Supprime l'ombre sur mobile */
-        gap: 10px;
-        /* Réduit l'espacement */
-        flex-wrap: nowrap;
-        /* Maintient les éléments sur une seule ligne */
-    }
-
-    .header-left,
-    .header-right {
-        width: auto;
-    }
-
-    .header-left {
-        display: flex;
-        justify-content: center;
-        /* Centre le bouton sur mobile */
-        margin-bottom: 10px;
-        /* Espacement entre le bouton et la barre de recherche */
-    }
 
     .search-bar-container {
         padding: 0;
@@ -188,30 +67,4 @@
         max-width: 100%;
         /* Utilise toute la largeur disponible */
     }
-
-    .switch-map-list-city {
-        width: 50px;
-        /* Réduit la largeur du switch sur mobile */
-        padding: 4px 8px;
-        /* Ajuste le padding */
-        height: 25px;
-    }
-
-    .switch-button {
-        font-size: 12px;
-        /* Ajustez la taille si nécessaire */
-    }
-
-    .switch-icon {
-        font-size: 16px;
-        /* Ajustez la taille des icônes si nécessaire */
-    }
-}
-
-/* Style pour le IonToolbar transparent */
-.transparent-toolbar {
-    --background: transparent;
-    /* Rendre le toolbar transparent */
-    --ion-background-color: transparent;
-    /* S'assurer que la couleur de fond est transparente */
 }
