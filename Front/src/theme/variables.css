@@ -75,3 +75,9 @@ ion-searchbar.tex .searchbar-input {
   text-align: left;
   padding: 4px 55px;
 }
+
+@media (min-width: 768px) {
+  .display-none-md-up {
+    display: none;
+  }
+}

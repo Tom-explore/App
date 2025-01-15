@@ -10,7 +10,6 @@ import "../styles/components/MapPlaceDisplay.css";
 import PlacesMarkers from "./PlaceMarker"; // Assurez-vous du bon import
 import { useCity } from "../context/cityContext";
 import { useLanguage } from "../context/languageContext";
-import FilterPlaces from "./FilterPlaces"; // Importez FilterPlaces
 
 interface Coordinates {
   lat: number;
