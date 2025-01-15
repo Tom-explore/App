@@ -122,22 +122,35 @@ const useFilterPlaces = ({
         updateURL();
     }, [selectedCategories, selectedAttributes, updateURL]);
 
-    // Filtrage des places
+    // Filtrage des places avec la nouvelle logique
     useEffect(() => {
         let filtered = allPlaces;
 
+        // Filtrer par catégories avec une logique OU
         if (selectedCategories.length > 0) {
-            // Combiner les catégories avec "ET"
             filtered = filtered.filter(place =>
-                selectedCategories.every(catId => place.categories.some(category => category.id === catId))
+                selectedCategories.some(catId =>
+                    place.categories.some(category => category.id === catId)
+                )
             );
         }
 
+        // Filtrer par attributs avec une logique ET
         if (selectedAttributes.length > 0) {
-            // Combiner les attributs avec "OU"
             filtered = filtered.filter(place =>
-                place.attributes.some(attribute => selectedAttributes.includes(attribute.id))
+                selectedAttributes.every(attrId =>
+                    place.attributes.some(attribute => attribute.id === attrId)
+                )
             );
+        }
+
+        // Trier les places : celles qui correspondent à plusieurs catégories sélectionnées en premier
+        if (selectedCategories.length > 1) {
+            filtered = filtered.sort((a, b) => {
+                const aMatches = a.categories.filter(cat => selectedCategories.includes(cat.id)).length;
+                const bMatches = b.categories.filter(cat => selectedCategories.includes(cat.id)).length;
+                return bMatches - aMatches; // Descendant : plus de correspondances en premier
+            });
         }
 
         onFilterChange(filtered);

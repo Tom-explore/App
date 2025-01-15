@@ -71,7 +71,20 @@ const Feed: React.FC<FeedProps> = ({
     const rowHeight = useMemo(() => ITEM_HEIGHT + verticalGap, [ITEM_HEIGHT, verticalGap]);
     const rowCount = useMemo(() => Math.ceil(places.length / COLUMN_COUNT), [places.length, COLUMN_COUNT]);
     const LIST_HEIGHT = useMemo(() => containerHeight, [containerHeight]);
+    const sortedPlaces = useMemo(() => {
+        return [...places].sort((a, b) => {
+            const aCategoryMatches = a.categories.filter(cat => selectedCategories.includes(cat.id)).length;
+            const bCategoryMatches = b.categories.filter(cat => selectedCategories.includes(cat.id)).length;
+            const aAttributeMatches = a.attributes.filter(attr => selectedAttributes.includes(attr.id)).length;
+            const bAttributeMatches = b.attributes.filter(attr => selectedAttributes.includes(attr.id)).length;
 
+            // Prioriser par correspondance (catégories et attributs)
+            const aTotalMatches = aCategoryMatches + aAttributeMatches;
+            const bTotalMatches = bCategoryMatches + bAttributeMatches;
+
+            return bTotalMatches - aTotalMatches; // Plus de correspondances en premier
+        });
+    }, [places, selectedCategories, selectedAttributes]);
     // Mémoïsation des fonctions de changement de filtre
     const memoizedHandleCategoryChange = useCallback((categoryId: number) => {
         handleCategoryChange(categoryId);
@@ -155,7 +168,36 @@ const Feed: React.FC<FeedProps> = ({
                     rowHeight={rowHeight}
                     width={containerWidth}
                 >
-                    {Cell}
+                    {({ columnIndex, rowIndex, style }) => {
+                        const index = rowIndex * COLUMN_COUNT + columnIndex;
+                        if (index >= sortedPlaces.length) return null;
+
+                        const place = sortedPlaces[index];
+                        return (
+                            <div
+                                style={{
+                                    ...style,
+                                    paddingRight: columnIndex < COLUMN_COUNT - 1 ? `${horizontalGap}px` : '0px',
+                                    paddingBottom: `${verticalGap}px`,
+                                    boxSizing: 'border-box'
+                                }}
+                            >
+                                <FeedCard
+                                    place={place}
+                                    selectedCategories={selectedCategories}
+                                    selectedAttributes={selectedAttributes}
+                                    handleCategoryChange={handleCategoryChange}
+                                    handleAttributeChange={handleAttributeChange}
+                                    getTranslation={getTranslation}
+                                    distance={
+                                        geolocation
+                                            ? calculateDistanceFromPlace(geolocation, { lat: place.lat, lng: place.lng })
+                                            : undefined
+                                    }
+                                />
+                            </div>
+                        );
+                    }}
                 </Grid>
             ) : (
                 <div className="no-results">
