@@ -1,5 +1,3 @@
-// src/components/Map.tsx
-
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { MapContainer, TileLayer, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -7,6 +5,7 @@ import '../styles/components/Map.css';
 import { useIonViewDidEnter } from '@ionic/react';
 import L, { LatLngBounds } from 'leaflet';
 import { CityMap } from '../types/CommonInterfaces';
+import UserMarker from './UserMarker'; // Import the UserMarker component
 
 interface MapProps {
   citiesData?: CityMap[];
@@ -151,6 +150,7 @@ const Map = React.forwardRef<any, MapProps>(
           />
           <MapZoomHandler />
           {children}
+          <UserMarker />
           {isMinZoomReached && (
             <div className="zoom-message">
               <p>Niveau de zoom minimum atteint.</p>

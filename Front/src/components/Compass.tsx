@@ -1,5 +1,3 @@
-// src/components/Compass.tsx
-
 import React, { useContext, useEffect, useRef, useCallback, useState } from 'react';
 import { GeolocationContext } from '../context/geolocationContext';
 import '../styles/components/Compass.css';

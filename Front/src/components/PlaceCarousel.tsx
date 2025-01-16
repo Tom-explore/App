@@ -107,8 +107,6 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
                     )
                 );
 
-            // Modifié pour inclure les lieux qui correspondent aux catégories et
-            // qui correspondent aux attributs OU n'ont aucun attribut
             return matchesCategory && (matchesAttribute || place.attributes.length === 0);
         });
     }, [allPlaces, categories, attributes]);

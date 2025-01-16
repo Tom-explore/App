@@ -15,6 +15,7 @@ import {
   IonCardContent,
   IonButtons,
   IonIcon,
+  IonText,
 } from '@ionic/react';
 import { GeolocationContext } from '../context/geolocationContext';
 import { addOutline, menuOutline } from 'ionicons/icons';
@@ -27,6 +28,8 @@ const CompassOrientationDisplay: React.FC = () => {
     error,
     requestBrowserGeolocation,
     disableBrowserGeolocation,
+    loading,
+    isGeolocationEnabled,
   } = useContext(GeolocationContext);
 
   const compassNeedleRef = useRef<HTMLDivElement>(null);
@@ -36,8 +39,37 @@ const CompassOrientationDisplay: React.FC = () => {
   const [orientationError, setOrientationError] = useState<string | null>(null);
   const [bearing, setBearing] = useState<number | null>(null);
   const [isAligned, setIsAligned] = useState(false);
+  const [debugInfo, setDebugInfo] = useState({
+    deviceType: '',
+    os: '',
+    browser: '',
+    headingRequested: false,
+    headingAvailable: false,
+    geolocationRequested: false,
+    lastGeolocationTime: null as number | null,
+  });
+
+  // Détection de l'appareil et du navigateur
+  useEffect(() => {
+    const ua = navigator.userAgent;
+    const isIOS = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
+    const isAndroid = /Android/.test(ua);
+    const isFirefox = ua.includes('Firefox');
+    const isChrome = ua.includes('Chrome');
+    const isSafari = ua.includes('Safari') && !ua.includes('Chrome');
+
+    setDebugInfo(prev => ({
+      ...prev,
+      deviceType: isIOS ? 'iOS' : isAndroid ? 'Android' : 'Desktop',
+      os: isIOS ? 'iOS' : isAndroid ? 'Android' : navigator.platform,
+      browser: isFirefox ? 'Firefox' : isChrome ? 'Chrome' : isSafari ? 'Safari' : 'Unknown',
+      headingAvailable: typeof (window as any).DeviceOrientationEvent !== 'undefined',
+    }));
+  }, []);
 
   const requestOrientationPermission = async () => {
+    setDebugInfo(prev => ({ ...prev, headingRequested: true }));
+
     if (
       typeof window !== 'undefined' &&
       typeof (window as any).DeviceOrientationEvent?.requestPermission === 'function'
@@ -47,6 +79,7 @@ const CompassOrientationDisplay: React.FC = () => {
         if (response === 'granted') {
           setOrientationPermission(true);
           requestBrowserGeolocation();
+          setDebugInfo(prev => ({ ...prev, geolocationRequested: true }));
         } else {
           setOrientationError("Permission refusée pour l'orientation (iOS).");
         }
@@ -56,8 +89,10 @@ const CompassOrientationDisplay: React.FC = () => {
     } else {
       setOrientationPermission(true);
       requestBrowserGeolocation();
+      setDebugInfo(prev => ({ ...prev, geolocationRequested: true }));
     }
   };
+
 
   const calcDegreeToTarget = (latitude: number, longitude: number) => {
     const phiK = (TARGET_COORDINATES.lat * Math.PI) / 180.0;
@@ -74,11 +109,7 @@ const CompassOrientationDisplay: React.FC = () => {
     return Math.round((psi + 360) % 360);
   };
 
-  useEffect(() => {
-    if (geolocation) {
-      setBearing(calcDegreeToTarget(geolocation.lat, geolocation.lng));
-    }
-  }, [geolocation]);
+
 
   useEffect(() => {
     function handleDeviceOrientation(event: DeviceOrientationEvent) {
@@ -104,45 +135,98 @@ const CompassOrientationDisplay: React.FC = () => {
     };
   }, [bearing]);
 
+  useEffect(() => {
+    if (geolocation) {
+      setBearing(calcDegreeToTarget(geolocation.lat, geolocation.lng));
+      setDebugInfo(prev => ({
+        ...prev,
+        lastGeolocationTime: Date.now()
+      }));
+    }
+  }, [geolocation]);
+
   return (
     <IonPage>
       <IonHeader>
-    <IonToolbar>
-      {/* Bouton à gauche */}
-      <IonButtons slot="start">
-        <IonButton aria-label="Menu">
-          <IonIcon icon={menuOutline} />
-        </IonButton>
-      </IonButtons>
+        <IonToolbar>
+          <IonButtons slot="start">
+            <IonButton aria-label="Menu">
+              <IonIcon icon={menuOutline} />
+            </IonButton>
+          </IonButtons>
+          <IonTitle>Compass Debug</IonTitle>
+          <IonButtons slot="end">
+            <IonButton aria-label="Ajouter">
+              <IonIcon icon={addOutline} />
+            </IonButton>
+          </IonButtons>
+        </IonToolbar>
+      </IonHeader>
 
-      {/* Titre de la barre d'outils */}
-      <IonTitle>Compass Orientation</IonTitle>
-
-      {/* Bouton à droite */}
-      <IonButtons slot="end">
-        <IonButton aria-label="Ajouter">
-          <IonIcon icon={addOutline} />
-        </IonButton>
-      </IonButtons>
-    </IonToolbar>
-  </IonHeader>
       <IonContent className="ion-padding">
+        {/* Debug Card */}
         <IonCard>
           <IonCardHeader>
-            <IonCardTitle>Current GPS Position</IonCardTitle>
+            <IonCardTitle>Debug Information</IonCardTitle>
           </IonCardHeader>
           <IonCardContent>
-            {geolocation ? (
-              <p>
-                <strong>Latitude:</strong> {geolocation.lat.toFixed(5)}<br />
-                <strong>Longitude:</strong> {geolocation.lng.toFixed(5)}
-              </p>
-            ) : (
-              <p>Waiting for geolocation...</p>
-            )}
+            <IonGrid>
+              <IonRow>
+                <IonCol>
+                  <h4>Device Information</h4>
+                  <p>Device Type: {debugInfo.deviceType}</p>
+                  <p>OS: {debugInfo.os}</p>
+                  <p>Browser: {debugInfo.browser}</p>
+                </IonCol>
+              </IonRow>
+
+              <IonRow>
+                <IonCol>
+                  <h4>Permissions & Status</h4>
+                  <p>Heading Available: {debugInfo.headingAvailable ? 'Yes' : 'No'}</p>
+                  <p>Heading Requested: {debugInfo.headingRequested ? 'Yes' : 'No'}</p>
+                  <p>Heading Permission: {orientationPermission ? 'Granted' : 'Not Granted'}</p>
+                  <p>Current Heading: {heading !== null ? `${heading.toFixed(2)}°` : 'N/A'}</p>
+                  <p>Geoloc Requested: {debugInfo.geolocationRequested ? 'Yes' : 'No'}</p>
+                  <p>Geoloc Enabled: {isGeolocationEnabled ? 'Yes' : 'No'}</p>
+                  <p>Geoloc Loading: {loading ? 'Yes' : 'No'}</p>
+                  {debugInfo.lastGeolocationTime && (
+                    <p>Last Geoloc Update: {new Date(debugInfo.lastGeolocationTime).toLocaleTimeString()}</p>
+                  )}
+                </IonCol>
+              </IonRow>
+
+              {error && (
+                <IonRow>
+                  <IonCol>
+                    <h4>Errors</h4>
+                    <IonText color="danger">
+                      <p>Geolocation Error: {error}</p>
+                      {orientationError && <p>Orientation Error: {orientationError}</p>}
+                    </IonText>
+                  </IonCol>
+                </IonRow>
+              )}
+
+              <IonRow>
+                <IonCol>
+                  <h4>Current Position</h4>
+                  {geolocation ? (
+                    <>
+                      <p>Latitude: {geolocation.lat.toFixed(6)}</p>
+                      <p>Longitude: {geolocation.lng.toFixed(6)}</p>
+                      <p>Bearing to Target: {bearing !== null ? `${bearing.toFixed(2)}°` : 'N/A'}</p>
+                    </>
+                  ) : (
+                    <p>No position data</p>
+                  )}
+                </IonCol>
+              </IonRow>
+            </IonGrid>
           </IonCardContent>
         </IonCard>
 
+        {/* Compass existant */}
         <div className="compass-container">
           <div className="compass-circle">
             <div ref={compassNeedleRef} className="compass-needle">
@@ -157,17 +241,6 @@ const CompassOrientationDisplay: React.FC = () => {
             Target Aligned!
           </div>
         </div>
-
-        <IonGrid>
-          <IonRow>
-            <IonCol>
-              <p>
-                <strong>Target Coordinates:</strong> <br />
-                Latitude: {TARGET_COORDINATES.lat.toFixed(5)}, Longitude: {TARGET_COORDINATES.lng.toFixed(5)}
-              </p>
-            </IonCol>
-          </IonRow>
-        </IonGrid>
 
         <IonButton expand="block" onClick={requestOrientationPermission}>
           Enable Compass Access

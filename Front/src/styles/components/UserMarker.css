@@ -1,0 +1,12 @@
+.user-marker-icon .user-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.5s ease;
+    color: #007bff;
+    /* Customize the color as needed */
+}
+
+.user-marker-icon svg {
+    transform-origin: center;
+}
