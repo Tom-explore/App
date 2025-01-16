@@ -59,10 +59,10 @@ export function usePlacesMarkers(places: Place[]) {
   /**
    * Ajuster calculateSize pour utiliser la nouvelle échelle (1-20)
    */
-  const calculateSize = useCallback((scale: number): [number, number] => {
+  const calculateSize = useCallback((scale: number, placeType: PlaceType): [number, number] => {
     // Définir les paramètres de taille de base
     const minSize = 60; // Taille minimale
-    const maxSize = 220; // Taille maximale
+    const maxSize = placeType === PlaceType.RESTAURANT_BAR ? 120 : 220;
 
     // Calculer la taille en fonction de l'échelle
     const size = minSize + ((scale - 1) / 19) * (maxSize - minSize);
@@ -124,42 +124,54 @@ export function usePlacesMarkers(places: Place[]) {
 
       const count = cluster.getChildCount();
       const scaleLevel = getScaleLevel(bestPlace.reviews_google_count);
-      const [finalSize] = calculateSize(scaleLevel);
+      const [finalSize] = calculateSize(scaleLevel, bestPlace.placeType);
       const zIndex = scaleLevel * 10;
-      const emojiFontSize = Math.round(finalSize * 20);
       let clusterContent: string;
       if (bestPlace.placeType === PlaceType.RESTAURANT_BAR) {
         const emoji = getEmoji(bestPlace.categories, bestPlace.attributes);
         clusterContent = `
-                  <div
-                      class="custom-cluster-icon"
-                      style="
-                          width: ${finalSize}px;
-                          height: ${finalSize}px;
-                          z-index: ${zIndex};
-                          display: flex;
-                          align-items: center;
-                          justify-content: center;
-                          position: relative;
-                          font-size: ${emojiFontSize}px;;
-                      "
-                  >
-                      <span class="icon-finder">${emoji}</span>
-                      <span
-                          style="
-                              position: absolute;
-                              bottom: 5px;
-                              right: 5px;
-                              background: rgba(255,255,255,0.8);
-                              border-radius: 50%;
-                              padding: 2px 5px;
-                              font-size: 0.8rem;
-                          "
-                      >
-                          ${count}
-                      </span>
-                  </div>
-              `;
+        <div
+          class="custom-cluster-icon"
+          style="
+            width: ${finalSize}px;
+            height: ${finalSize}px;
+            z-index: ${zIndex};
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+          "
+        >
+          <div
+            class="custom-marker-icon emoji-marker"
+            style="
+              width: ${finalSize}px;
+              height: ${finalSize}px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              position: relative;
+              font-size: ${finalSize * 0.8}px;
+            "
+          >
+            ${emoji}
+          </div>
+          <span
+            style="
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              color: white;
+              font-size: 1.2rem; /* Augmente la taille de la police */
+              font-weight: bold; /* Rend le texte en gras */
+              text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* Ajoute une ombre pour la lisibilité */
+            "
+          >
+            ${count}
+          </span>
+        </div>
+      `;
       } else {
         const imageUrl =
           bestPlace.images && bestPlace.images.length > 0 && bestPlace.images[0].slug
@@ -189,19 +201,20 @@ export function usePlacesMarkers(places: Place[]) {
                               border-radius: 50%;
                           "
                       />
-                      <span
-                          style="
-                              position: absolute;
-                              bottom: 5px;
-                              right: 5px;
-                              background: rgba(255,255,255,0.8);
-                              border-radius: 50%;
-                              padding: 2px 5px;
-                              font-size: 0.8rem;
-                          "
-                      >
-                          ${count}
-                      </span>
+                     <span
+            style="
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              color: white;
+              font-size: ${finalSize * 0.02}rem;
+              font-weight: bold; /* Rend le texte en gras */
+              text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* Ajoute une ombre pour la lisibilité */
+            "
+          >
+            ${count}
+          </span>
                   </div>
               `;
       }

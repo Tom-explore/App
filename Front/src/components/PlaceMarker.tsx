@@ -60,7 +60,7 @@ const PlacesMarkers: React.FC<PlacesMarkersProps> = React.memo(
             if (!activePlace || activePlace.lat === undefined || activePlace.lng === undefined) return null;
 
             const scaleLevel = getScaleLevel(activePlace.reviews_google_count || 0);
-            const [iconWidth, iconHeight] = calculateSize(scaleLevel);
+            const [iconWidth, iconHeight] = calculateSize(scaleLevel, activePlace.placeType);
             const zIndex = scaleLevel * 10;
 
             const isRestaurantBar = activePlace.placeType === PlaceType.RESTAURANT_BAR;
@@ -177,7 +177,7 @@ const PlacesMarkers: React.FC<PlacesMarkersProps> = React.memo(
                 )
                 .map(place => {
                     const scaleLevel = getScaleLevel(place.reviews_google_count || 0);
-                    const [iconWidth, iconHeight] = calculateSize(scaleLevel);
+                    const [iconWidth, iconHeight] = calculateSize(scaleLevel, place.placeType);
                     const zIndex = scaleLevel * 10;
 
                     const isRestaurantBar = place.placeType === PlaceType.RESTAURANT_BAR;
