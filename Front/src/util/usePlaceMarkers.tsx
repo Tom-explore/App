@@ -208,7 +208,7 @@ export function usePlacesMarkers(places: Place[]) {
               left: 50%;
               transform: translate(-50%, -50%);
               color: white;
-              font-size: ${finalSize * 0.02}rem;
+              font-size: ${finalSize * 0.025}rem;
               font-weight: bold; /* Rend le texte en gras */
               text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* Ajoute une ombre pour la lisibilité */
             "

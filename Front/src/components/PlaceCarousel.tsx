@@ -88,10 +88,7 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
      * 1. Filtrage par catégories et attributs
      ****************************************************************/
     const filteredByCategoryAndAttribute = useMemo(() => {
-        if (
-            categories.length === 0 &&
-            attributes.length === 0
-        ) {
+        if (categories.length === 0 && attributes.length === 0) {
             return allPlaces;
         }
 
@@ -110,20 +107,25 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
                     )
                 );
 
-            return matchesCategory && matchesAttribute;
+            // Modifié pour inclure les lieux qui correspondent aux catégories et
+            // qui correspondent aux attributs OU n'ont aucun attribut
+            return matchesCategory && (matchesAttribute || place.attributes.length === 0);
         });
     }, [allPlaces, categories, attributes]);
+
 
     /****************************************************************
      * 2. Tri des places (appliquer logique étendue)
      ****************************************************************/
     const sortedPlaces = useMemo(() => {
-        // Filtre de base pour les reviews >= 100
+
         const placesAbove100 = filteredByCategoryAndAttribute.filter(
             (p) => (p.reviews_google_count || 0) >= 100
         );
 
-        return placesAbove100.sort((a, b) => {
+
+        // Création d'une copie pour éviter de muter le tableau original lors du tri
+        const sorted = [...placesAbove100].sort((a, b) => {
             // Si aucune catégorie ou attribut n'est sélectionné, trier uniquement par reviews
             if (selectedCategories.length === 0 && selectedAttributes.length === 0) {
                 const aReviewCount = a.reviews_google_count || 0;
@@ -152,9 +154,14 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
             // Si les correspondances sont égales, trier par Google review count
             const aReviewCount = a.reviews_google_count || 0;
             const bReviewCount = b.reviews_google_count || 0;
+
             return bReviewCount - aReviewCount;
         });
+
+        return sorted;
+
     }, [filteredByCategoryAndAttribute, selectedCategories, selectedAttributes]);
+
 
     /****************************************************************
      * 3. Exclure la place active du slider (si n'est pas sur la page feed)
@@ -368,8 +375,8 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
                     virtual={{
                         enabled: true,
                         slides: slides, // Passer les slides ici
-                        addSlidesBefore: 5,
-                        addSlidesAfter: 5,
+                        addSlidesBefore: 2,
+                        addSlidesAfter: 2,
                     }}
                     slideToClickedSlide={false}
                     breakpoints={{
