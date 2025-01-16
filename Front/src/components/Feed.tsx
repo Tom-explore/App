@@ -1,11 +1,14 @@
 // src/components/Feed.tsx
 
-import React, { useMemo, useRef, useLayoutEffect, useCallback } from 'react';
+import React, { useMemo, useRef, useLayoutEffect, useCallback, useContext } from 'react';
 import { FixedSizeGrid as Grid } from 'react-window';
 import { Place } from '../types/PlacesInterfaces';
 import FeedCard from './FeedCard';
 import '../styles/components/Feed.css';
 import { Attribute, Category } from '../types/CategoriesAttributesInterfaces';
+import { GeolocationContext } from '../context/geolocationContext';
+import { IonButton, IonIcon } from '@ionic/react';
+import { locationOutline } from 'ionicons/icons';
 interface Coordinates {
     lat: number;
     lng: number;
@@ -44,6 +47,7 @@ const Feed: React.FC<FeedProps> = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const [containerWidth, setContainerWidth] = React.useState<number>(300);
     const [containerHeight, setContainerHeight] = React.useState<number>(500);
+    const { requestBrowserGeolocation, loading } = useContext(GeolocationContext);
 
     useLayoutEffect(() => {
         if (!containerRef.current) return;
@@ -158,6 +162,15 @@ const Feed: React.FC<FeedProps> = ({
 
     return (
         <div ref={containerRef} style={{ width: '100%', height: '100%' }}>
+            <div className="geoloc-button">
+                <IonButton
+                    onClick={requestBrowserGeolocation}
+                    color="primary"
+                >
+                    <IonIcon icon={locationOutline} />
+                </IonButton>
+            </div>
+
             {places.length > 0 ? (
                 <Grid
                     className="no-scrollbar"

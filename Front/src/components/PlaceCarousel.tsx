@@ -37,23 +37,32 @@ import { FeedContext } from '../context/feedContext';
 import { useLanguage } from '../context/languageContext';
 
 interface PlaceCarouselProps {
+    title?: string;
     allPlaces: Place[];
     isPreview: boolean;
     isMobile: boolean;
     categories: Category[];
     attributes: Attribute[];
-    activePlace?: Place | null;
+    selectedCategories: number[];
+    selectedAttributes: number[];
+    activePlace: Place | null;
     setActivePlace: (place: Place | null) => void;
+    getTranslation: (slug: string, type: 'attributes' | 'categories') => string;
+
 }
 
 const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
+    title,
     allPlaces,
     isPreview,
     isMobile,
     categories,
     attributes,
+    selectedCategories,
+    selectedAttributes,
     activePlace,
     setActivePlace,
+    getTranslation,
 }) => {
     const swiperRef = useRef<any>(null);
     const [currentSlidesPerView, setCurrentSlidesPerView] = useState<number>(
@@ -277,14 +286,6 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
     /****************************************************************
      * 10. Navigation "Voir plus" vers la page feed
      ****************************************************************/
-    const navigateToFeed = useCallback(() => {
-        if (!slug || categories.length === 0) return;
-        setFilteredPlaces(sortedPlaces);
-        router.push(
-            `/${language.language.code}/feed/city/${slug}`,
-            'forward'
-        );
-    }, [slug, categories, sortedPlaces, setFilteredPlaces, language, router]);
 
     const handleSeeMore = useCallback(() => {
         if (!slug || categories.length === 0) return;
@@ -317,17 +318,17 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
      ****************************************************************/
     return (
         <div className="place-carousel">
-            {/* HEADER : icône pour naviguer vers la page feed */}
             {!isFeedPage && (
                 <div className="carousel-header">
                     {categories.length > 0 && (
-                        <IonButton fill="clear" onClick={navigateToFeed}>
-                            <IonIcon icon={chevronForwardOutline} size="large" />
+                        <IonButton fill="clear" onClick={handleSeeMore}>
+                            <span className="carousel-title">{title}</span>
                         </IonButton>
                     )}
                 </div>
             )}
             <div className="swiper-wrapper">
+
 
                 <Swiper
                     ref={swiperRef}
@@ -381,6 +382,10 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
                                             activePlace?.id === slide.content.id
                                         }
                                         isFeed={isFeedPage}
+                                        selectedAttributes={selectedAttributes}
+                                        selectedCategories={selectedCategories}
+                                        getTranslation={getTranslation}
+
                                     />
                                 </div>
                             ) : slide.type === 'see-more' ? (
@@ -418,6 +423,9 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
                         isFirst={false}
                         isLast={false}
                         isFeed={isFeedPage}
+                        selectedAttributes={selectedAttributes}
+                        selectedCategories={selectedCategories}
+                        getTranslation={getTranslation}
                     />
                 </ModalPortal>
             )}

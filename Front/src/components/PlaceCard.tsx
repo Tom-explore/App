@@ -1,6 +1,6 @@
 // src/components/PlaceCard.tsx
 
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInstagram, faGoogle } from '@fortawesome/free-brands-svg-icons';
@@ -27,7 +27,11 @@ interface PlaceCardProps {
     isFirst?: boolean;
     isLast?: boolean;
     isFeed: boolean;
+    selectedCategories: number[];
+    selectedAttributes: number[];
+    getTranslation: (slug: string, type: 'attributes' | 'categories') => string;
 }
+
 
 const PlaceCard: React.FC<PlaceCardProps> = ({
     place,
@@ -40,6 +44,10 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
     isFirst,
     isLast,
     isFeed,
+    selectedCategories,
+    selectedAttributes,
+    getTranslation
+
 }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [touchStartY, setTouchStartY] = useState<number | null>(null);
@@ -76,7 +84,16 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
             },
         },
     };
-
+    const selectedHashtags = [
+        ...place.categories.filter(cat => selectedCategories.includes(cat.id)).map(cat => ({
+            ...cat,
+            translatedName: getTranslation(cat.slug, 'categories'),
+        })),
+        ...place.attributes.filter(attr => selectedAttributes.includes(attr.id)).map(attr => ({
+            ...attr,
+            translatedName: getTranslation(attr.slug, 'attributes'),
+        })),
+    ];
     /**
      * 2. Gérer le clic sur l’image dans le slider modal
      */
@@ -373,6 +390,33 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                                 {place.reviews_google_count} reviews)
                             </span>
                         </div>
+                        {/* New hashtags section */}
+                        {selectedHashtags.length > 0 && (
+                            <div className="hashtags-container" style={{
+                                marginTop: '10px',
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: '5px',
+                                justifyContent: 'center'
+                            }}>
+                                {selectedHashtags.map((tag, index) => (
+                                    <span
+                                        key={`${tag.id}-${index}`}
+                                        style={{
+                                            backgroundColor: '#ff9800',
+                                            color: 'white',
+                                            padding: '2px 8px',
+                                            borderRadius: '5px',
+                                            fontSize: '0.75rem',
+                                            fontWeight: 500
+                                        }}
+                                    >
+                                        #{tag.translatedName || tag.slug}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+
                         <div className="place-links">
                             {place.link_insta && (
                                 <a

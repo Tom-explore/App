@@ -155,8 +155,12 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
                     isMobile={isMobile}
                     categories={memoizedCategories}
                     attributes={memoizedAttributes}
+                    selectedCategories={selectedCategories} // Ajout
+                    selectedAttributes={selectedAttributes} // Ajout
                     activePlace={activePlace}
                     setActivePlace={setActivePlace} // Passez setActivePlace
+                    getTranslation={getTranslation}
+
                 />
             </div>
         </div>

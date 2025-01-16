@@ -13,7 +13,6 @@
 
 /* Container principal */
 .city-page {
-  position: relative;
   overflow-x: hidden;
   transition: transform 0.3s ease-in-out;
 }

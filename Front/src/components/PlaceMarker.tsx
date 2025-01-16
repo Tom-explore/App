@@ -1,5 +1,3 @@
-// src/components/PlaceMarker.tsx
-
 import React, { useEffect, useRef, useMemo } from 'react';
 import { Marker, Popup, useMap } from 'react-leaflet';
 import L, { DivIcon } from 'leaflet';
@@ -18,7 +16,6 @@ interface PlacesMarkersProps {
     selectedAttributes: number[];
     getTranslation: (slug: string, type: 'attributes' | 'categories') => string;
 }
-
 
 interface MarkerWithPlaceComponentProps {
     place: Place;
@@ -53,8 +50,6 @@ const PlacesMarkers: React.FC<PlacesMarkersProps> = React.memo(
             calculateSize,
             createClusterIcon,
         } = usePlacesMarkers(places);
-        // Au début du composant PlacesMarkers
-
 
         const markersData = useMemo(() => {
             return sortedPlaces
@@ -66,14 +61,12 @@ const PlacesMarkers: React.FC<PlacesMarkersProps> = React.memo(
                     const [iconWidth, iconHeight] = calculateSize(scaleLevel);
                     const zIndex = scaleLevel * 10;
 
-                    const imageUrl =
-                        place.images && place.images.length > 0 && place.images[0].slug
-                            ? `https://api.allorigins.win/raw?url=https://lh3.googleusercontent.com/p/${place.images[0].slug}`
-                            : '/assets/img/compass.png';
+                    const isRestaurantBar = place.placeType === PlaceType.RESTAURANT_BAR;
+                    const imageUrl = !isRestaurantBar && place.images && place.images.length > 0 && place.images[0].slug
+                        ? `https://api.allorigins.win/raw?url=https://lh3.googleusercontent.com/p/${place.images[0].slug}`
+                        : '/assets/img/compass.png';
 
-                    const emoji = place.placeType === PlaceType.RESTAURANT_BAR
-                        ? getEmoji(place.categories, place.attributes)
-                        : null;
+                    const emoji = isRestaurantBar ? getEmoji(place.categories, place.attributes) : null;
 
                     const selectedHashtags = [
                         ...place.categories.filter(cat => selectedCategories.includes(cat.id)).map(cat => ({
@@ -85,56 +78,82 @@ const PlacesMarkers: React.FC<PlacesMarkersProps> = React.memo(
                             translatedName: getTranslation(attr.slug, 'attributes'),
                         })),
                     ];
+
+                    const markerContent = isRestaurantBar
+                        ? `<div class="custom-marker-icon emoji-marker" style="
+                            width: ${iconWidth}px;
+                            height: ${iconHeight}px;
+                            z-index: ${zIndex};
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            position: relative;
+                            font-size: ${iconWidth * 0.8}px;
+                          ">
+                            ${emoji}
+                          </div>`
+                        : `<div class="custom-marker-icon" style="
+                            width: ${iconWidth}px;
+                            height: ${iconHeight}px;
+                            z-index: ${zIndex};
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            position: relative;
+                          ">
+                            <img
+                                src="${imageUrl}"
+                                alt="${place.translation?.name || place.name_original}"
+                                style="
+                                    width: 100%;
+                                    height: 100%;
+                                    border-radius: 50%;
+                                    object-fit: cover;
+                                    border: 2px solid white;
+                                "
+                            />
+                          </div>`;
+
                     const icon = L.divIcon({
                         html: `
-                    <div class="custom-marker-icon" style="
-                        width: ${iconWidth}px;
-                        height: ${iconHeight}px;
-                        font-size: 1.5rem;
-                        z-index: ${zIndex};
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                    ">
-                        <span class="icon-finder">${emoji}</span>
-                    </div>
-                    <span style="
-                        margin-top: 5px;
-                        font-size: 1.2rem;
-                        color: #333;
-                        background: rgba(255, 255, 255, 0.8);
-                        border-radius: 5px;
-                        padding: 2px 6px;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                        display: block;
-                        text-align: center;
-                    ">
-                        ${place.translation?.name || ''}
-                        <div style="
-                            margin-top: 5px;
-                            font-size: 0.8rem;
-                            color: #555;
-                            display: flex;
-                            flex-wrap: wrap;
-                            justify-content: center;
-                            gap: 5px;
-                        ">
-                            ${selectedHashtags.map(tag => `
-                                <span style="
-                                    background-color: #ff9800;
-                                    color: white;
-                                    padding: 2px 5px;
-                                    border-radius: 5px;
-                                    font-size: 0.75rem;
-                                    margin: 1px;
+                            ${markerContent}
+                            <span style="
+                                margin-top: 5px;
+                                font-size: 1.2rem;
+                                color: #333;
+                                background: rgba(255, 255, 255, 0.8);
+                                border-radius: 5px;
+                                padding: 2px 6px;
+                                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                                display: block;
+                                text-align: center;
+                            ">
+                                ${place.translation?.name || ''}
+                                <div style="
+                                    margin-top: 5px;
+                                    font-size: 0.8rem;
+                                    color: #555;
+                                    display: flex;
+                                    flex-wrap: wrap;
+                                    justify-content: center;
+                                    gap: 5px;
                                 ">
-                                    #${tag.translatedName || tag.slug}
-                                </span>
-                            `).join('')}
-                        </div>
-                    </span>
-                `,
-                        className: 'custom-marker-icon',
+                                    ${selectedHashtags.map(tag => `
+                                        <span style="
+                                            background-color: #ff9800;
+                                            color: white;
+                                            padding: 2px 5px;
+                                            border-radius: 5px;
+                                            font-size: 0.75rem;
+                                            margin: 1px;
+                                        ">
+                                            #${tag.translatedName || tag.slug}
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            </span>
+                        `,
+                        className: `custom-marker-icon ${isRestaurantBar ? 'emoji-marker' : ''}`,
                         iconSize: L.point(iconWidth, iconHeight, true),
                         iconAnchor: [iconWidth / 2, iconHeight / 2],
                         popupAnchor: [0, -iconHeight / 2],
@@ -148,8 +167,6 @@ const PlacesMarkers: React.FC<PlacesMarkersProps> = React.memo(
                     };
                 });
         }, [sortedPlaces, getScaleLevel, calculateSize, selectedCategories, selectedAttributes, getTranslation]);
-
-
 
         return (
             <MarkerClusterGroup
@@ -203,6 +220,7 @@ const PlacesMarkers: React.FC<PlacesMarkersProps> = React.memo(
         );
     }
 );
+
 const MarkerWithPlaceComponent: React.FC<MarkerWithPlaceComponentProps> = React.memo(
     ({ place, onClickPlace, activePlace, ...props }) => {
         const markerRef = useRef<L.Marker>(null);

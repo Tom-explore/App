@@ -214,7 +214,6 @@ const City: React.FC = () => {
 
                 <div className="city-content">
                     {carouselConfigurations.map((config, index) => {
-                        // Chercher la Category correspondante
                         const category = uniqueCategories.find(
                             cat => cat.slug === config.categorySlug
                         );
@@ -239,8 +238,8 @@ const City: React.FC = () => {
                             );
                             return (
                                 <div key={index}>
-                                    <h2>{title}</h2>
                                     <PlaceCarousel
+                                        title={title}
                                         allPlaces={allPlaces}
                                         isPreview={true}
                                         isMobile={isMobile}
@@ -248,6 +247,10 @@ const City: React.FC = () => {
                                         attributes={[]}
                                         activePlace={null}
                                         setActivePlace={() => { }}
+                                        selectedAttributes={[]}
+                                        selectedCategories={[]}
+                                        getTranslation={getTranslation}
+
                                     />
                                 </div>
                             );

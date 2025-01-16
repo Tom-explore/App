@@ -69,6 +69,16 @@
     color: #0056b3;
 }
 
+.carousel-title {
+    text-decoration: underline;
+    color: #b9e712;
+    /* Pour hériter de la couleur du bouton */
+    font-size: 1.2rem;
+    /* Hérite de la taille de la police */
+    display: inline;
+    /* Assure que le span reste inline */
+}
+
 
 @keyframes shimmer {
     0% {
