@@ -51,8 +51,127 @@ const PlacesMarkers: React.FC<PlacesMarkersProps> = React.memo(
             createClusterIcon,
         } = usePlacesMarkers(places);
 
+        // Séparer les places actives des autres
+        const clusteredPlaces = useMemo(() => {
+            return sortedPlaces.filter(place => !(activePlace && place.id === activePlace.id));
+        }, [sortedPlaces, activePlace]);
+
+        const activePlaceMarker = useMemo(() => {
+            if (!activePlace || activePlace.lat === undefined || activePlace.lng === undefined) return null;
+
+            const scaleLevel = getScaleLevel(activePlace.reviews_google_count || 0);
+            const [iconWidth, iconHeight] = calculateSize(scaleLevel);
+            const zIndex = scaleLevel * 10;
+
+            const isRestaurantBar = activePlace.placeType === PlaceType.RESTAURANT_BAR;
+            const imageUrl = !isRestaurantBar && activePlace.images && activePlace.images.length > 0 && activePlace.images[0].slug
+                ? `https://api.allorigins.win/raw?url=https://lh3.googleusercontent.com/p/${activePlace.images[0].slug}`
+                : '/assets/img/compass.png';
+
+            const emoji = isRestaurantBar ? getEmoji(activePlace.categories, activePlace.attributes) : null;
+
+            const selectedHashtags = [
+                ...activePlace.categories.filter(cat => selectedCategories.includes(cat.id)).map(cat => ({
+                    ...cat,
+                    translatedName: getTranslation(cat.slug, 'categories'),
+                })),
+                ...activePlace.attributes.filter(attr => selectedAttributes.includes(attr.id)).map(attr => ({
+                    ...attr,
+                    translatedName: getTranslation(attr.slug, 'attributes'),
+                })),
+            ];
+
+            const markerContent = isRestaurantBar
+                ? `<div class="custom-marker-icon emoji-marker" style="
+                    width: ${iconWidth}px;
+                    height: ${iconHeight}px;
+                    z-index: ${zIndex};
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    position: relative;
+                    font-size: ${iconWidth * 0.8}px;
+                  ">
+                    ${emoji}
+                  </div>`
+                : `<div class="custom-marker-icon" style="
+                    width: ${iconWidth}px;
+                    height: ${iconHeight}px;
+                    z-index: ${zIndex};
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    position: relative;
+                  ">
+                    <img
+                        src="${imageUrl}"
+                        alt="${activePlace.translation?.name || activePlace.name_original}"
+                        style="
+                            width: 100%;
+                            height: 100%;
+                            border-radius: 50%;
+                            object-fit: cover;
+                            border: 2px solid white;
+                        "
+                    />
+                  </div>`;
+
+            const icon = L.divIcon({
+                html: `
+                    ${markerContent}
+                    <span style="
+                        margin-top: 5px;
+                        font-size: 1.2rem;
+                        color: #333;
+                        background: rgba(255, 255, 255, 0.8);
+                        border-radius: 5px;
+                        padding: 2px 6px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        display: block;
+                        text-align: center;
+                    ">
+                        ${activePlace.translation?.name || ''}
+                        <div style="
+                            margin-top: 5px;
+                            font-size: 0.8rem;
+                            color: #555;
+                            display: flex;
+                            flex-wrap: wrap;
+                            justify-content: center;
+                            gap: 5px;
+                        ">
+                            ${selectedHashtags.map(tag => `
+                                <span style="
+                                    background-color: #ff9800;
+                                    color: white;
+                                    padding: 2px 5px;
+                                    border-radius: 5px;
+                                    font-size: 0.75rem;
+                                    margin: 1px;
+                                ">
+                                    #${tag.translatedName || tag.slug}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </span>
+                `,
+                className: `custom-marker-icon ${isRestaurantBar ? 'emoji-marker' : ''}`,
+                iconSize: L.point(iconWidth, iconHeight, true),
+                iconAnchor: [iconWidth / 2, iconHeight / 2],
+                popupAnchor: [0, -iconHeight / 2],
+            });
+
+            return {
+                place: activePlace,
+                position: [activePlace.lat, activePlace.lng] as [number, number],
+                icon,
+                zIndex,
+            };
+        }, [activePlace, getScaleLevel, calculateSize, selectedCategories, selectedAttributes, getTranslation]);
+
+        // Préparer les données des marqueurs cluster
         const markersData = useMemo(() => {
-            return sortedPlaces
+            return clusteredPlaces
                 .filter((place): place is Place & { lat: number; lng: number } =>
                     place.lat !== undefined && place.lng !== undefined
                 )
@@ -166,45 +285,93 @@ const PlacesMarkers: React.FC<PlacesMarkersProps> = React.memo(
                         zIndex,
                     };
                 });
-        }, [sortedPlaces, getScaleLevel, calculateSize, selectedCategories, selectedAttributes, getTranslation]);
+        }, [clusteredPlaces, getScaleLevel, calculateSize, selectedCategories, selectedAttributes, getTranslation]);
 
         return (
-            <MarkerClusterGroup
-                chunkedLoading
-                iconCreateFunction={createClusterIcon}
-            >
-                {markersData.map(({ place, position, icon, zIndex }) => (
+            <>
+                {/* Groupe de clusters sans la place active */}
+                <MarkerClusterGroup
+                    chunkedLoading
+                    iconCreateFunction={createClusterIcon}
+                >
+                    {markersData.map(({ place, position, icon, zIndex }) => (
+                        <MarkerWithPlaceComponent
+                            key={place.id}
+                            position={position}
+                            icon={icon}
+                            place={place}
+                            onClickPlace={onClickPlace}
+                            activePlace={activePlace}
+                            zIndexOffset={zIndex}
+                        >
+                            <Popup>
+                                <div className="popup-content">
+                                    {place.images &&
+                                        place.images.length > 0 &&
+                                        place.images[0].source && (
+                                            <img
+                                                src={place.images[0].source}
+                                                alt={place.description}
+                                                className="popup-image"
+                                                loading="lazy"
+                                            />
+                                        )}
+                                    <h3 className="popup-title">
+                                        {place.translation?.name || place.name_original}
+                                    </h3>
+                                    <p className="popup-description">{place.description}</p>
+                                    <p>
+                                        <strong>Address:</strong> {place.address}
+                                    </p>
+                                    {place.link_website && (
+                                        <a
+                                            href={place.link_website}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="visit-button"
+                                        >
+                                            Visit Website
+                                        </a>
+                                    )}
+                                </div>
+                            </Popup>
+                        </MarkerWithPlaceComponent>
+                    ))}
+                </MarkerClusterGroup>
+
+                {/* Marqueur pour la place active, en dehors du groupe de clusters */}
+                {activePlaceMarker && (
                     <MarkerWithPlaceComponent
-                        key={place.id}
-                        position={position}
-                        icon={icon}
-                        place={place}
+                        key={activePlaceMarker.place.id}
+                        position={activePlaceMarker.position}
+                        icon={activePlaceMarker.icon}
+                        place={activePlaceMarker.place}
                         onClickPlace={onClickPlace}
                         activePlace={activePlace}
-                        zIndexOffset={zIndex}
+                        zIndexOffset={activePlaceMarker.zIndex}
                     >
                         <Popup>
                             <div className="popup-content">
-                                {place.images &&
-                                    place.images.length > 0 &&
-                                    place.images[0].source && (
+                                {activePlaceMarker.place.images &&
+                                    activePlaceMarker.place.images.length > 0 &&
+                                    activePlaceMarker.place.images[0].source && (
                                         <img
-                                            src={place.images[0].source}
-                                            alt={place.description}
+                                            src={activePlaceMarker.place.images[0].source}
+                                            alt={activePlaceMarker.place.description}
                                             className="popup-image"
                                             loading="lazy"
                                         />
                                     )}
                                 <h3 className="popup-title">
-                                    {place.translation?.name || place.name_original}
+                                    {activePlaceMarker.place.translation?.name || activePlaceMarker.place.name_original}
                                 </h3>
-                                <p className="popup-description">{place.description}</p>
+                                <p className="popup-description">{activePlaceMarker.place.description}</p>
                                 <p>
-                                    <strong>Address:</strong> {place.address}
+                                    <strong>Address:</strong> {activePlaceMarker.place.address}
                                 </p>
-                                {place.link_website && (
+                                {activePlaceMarker.place.link_website && (
                                     <a
-                                        href={place.link_website}
+                                        href={activePlaceMarker.place.link_website}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="visit-button"
@@ -215,8 +382,8 @@ const PlacesMarkers: React.FC<PlacesMarkersProps> = React.memo(
                             </div>
                         </Popup>
                     </MarkerWithPlaceComponent>
-                ))}
-            </MarkerClusterGroup>
+                )}
+            </>
         );
     }
 );
@@ -235,6 +402,15 @@ const MarkerWithPlaceComponent: React.FC<MarkerWithPlaceComponentProps> = React.
         useEffect(() => {
             if (markerRef.current && activePlace && activePlace.id === place.id) {
                 markerRef.current.openPopup();
+
+                const markerLatLng = markerRef.current.getLatLng();
+                const mapBounds = map.getBounds();
+                if (!mapBounds.contains(markerLatLng)) {
+                    map.setView(markerLatLng, map.getZoom(), { animate: true });
+                }
+                setTimeout(() => {
+                    markerRef.current?.openPopup();
+                }, 300);
             }
         }, [activePlace, place.id, map]);
 
@@ -253,5 +429,6 @@ const MarkerWithPlaceComponent: React.FC<MarkerWithPlaceComponentProps> = React.
         );
     }
 );
+
 
 export default PlacesMarkers;

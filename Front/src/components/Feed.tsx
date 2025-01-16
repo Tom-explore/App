@@ -77,16 +77,25 @@ const Feed: React.FC<FeedProps> = ({
     const LIST_HEIGHT = useMemo(() => containerHeight, [containerHeight]);
     const sortedPlaces = useMemo(() => {
         return [...places].sort((a, b) => {
+            // Calculer les correspondances pour les catégories et les attributs
             const aCategoryMatches = a.categories.filter(cat => selectedCategories.includes(cat.id)).length;
             const bCategoryMatches = b.categories.filter(cat => selectedCategories.includes(cat.id)).length;
             const aAttributeMatches = a.attributes.filter(attr => selectedAttributes.includes(attr.id)).length;
             const bAttributeMatches = b.attributes.filter(attr => selectedAttributes.includes(attr.id)).length;
 
-            // Prioriser par correspondance (catégories et attributs)
+            // Prioriser par correspondance totale
             const aTotalMatches = aCategoryMatches + aAttributeMatches;
             const bTotalMatches = bCategoryMatches + bAttributeMatches;
 
-            return bTotalMatches - aTotalMatches; // Plus de correspondances en premier
+            if (aTotalMatches !== bTotalMatches) {
+                return bTotalMatches - aTotalMatches; // Plus de correspondances en premier
+            }
+
+            // Si les correspondances sont égales, trier par Google review count
+            const aReviewCount = a.reviews_google_count; // Valeur par défaut à 0 si non défini
+            const bReviewCount = b.reviews_google_count;
+
+            return bReviewCount - aReviewCount; // Plus de reviews en premier
         });
     }, [places, selectedCategories, selectedAttributes]);
     // Mémoïsation des fonctions de changement de filtre

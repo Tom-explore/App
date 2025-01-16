@@ -1,5 +1,3 @@
-// src/components/MapPlacesDisplay.tsx
-
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { IonContent, IonPage } from "@ionic/react";
 import Map from "./Map";
@@ -7,7 +5,7 @@ import PlaceCarousel from "./PlaceCarousel";
 import { Place } from "../types/PlacesInterfaces";
 import { Category, Attribute } from "../types/CategoriesAttributesInterfaces";
 import "../styles/components/MapPlaceDisplay.css";
-import PlacesMarkers from "./PlaceMarker"; // Assurez-vous du bon import
+import PlacesMarkers from "./PlaceMarker";
 import { useCity } from "../context/cityContext";
 import { useLanguage } from "../context/languageContext";
 
@@ -39,7 +37,7 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
 }) => {
     const [center, setCenter] = useState<[number, number] | null>(null);
     const [zoom, setZoom] = useState<number>(3.5);
-    const [activePlace, setActivePlace] = useState<Place | null>(null); // État de l'endroit actif
+    const [activePlace, setActivePlace] = useState<Place | null>(null);
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const city = useCity();
     const initialZoom = isMobile ? 3.5 : 5;
@@ -47,11 +45,9 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
         ? [38.134, 11.5799]
         : [48.134, 11.5799];
 
-    // Mémorisation des catégories et attributs pour éviter les re-renders inutiles
     const memoizedCategories = useMemo(() => categories, [categories]);
     const memoizedAttributes = useMemo(() => attributes, [attributes]);
 
-    // Limites possibles de la carte en fonction de la ville
     const getBoundaries = ():
         | [[number, number], [number, number]]
         | undefined => {
@@ -66,6 +62,8 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
         return undefined;
     };
     const boundaries = useMemo(getBoundaries, [city]);
+
+    // Effect for initial map setup
     useEffect(() => {
         if (places.length === 0) {
             setCenter(null);
@@ -83,7 +81,6 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
                 console.warn("Les coordonnées de la ville sont manquantes.");
             }
         } else {
-            // Calculer un centre moyen pour toutes les places
             const latitudes = places
                 .map((p) => p.lat)
                 .filter((lat) => lat !== undefined) as number[];
@@ -105,7 +102,15 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
         }
     }, [places, isMobile, initialZoom, city]);
 
-    // Mémoriser les places triées
+    // New effect to handle activePlace changes
+    useEffect(() => {
+        if (activePlace && activePlace.lat && activePlace.lng) {
+            const adjustedLat = isMobile ? activePlace.lat - 0.1 : activePlace.lat;
+            setCenter([adjustedLat, activePlace.lng]);
+            setZoom(12); // You can adjust this zoom level as needed
+        }
+    }, [activePlace, isMobile]);
+
     const sortedPlaces = useMemo(() => {
         return places
             .filter((p) => (p.reviews_google_count || 0) >= 100)
@@ -113,17 +118,13 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
                 (a, b) => (b.reviews_google_count || 0) - (a.reviews_google_count || 0)
             );
     }, [places]);
-    // Après la définition de sortedPlaces
 
-    // Si aucun centre défini => rien à afficher (ou un loader)
     if (!center) {
-        return null; // Envisagez d'ajouter un loader pour une meilleure UX
+        return null;
     }
 
-    // JSX Render
     return (
         <div className="map-container">
-            {/* Carte */}
             <Map
                 initialZoom={initialZoom}
                 initialPosition={position}
@@ -133,21 +134,18 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
                 boundaries={boundaries}
                 isMobile={isMobile}
                 isFeed={true}
-                onZoomChange={setZoom} // Passez setZoom pour gérer les changements de zoom
+                onZoomChange={setZoom}
             >
-                {/* Passez activePlace à PlacesMarkers */}
                 <PlacesMarkers
                     places={sortedPlaces}
                     onClickPlace={setActivePlace}
                     activePlace={activePlace}
-                    selectedCategories={selectedCategories} // Ajout
-                    selectedAttributes={selectedAttributes} // Ajout
+                    selectedCategories={selectedCategories}
+                    selectedAttributes={selectedAttributes}
                     getTranslation={getTranslation}
-
                 />
             </Map>
 
-            {/* Carousel */}
             <div className="carousel-wrapper">
                 <PlaceCarousel
                     allPlaces={sortedPlaces}
@@ -155,12 +153,11 @@ const MapPlacesDisplay: React.FC<MapPlacesDisplayProps> = ({
                     isMobile={isMobile}
                     categories={memoizedCategories}
                     attributes={memoizedAttributes}
-                    selectedCategories={selectedCategories} // Ajout
-                    selectedAttributes={selectedAttributes} // Ajout
+                    selectedCategories={selectedCategories}
+                    selectedAttributes={selectedAttributes}
                     activePlace={activePlace}
-                    setActivePlace={setActivePlace} // Passez setActivePlace
+                    setActivePlace={setActivePlace}
                     getTranslation={getTranslation}
-
                 />
             </div>
         </div>

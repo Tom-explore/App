@@ -115,18 +115,46 @@ const PlaceCarousel: React.FC<PlaceCarouselProps> = ({
     }, [allPlaces, categories, attributes]);
 
     /****************************************************************
-     * 2. Tri des places (exclure <100 avis + ordre décroissant)
+     * 2. Tri des places (appliquer logique étendue)
      ****************************************************************/
     const sortedPlaces = useMemo(() => {
+        // Filtre de base pour les reviews >= 100
         const placesAbove100 = filteredByCategoryAndAttribute.filter(
             (p) => (p.reviews_google_count || 0) >= 100
         );
-        return placesAbove100.sort(
-            (a, b) =>
-                (b.reviews_google_count || 0) -
-                (a.reviews_google_count || 0)
-        );
-    }, [filteredByCategoryAndAttribute]);
+
+        return placesAbove100.sort((a, b) => {
+            // Si aucune catégorie ou attribut n'est sélectionné, trier uniquement par reviews
+            if (selectedCategories.length === 0 && selectedAttributes.length === 0) {
+                const aReviewCount = a.reviews_google_count || 0;
+                const bReviewCount = b.reviews_google_count || 0;
+                return bReviewCount - aReviewCount;
+            }
+
+            // Calculer les correspondances pour les catégories et les attributs
+            const aCategoryMatches = a.categories.filter(cat =>
+                selectedCategories.includes(cat.id)).length;
+            const bCategoryMatches = b.categories.filter(cat =>
+                selectedCategories.includes(cat.id)).length;
+            const aAttributeMatches = a.attributes.filter(attr =>
+                selectedAttributes.includes(attr.id)).length;
+            const bAttributeMatches = b.attributes.filter(attr =>
+                selectedAttributes.includes(attr.id)).length;
+
+            // Prioriser par correspondance totale
+            const aTotalMatches = aCategoryMatches + aAttributeMatches;
+            const bTotalMatches = bCategoryMatches + bAttributeMatches;
+
+            if (aTotalMatches !== bTotalMatches) {
+                return bTotalMatches - aTotalMatches; // Plus de correspondances en premier
+            }
+
+            // Si les correspondances sont égales, trier par Google review count
+            const aReviewCount = a.reviews_google_count || 0;
+            const bReviewCount = b.reviews_google_count || 0;
+            return bReviewCount - aReviewCount;
+        });
+    }, [filteredByCategoryAndAttribute, selectedCategories, selectedAttributes]);
 
     /****************************************************************
      * 3. Exclure la place active du slider (si n'est pas sur la page feed)
